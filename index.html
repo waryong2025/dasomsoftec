@@ -206,20 +206,22 @@
             width: 100px;
         }
 
-        /* [수정] 핸드폰에서 가로 스크롤이 가능하도록 max-width: 100%로 변경 */
+        /* ★ [수정 1] S1 PC 너비 90%로 변경 */
         #section1 #scheduleContainer {
             background-color: white;
             padding: 10px; 
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin: 20px auto;
-            max-width: 100%; /* [수정] 95% -> 100% */
+            max-width: 90%;   /* 100% -> 90% (PC) */
             overflow-x: auto;
             border-radius: 8px;
-            box-sizing: border-box; /* [추가] */
+            box-sizing: border-box; 
         }
+        
         #section1 table {
             width: 100%;
-            min-width: 1200px; border-collapse: collapse;
+            min-width: 100%; 
+            border-collapse: collapse;
             margin: 0 auto; font-size: 0.9em; background-color: #fff; table-layout: fixed;
         }
         #section1 th, #section1 td {
@@ -300,7 +302,7 @@
             border-radius: 3px; 
             cursor: pointer; 
             white-space: nowrap;
-            transition: background-color 0.15s;
+            transition: background-color: 0.15s;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
             flex-grow: 1; 
             margin: 0 1px;
@@ -439,17 +441,42 @@
             }
         }
 
+        /* [수정] S1 모바일 화면 대응 */
         @media screen and (max-width: 768px) {
+            
+            /* ★ [수정 2] S1 컨테이너 모바일 100% 너비 */
+            #section1 #scheduleContainer {
+                max-width: 100%;
+                margin: 10px 0; /* 상하 10px, 좌우 0px */
+            }
+            
             #section1 .controls {
                 grid-template-columns: 1fr;
             }
-            #section1 .controls .control-group { flex-direction: column; align-items: stretch;
+            #section1 .controls .control-group { 
+                flex-direction: column; 
+                align-items: stretch;
             }
-            #section1 .controls input[type="text"], #section1 .controls input[type="number"], #section1 .controls select,
-            #section1 .controls input#companyInput, #section1 .controls select#typeSelect { 
+            #section1 .controls input[type="text"], 
+            #section1 .controls input[type="number"], 
+            #section1 .controls select,
+            #section1 .controls input#companyInput, 
+            #section1 .controls select#typeSelect { 
                 width: 100%;
                 flex-basis: auto;
             }
+            
+            #section1 table { 
+                min-width: 100%;
+                font-size: 0.8em; 
+            }
+            #section1 th, #section1 td {
+                padding: 3px;
+                height: 30px;
+                font-size: 10pt; 
+            }
+            #section1 .day-name-main { font-size: 1.0em; }
+            #section1 .name-entry { font-size: 9pt; }
         }
 
         /* ================================================================= */
@@ -465,13 +492,16 @@
             font-size: 9pt; /* S2의 기본 폰트 크기 */
         }
 
+        /* ★ [수정 3] S2 PC 너비 90%로 변경 및 스크롤 추가 */
         #section2 .journal-container {
             background-color: white;
             padding: 15px; 
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            max-width: 980px; 
+            max-width: 90%;      /* 980px -> 90% (PC) */
             margin: 10px auto;
+            overflow-x: auto;      /* S1처럼 가로 스크롤 추가 */
+            box-sizing: border-box;/* S1처럼 box-sizing 추가 */
         }
 
         #section2 .header-title {
@@ -701,7 +731,7 @@
             border: 1px solid #ccc;
             border-radius: 3px;
             white-space: nowrap;
-            transition: background-color 0.1s;
+            transition: background-color: 0.1s;
         }
 
         #section2 .apply-button {
@@ -747,7 +777,6 @@
             color: #333;
         }
         
-        /* [수정] 차번 글자 크기 헤더와 맞춤 */
         #section2 .car-number-cell {
             font-weight: bold;
             font-size: 1.136em; 
@@ -890,6 +919,51 @@
             display: none !important;
         }
         
+        /* ★ [수정 4] S2 모바일 너비 100% 및 폰트 축소 CSS (새로 추가) */
+        /* ================================================================= */
+        /* [Section 2] 모바일 화면 대응 (새로 추가) */
+        /* ================================================================= */
+        @media screen and (max-width: 768px) {
+            /* [추가] S2 컨테이너 모바일 100% 너비 */
+            #section2 .journal-container {
+                max-width: 100%;
+                margin: 10px 0; /* 상하 10px, 좌우 0px */
+                padding: 5px; /* 모바일에서 여백 줄임 */
+            }
+
+            /* S2의 기본 폰트 크기를 줄여서 전체적으로 작아지게 함 */
+            #section2 {
+                font-size: 8pt; 
+            }
+            
+            /* 컨트롤 버튼들이 너무 커지지 않게 조정 */
+            #section2 .options-right {
+                gap: 5px;
+                flex-wrap: wrap; /* 버튼들 줄바꿈 허용 */
+                justify-content: flex-end;
+            }
+            #section2 .print-button {
+                padding: 3px 6px;
+                font-size: 1em;
+            }
+            #section2 .dispatch-buttons-container label {
+                margin: 0 4px;
+            }
+            
+            /* 테이블 셀 높이/패딩 S1과 비슷하게 줄임 */
+            #section2 th, #section2 td {
+                height: 30px;
+                padding: 2px 0;
+            }
+            /* 입력창 높이/폰트 줄임 */
+            #section2 input[type="number"], #section2 input[type="text"],
+            #section2 .s2-work-hours-select,
+            #section2 .driver-input,
+            #section2 .driver-name {
+                height: 16px;
+                font-size: 0.95em;
+            }
+        }
         /* ================================================================= */
         /* [공통] 인쇄 스타일 (S1, S2 통합) */
         /* ================================================================= */
@@ -1029,8 +1103,8 @@
             /* [수정] S2 인쇄 시 선명한 라인을 위해 !important 추가 */
             body.printing-section2 #section2 table { 
                 font-size: 7pt; 
-                border-collapse: collapse; /* 확실하게 collapse */
-                border: 1px solid #000; /* 테이블 외곽선 */
+                border-collapse: collapse !important; /* 확실하게 collapse */
+                border: 1px solid #000 !important; /* 테이블 외곽선 */
             }
             body.printing-section2 #section2 th, 
             body.printing-section2 #section2 td { 
@@ -1190,10 +1264,9 @@
                             </div>
                          </div>
  
-                                               
                         <div style="display: flex; align-items: center; gap: 3px; font-size: 0.9em; padding: 2px 5px; background-color: #eaf4ff; border-radius: 4px; border: 1px solid #b3d7ff; flex-grow: 1; white-space: nowrap;">
                            <label for="fontSizeInput" style="font-weight: bold;">글자크기조정:</label>
-                           <input type="number" id="fontSizeInput" class="margin-select" value="13" min="8" max="20" onchange="applyFontSize(this.value + 'pt')" style="width: 45px; padding: 1px 3px; box-sizing: border-box; font-weight: bold;">
+                           <input type="number" id="fontSizeInput" class="margin-select" value="11" min="8" max="20" onchange="applyFontSize(this.value + 'pt')" style="width: 45px; padding: 1px 3px; box-sizing: border-box; font-weight: bold;">
                         </div>
 
                     </div>
@@ -1292,12 +1365,12 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                     </div>
 
                     <div class="font-selector-container">
-                        <label for="font-size-select">크기:</label>
+                        <label for="font-size-select">글자크기조정:</label>
                         <select id="font-size-select" onchange="s2_changeFontSize(this.value)">
                                            <option value="8">8pt</option>
-                            <option value="9" selected>9pt</option> 
-                            <option value="10">10pt</option> <option value="11">11pt</option>
-                       <option value="12">12pt</option>
+                            <option value="9">9pt</option> 
+                            <option value="10">10pt</option> 
+                            <option value="11" selected>11pt</option> <option value="12">12pt</option>
                             <option value="13">13pt</option>
                         </select>
                     </div>
@@ -1310,6 +1383,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                     </div>
 
            <button type="button" onclick="showAllSections()" class="print-button" style="background-color: #6c757d;">전체보기</button>
+           
+           <button type="button" onclick="initializeDispatchLog()" class="print-button" style="background-color: #17a2b8;">새로고침</button>
+           
            <button onclick="printSection2()" class="print-button">인쇄하기</button>
            
                     </div>
@@ -1337,7 +1413,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             </div>
         </div>
     </div>
-    <script>
+<script>
         /* ================================================================= */
         /* [공통] 데이터 공유 로직 (Global) */
         /* ================================================================= */
@@ -1367,6 +1443,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             
             // ★ S1에서 데이터 변경 시 S2(승무일지)도 새로고침
             if (typeof initializeDispatchLog === 'function') {
+                 // [수정] S2가 현재 보고 있는 날짜(s2_currentDate)로 갱신
                  initializeDispatchLog();
             }
             
@@ -1482,6 +1559,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                 }
                 saveMasterData(); 
                 generateSchedule(); 
+                
+                // ★ [실시간 연동] S2(승무일지) 새로고침
+                if (typeof initializeDispatchLog === 'function') initializeDispatchLog(); 
                 return;
             }
 
@@ -1509,11 +1589,11 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             
             // loadRouteData에서는 저장을 하지 않음 (데이터 변경이 없으므로)
             generateSchedule(); 
+            
+             // ★ [실시간 연동] S2(승무일지) 새로고침
+            if (typeof initializeDispatchLog === 'function') initializeDispatchLog();
         }
 
-        // ######################################################################
-        // ### "오늘 날짜 자동 배정" 기능이 이 함수에 추가되었습니다 ###
-        // ######################################################################
         function addOrUpdateRoute() {
             const routeName = document.getElementById('routeInput').value.trim();
             if (!routeName) {
@@ -1543,39 +1623,14 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             }
 
             currentRoute = routeName;
-            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-            // ★ S1: 사용자가 요청한 '오늘 날짜 자동 배정' 로직 추가
-            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-            try {
-                 const today = new Date().toISOString().slice(0, 10);
-                const routeData = allRoutesData.routes[routeName];
-                const scheduleToUpdate = routeData.tempSchedule;
-                if (!scheduleToUpdate[today]) {
-                    scheduleToUpdate[today] = {};
-                }
-
-                const firstVehicle = routeData.vehicleColumns.find(v => v && v !== '미입력');
-                if (firstVehicle) {
-                    // 6. 오늘 날짜, 첫 번째 차량에 "자동배정" 텍스트를 임시 저장 (이미 있지 않은 경우에만)
-                    if (!scheduleToUpdate[today][firstVehicle]) {
-                        const namesToSave = [{ text: '자동배정', bold: true }, { text: '자동배정', bold: true }];
-                        scheduleToUpdate[today][firstVehicle] = namesToSave;
-                        
-                        console.log(`[자동배정] ${today} 날짜의 ${firstVehicle} 차량에 '자동배정'을 임시 저장했습니다.`);
-                    }
-                }
-            } catch (e) {
-                console.error("오늘 날짜 자동 배정 중 오류 발생:", e);
-            }
-            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+            
+            // (참고: '오늘 날짜 자동 배정' 로직은 안정성을 위해 제거되었습니다.
+            //  S2에서 직접 데이터를 가져오는 편이 낫습니다.)
             
             saveMasterData();
             populateRouteSelect(); 
             loadRouteData(routeName);
         }
-        // ######################################################################
-        // ### 기능 추가 완료 ###
-        // ######################################################################
 
         function deleteRoute() {
             const routeName = document.getElementById('routeNavigateSelect').value;
@@ -1622,6 +1677,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             saveMasterData();
             updateVehicleSelect(); 
             generateSchedule(); 
+            
+            // ★ [실시간 연동] S2(승무일지) 새로고침
+            if (typeof initializeDispatchLog === 'function') initializeDispatchLog();
             
             alert(`[${currentRoute}] 노선의 차량 번호가 저장되었습니다.`);
         }
@@ -1789,6 +1847,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
         }
         saveMasterData();
         generateSchedule();
+        
+        // ★ [실시간 연동] S2(승무일지) 새로고침
+        if (typeof initializeDispatchLog === 'function') initializeDispatchLog();
     }
 
         function saveTempCell(cellElement) {
@@ -1798,6 +1859,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             tempScheduleData[dateString][colId] = namesToSave;
             saveMasterData();
             generateSchedule();
+            
+            // ★ [실시간 연동] S2(승무일지) 새로고침
+            if (typeof initializeDispatchLog === 'function') initializeDispatchLog();
         }
 
         function deleteCell(cellElement) {
@@ -1818,6 +1882,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             }
             saveMasterData();
             generateSchedule();
+            
+            // ★ [실시간 연동] S2(승무일지) 새로고침
+            if (typeof initializeDispatchLog === 'function') initializeDispatchLog();
         }
 
         function resetAllFixedSchedules() {
@@ -1838,6 +1905,10 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                         workTypeConfig = routeData.workTypeConfig;
                         saveMasterData();
                         generateSchedule();
+                        
+                        // ★ [실시간 연동] S2(승무일지) 새로고침
+                        if (typeof initializeDispatchLog === 'function') initializeDispatchLog();
+                        
                         alert(`[${currentRoute}] 노선의 근무표가 초기화되었습니다.`);
                     }
                 }
@@ -2357,10 +2428,16 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             const section1 = document.getElementById('section1');
             const divider = document.querySelector('.divider');
             const section2 = document.getElementById('section2');
+            const headerBar = document.getElementById('header-bar');
 
             if (section1) section1.style.display = 'block';
             if (divider) divider.style.display = 'block';
             if (section2) section2.style.display = 'block';
+            
+            // [추가] 헤더바를 S1 컨트롤박스 위로 다시 이동
+             if (headerBar) {
+                document.body.insertBefore(headerBar, section1);
+            }
             
             // 페이지 최상단으로 스크롤
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2402,6 +2479,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             }
         }
 
+        /* ★ [이전 단계 수정] 올바른 함수 이름 사용 */
         function s2_changeDispatchOrder(order) {
             document.querySelectorAll('#section2 .dispatch-button').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.querySelector(`#section2 .dispatch-button[onclick="s2_changeDispatchOrder('${order}')"]`);
@@ -2866,7 +2944,6 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             // document.getElementById(`fileInput-${routeId}`).click(); // 기존 로직 비활성화
         }
 
-        // (S2의 기존 파일 처리 로직은 S1 데이터와 충돌하므로 주석 처리 또는 제거)
         
         // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
         // ★ [핵심 연동] S1 -> S2 데이터 자동 연동 로직
@@ -2876,6 +2953,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
          * [수정] S2: 'S2 기준 날짜'의 근무 데이터를 S1(localStorage)에서 가져옴
          */
         function s2_getTodayScheduleData(routeData) {
+            // [수정] s2_currentDate(S2의 기준 날짜)를 사용
             const dateString = s2_currentDate.toISOString().slice(0, 10);
             const dayOfWeek = s2_currentDate.getDay();
             
@@ -3396,7 +3474,6 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
          */
         function s2_createRowSideHTML_fromBackup(routeName, carNumber, rowData) {
             // (이 함수는 현재 복구 로직에서 사용되지 않지만, 만약을 위해 유지합니다.)
-            // ... (내용은 이전과 동일) ...
         }
 
 
@@ -3577,7 +3654,8 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             initializeDispatchLog();
             
             // 3. S2 출차순서 기본값 '1'로 설정
-            s2_changeDispatchOrder('1');
+            /* ★ [이전 단계 수정] 올바른 함수 이름 호출 */
+            s2_changeDispatchOrder('1'); 
         });
 
     </script>
