@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>통합 근무 관리 시스템 (현황표 + 승무일지)</title>
+    <title>통합 근무 관리 시스템 (현황표 + 승무일지 + 정비일지)</title>
     
     <style>
         /* ================================================================= */
@@ -478,8 +478,7 @@
             #section1 .day-name-main { font-size: 1.0em; }
             #section1 .name-entry { font-size: 9pt; }
         }
-
-        /* ================================================================= */
+/* ================================================================= */
         /* [Section 2] 승무 일지 Styles (새로운 배차표-25.html) */
         /* ================================================================= */
 
@@ -964,8 +963,171 @@
                 font-size: 0.95em;
             }
         }
+
+        #section2 .s2-work-hours-select {
+            font-size: 1em; 
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 18px; 
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            text-align: center;
+            background-color: white; 
+            -moz-appearance: none; /* 기본 화살표 숨기기 */
+            -webkit-appearance: none; /* 기본 화살표 숨기기 */
+            appearance: none;
+        }
+        
         /* ================================================================= */
-        /* [공통] 인쇄 스타일 (S1, S2 통합) */
+        /* [Section 3] 정비일지 Styles (정비일지-1.html 기반) */
+        /* ================================================================= */
+        /* S3의 body 스타일을 #section3 컨테이너에 적용 */
+        #section3 {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 10px; 
+            color: #333;
+            font-size: 14pt; /* S1과 유사하게 설정 */
+            /* display: none; 초기에는 숨김 */
+        }
+
+        /* S3 컨테이너 스타일 */
+        #section3 .maintenance-container {
+            max-width: 900px; /* PC 너비 제한 */
+            margin: 18px auto;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #000;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+
+        #section3 header{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #section3 header h1{
+            font-size: 20px;
+            margin: 6px 0;
+        }
+        #section3 .controls{
+            display: flex;
+            gap: 8px;
+        }
+        #section3 button{
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14pt; /* 버튼 크기 통일 */
+        }
+        #section3 button.primary{
+            background: #222;
+            color: #fff;
+        }
+        #section3 .form-table{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        #section3 .form-table td, #section3 .form-table th{
+            border: 1px solid #000;
+            padding: 6px;
+            vertical-align: top;
+        }
+        #section3 .form-table thead th{
+            border-width: 3px 1px 1px 1px;
+            text-align: center;
+        }
+        #section3 .left-col{
+            width: 120px;
+        }
+        #section3 .date-col{
+            width: 170px;
+        }
+        #section3 .wide{
+            width: 100%;
+        }
+        #section3 .entry-row td{
+            height: 28px;
+        }
+        #section3 .section-title{
+            font-weight: 700;
+            padding: 12px;
+            text-align: left;
+        }
+        #section3 input[type=text], #section3 textarea, #section3 select{
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            outline: none;
+            font-size: 13px;
+            background: transparent;
+        }
+        #section3 textarea{
+            resize: none;
+            height: 100%;
+        }
+        #section3 .thin-text{
+            font-size: 12px;
+            color: #333;
+        }
+        /* 두꺼운 구분선 스타일 */
+        #section3 .form-table th, 
+        #section3 .form-table td {
+            border: 1px solid #000;
+        }
+        #section3 .form-table thead th {
+            border-top: 3px solid #000; 
+        }
+        #section3 .entry-row:first-child .section-title {
+             border-top: 3px solid #000; /* 첫 줄 좌측 상단선 */
+        }
+        #section3 .entry-row td:nth-child(2) {
+            border-left: 3px solid #000; /* 첫 줄 항목 좌측선 */
+        }
+        #section3 .entry-row td:last-child {
+            border-right: 3px solid #000; /* 마지막 열 우측선 */
+        }
+
+        /* S3 모바일 대응 (S1, S2와 동일한 너비 100% 로직 적용) */
+        @media screen and (max-width: 768px) {
+            #section3 .maintenance-container {
+                max-width: 100%;
+                margin: 10px 0;
+                padding: 5px;
+            }
+            #section3 header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            #section3 .controls {
+                flex-wrap: wrap;
+                margin-top: 5px;
+                gap: 5px;
+            }
+            #section3 button {
+                padding: 5px 8px;
+                font-size: 12pt;
+            }
+            #section3 .left-col {
+                width: 80px;
+            }
+            #section3 .date-col {
+                width: 120px;
+            }
+            #section3 .form-table td, #section3 .form-table th {
+                padding: 4px;
+                font-size: 12px;
+            }
+            #section3 input[type=text], #section3 textarea, #section3 select {
+                font-size: 11px;
+            }
+        }
+        /* ================================================================= */
+        /* [공통] 인쇄 스타일 (S1, S2, S3 통합) */
         /* ================================================================= */
         @media print {
             
@@ -993,6 +1155,11 @@
 
             /* 4. S2 인쇄 시: #section2만 강제로 표시합니다. */
             body.printing-section2 #section2 {
+                display: block !important;
+            }
+
+            /* 5. S3 인쇄 시: #section3만 강제로 표시합니다. */
+            body.printing-section3 #section3 {
                 display: block !important;
             }
             
@@ -1156,20 +1323,69 @@
             body.printing-section2 #section2 .car-number-cell {
                 padding: 2px 1px;
             }
-        }
-#section2 .s2-work-hours-select {
-            font-size: 1em; 
-            padding: 0;
-            margin: 0;
-            width: 100%;
-            height: 18px; 
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            text-align: center;
-            background-color: white; 
-            -moz-appearance: none; /* 기본 화살표 숨기기 */
-            -webkit-appearance: none; /* 기본 화살표 숨기기 */
-            appearance: none;
+
+            /* ----- S3 인쇄 규칙 ----- */
+            body.printing-section3 @page {
+                size: A4 portrait; /* A4 세로 모드 */
+                margin: 10mm; 
+            }
+            body.printing-section3 { 
+                background-color: white; 
+                padding: 0; 
+                margin: 0; 
+                font-size: 11pt; /* S3 인쇄 폰트 크기 조정 */
+                color: #000;
+            }
+            body.printing-section3 .maintenance-container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 0;
+            }
+            body.printing-section3 .no-print {
+                display: none !important;
+            }
+            
+            /* S3 폼 테이블 인쇄 스타일 조정 */
+            body.printing-section3 #section3 .form-table{
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed; 
+            }
+            body.printing-section3 #section3 .form-table td, 
+            body.printing-section3 #section3 .form-table th{
+                border: 1px solid #000 !important;
+                padding: 4px; 
+                height: 18px; /* 인쇄 시 높이 고정 */
+                vertical-align: middle;
+            }
+            body.printing-section3 #section3 .form-table thead th{
+                border-width: 3px 1px 1px 1px !important;
+            }
+            body.printing-section3 #section3 input[type=text], 
+            body.printing-section3 #section3 textarea{
+                border: none !important;
+                background: transparent !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-size: 11px;
+            }
+            body.printing-section3 #section3 .thin-text {
+                display: none;
+            }
+            /* S3 두꺼운 구분선 인쇄 시 적용 */
+            body.printing-section3 #section3 .entry-row:first-child .section-title {
+                 border-top: 3px solid #000 !important;
+            }
+            body.printing-section3 #section3 .entry-row td:nth-child(2) {
+                border-left: 3px solid #000 !important;
+            }
+            body.printing-section3 #section3 .entry-row td:last-child {
+                border-right: 3px solid #000 !important;
+            }
+            body.printing-section3 #section3 tr[style*="border-top:3px"] td {
+                border-top: 3px solid #000 !important;
+            }
         }
     </style>
 </head>
@@ -1273,7 +1489,7 @@
                     
                 </div>
               
-  </fieldset>
+            </fieldset>
 
             <fieldset>
                 <legend>근무전체데이타관리옵션</legend> <div class="control-group">
@@ -1303,11 +1519,11 @@
            <div style="border-top: 1px solid #dee2e6; padding-top: 10px; margin-top: 5px;"></div> 
                 
                 <div class="control-group">
-                    <button onclick="showSection2Only()">승무일지 및 배차관리</button>
-                    <button onclick="alert('근무자명단관리 로직을 추가할 예정입니다.')">근무자명단관리</button>
+                    <button onclick="showSection('S2')">승무일지 및 배차관리</button>
+                    <button onclick="showSection('S3')">차량정비점검일지</button>
            
-   </div>
-                </fieldset>
+                </div>
+            </fieldset>
             
             <fieldset>
                 <legend>차량 설정 (현재 노선)</legend>
@@ -1399,6 +1615,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
    
            </div>
     </div>
+<div id="section2">
+    </div>
+
 <div id="s2_restoreDateModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
         <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
             <h3 style="margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 10px;">승무일지 복구 날짜 선택</h3>
@@ -1413,7 +1632,210 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             </div>
         </div>
     </div>
-<script>
+
+    <hr class="divider">
+
+    <div id="section3" style="display: none;">
+        <div class="maintenance-container">
+            <header>
+                <h1>차량점검정비일지</h1>
+                <div class="controls no-print">
+                    <button onclick="clearForm()">폼 초기화</button>
+                    <button onclick="printSection3()" class="primary">PDF로 저장 / 인쇄</button> 
+                    <button onclick="showAllSections()" class="print-button" style="background-color: #6c757d;">전체보기</button>
+                </div>
+            </header>
+
+            <form id="maintenanceForm">
+                <table class="form-table">
+                    <thead>
+                    <tr>
+                        <th class="left-col">작업자</th>
+                        <th class="date-col">년/월/일</th>
+                        <th colspan="4">2024-04-15 월요일</th>
+                    </tr>
+                    <tr>
+                        <th>와룡운수(주)</th>
+                        <th>항목</th>
+                        <th>정비내역</th>
+                        <th>부품내역</th>
+                        <th>부품가격</th>
+                        <th>예정사항</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="entry-row">
+                        <td rowspan="6" class="section-title" style="width:120px">&nbsp;</td>
+                        <td><input type="text" name="item_1_1" placeholder="" /></td>
+                        <td><textarea name="detail_1_1"></textarea></td>
+                        <td><input type="text" name="parts_1_1" /></td>
+                        <td><input type="text" name="price_1_1" /></td>
+                        <td><input type="text" name="note_1_1" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_1_2" /></td>
+                        <td><textarea name="detail_1_2"></textarea></td>
+                        <td><input type="text" name="parts_1_2" /></td>
+                        <td><input type="text" name="price_1_2" /></td>
+                        <td><input type="text" name="note_1_2" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_1_3" /></td>
+                        <td><textarea name="detail_1_3"></textarea></td>
+                        <td><input type="text" name="parts_1_3" /></td>
+                        <td><input type="text" name="price_1_3" /></td>
+                        <td><input type="text" name="note_1_3" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_1_4" /></td>
+                        <td><textarea name="detail_1_4"></textarea></td>
+                        <td><input type="text" name="parts_1_4" /></td>
+                        <td><input type="text" name="price_1_4" /></td>
+                        <td><input type="text" name="note_1_4" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_1_5" /></td>
+                        <td><textarea name="detail_1_5"></textarea></td>
+                        <td><input type="text" name="parts_1_5" /></td>
+                        <td><input type="text" name="price_1_5" /></td>
+                        <td><input type="text" name="note_1_5" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_1_6" /></td>
+                        <td><textarea name="detail_1_6"></textarea></td>
+                        <td><input type="text" name="parts_1_6" /></td>
+                        <td><input type="text" name="price_1_6" /></td>
+                        <td><input type="text" name="note_1_6" /></td>
+                    </tr>
+
+                    <tr style="border-top:3px solid #000">
+                        <td style="height:10px;border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                    </tr>
+
+                    <tr class="entry-row">
+                        <td rowspan="6" class="section-title">낙산운수(주)</td>
+                        <td><input type="text" name="item_2_1" value="머플러청소" /></td>
+                        <td><input type="text" name="detail_2_1" value="검사준비 - 이부장검사" /></td>
+                        <td><input type="text" name="parts_2_1" /></td>
+                        <td><input type="text" name="price_2_1" /></td>
+                        <td><input type="text" name="note_2_1" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_2_2" value="토인조정" /></td>
+                        <td><textarea name="detail_2_2"></textarea></td>
+                        <td><input type="text" name="parts_2_2" /></td>
+                        <td><input type="text" name="price_2_2" /></td>
+                        <td><input type="text" name="note_2_2" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_2_3" value="브레이크조정" /></td>
+                        <td><textarea name="detail_2_3"></textarea></td>
+                        <td><input type="text" name="parts_2_3" /></td>
+                        <td><input type="text" name="price_2_3" /></td>
+                        <td><input type="text" name="note_2_3" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_2_4" /></td>
+                        <td><textarea name="detail_2_4"></textarea></td>
+                        <td><input type="text" name="parts_2_4" /></td>
+                        <td><input type="text" name="price_2_4" /></td>
+                        <td><input type="text" name="note_2_4" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_2_5" /></td>
+                        <td><textarea name="detail_2_5"></textarea></td>
+                        <td><input type="text" name="parts_2_5" /></td>
+                        <td><input type="text" name="price_2_5" /></td>
+                        <td><input type="text" name="note_2_5" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_2_6" /></td>
+                        <td><textarea name="detail_2_6"></textarea></td>
+                        <td><input type="text" name="parts_2_6" /></td>
+                        <td><input type="text" name="price_2_6" /></td>
+                        <td><input type="text" name="note_2_6" /></td>
+                    </tr>
+
+                    <tr style="border-top:3px solid #000">
+                        <td style="height:10px;border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                        <td style="border-top:3px solid #000"></td>
+                    </tr>
+
+                    <tr class="entry-row">
+                        <td class="section-title" rowspan="8">기타</td>
+                        <td><input type="text" name="item_3_1" /></td>
+                        <td><textarea name="detail_3_1"></textarea></td>
+                        <td><input type="text" name="parts_3_1" /></td>
+                        <td><input type="text" name="price_3_1" /></td>
+                        <td><input type="text" name="note_3_1" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_3_2" /></td>
+                        <td><textarea name="detail_3_2"></textarea></td>
+                        <td><input type="text" name="parts_3_2" /></td>
+                        <td><input type="text" name="price_3_2" /></td>
+                        <td><input type="text" name="note_3_2" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_3_3" /></td>
+                        <td><textarea name="detail_3_3"></textarea></td>
+                        <td><input type="text" name="parts_3_3" /></td>
+                        <td><input type="text" name="price_3_3" /></td>
+                        <td><input type="text" name="note_3_3" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_3_4" /></td>
+                        <td><textarea name="detail_3_4"></textarea></td>
+                        <td><input type="text" name="parts_3_4" /></td>
+                        <td><input type="text" name="price_3_4" /></td>
+                        <td><input type="text" name="note_3_4" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_3_5" /></td>
+                        <td><textarea name="detail_3_5"></textarea></td>
+                        <td><input type="text" name="parts_3_5" /></td>
+                        <td><input type="text" name="price_3_5" /></td>
+                        <td><input type="text" name="note_3_5" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_3_6" /></td>
+                        <td><textarea name="detail_3_6"></textarea></td>
+                        <td><input type="text" name="parts_3_6" /></td>
+                        <td><input type="text" name="price_3_6" /></td>
+                        <td><input type="text" name="note_3_6" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_3_7" /></td>
+                        <td><textarea name="detail_3_7"></textarea></td>
+                        <td><input type="text" name="parts_3_7" /></td>
+                        <td><input type="text" name="price_3_7" /></td>
+                        <td><input type="text" name="note_3_7" /></td>
+                    </tr>
+                    <tr class="entry-row">
+                        <td><input type="text" name="item_3_8" /></td>
+                        <td><textarea name="detail_3_8"></textarea></td>
+                        <td><input type="text" name="parts_3_8" /></td>
+                        <td><input type="text" name="price_3_8" /></td>
+                        <td><input type="text" name="note_3_8" /></td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </form>
+
+            <p class="thin-text" style="margin-top:8px">사용법: 셀에 내용을 입력한 뒤 'PDF로 저장 / 인쇄' 버튼을 눌러 A4로 저장하세요. 모바일에서는 가로 모드에서 인쇄 결과가 더 잘 맞을 수 있습니다.</p>
+        </div>
+    </div>
+    <script>
         /* ================================================================= */
         /* [공통] 데이터 공유 로직 (Global) */
         /* ================================================================= */
@@ -1505,8 +1927,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                 allRoutesData.currentRoute = currentRoute;
             }
         }
-
-        function saveMasterData() {
+function saveMasterData() {
             allRoutesData.currentRoute = currentRoute;
             window.sharedData.save(window.MASTER_STORAGE_KEY, allRoutesData); 
         }
@@ -1794,8 +2215,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                 if (editCell) {
                     const prevColId = editCell.dataset.colId;
                     const prevDateString = editCell.dataset.dateString;
-                    const originalNames = (scheduleData[prevDateString] && scheduleData[prevDateString][prevColId]) ||
-                    [{ text: '', bold: false }, { text: '', bold: false }];
+                    const originalNames = (scheduleData[prevDateString] && scheduleData[prevDateString][prevColId]) || [{ text: '', bold: false }, { text: '', bold: false }];
                     editCell.classList.remove('edit-mode');
                     editCell.innerHTML = renderCellContent(originalNames);
                 }
@@ -2296,6 +2716,8 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                 newTitle = `${currentRoute} 근무현황표`;
             }
             
+            document.body.classList.remove('printing-section2'); // S2 클래스 제거
+            document.body.classList.remove('printing-section3'); // S3 클래스 제거
             document.body.classList.add('printing-section1'); // S1 인쇄용 클래스 추가
 
             const handleAfterPrint = () => {
@@ -2398,26 +2820,36 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             document.addEventListener('click', clearEditMode);
         }
 
-        // ▼▼▼ [수정된 부분] S1/S2 보이기/숨기기 함수 추가 ▼▼▼
+        // ▼▼▼ [수정된 부분] S1/S2/S3 보이기/숨기기 함수 최종 수정 ▼▼▼
         /**
-         * S2(승무일지)만 표시하고 S1은 숨깁니다.
+         * 특정 섹션(S1, S2, S3)만 표시하고 나머지는 숨깁니다.
          */
-        function showSection2Only() {
-            const section1 = document.getElementById('section1');
+        function showSection(sectionId) {
+            const sections = {
+                'S1': document.getElementById('section1'),
+                'S2': document.getElementById('section2'),
+                'S3': document.getElementById('section3') 
+            };
             const divider = document.querySelector('.divider');
-            const section2 = document.getElementById('section2');
             const headerBar = document.getElementById('header-bar');
 
-            if (section1) section1.style.display = 'none';
-            if (divider) divider.style.display = 'none';
-            if (section2) {
-                section2.style.display = 'block';
-                // S2의 시작점으로 화면 스크롤
-                section2.scrollIntoView({ behavior: 'smooth' });
+            // 1. 모든 섹션 숨기기
+            for (const key in sections) {
+                if (sections[key]) sections[key].style.display = 'none';
             }
-            // [추가] 헤더바가 S1 위에만 있지 않고 S2 위에도 보이도록
+            if (divider) divider.style.display = 'none';
+
+            // 2. 선택된 섹션만 표시
+            const targetSection = sections[sectionId];
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                // S2의 시작점으로 화면 스크롤
+                targetSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // 3. 헤더바 위치 이동 (항상 body 최상단에 보이도록)
             if (headerBar) {
-                document.body.prepend(headerBar); // body 최상단으로 이동
+                document.body.prepend(headerBar); 
             }
         }
 
@@ -2428,13 +2860,15 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             const section1 = document.getElementById('section1');
             const divider = document.querySelector('.divider');
             const section2 = document.getElementById('section2');
+            const section3 = document.getElementById('section3');
             const headerBar = document.getElementById('header-bar');
 
             if (section1) section1.style.display = 'block';
             if (divider) divider.style.display = 'block';
             if (section2) section2.style.display = 'block';
+            if (section3) section3.style.display = 'none'; // S3는 기본적으로 숨김
             
-            // [추가] 헤더바를 S1 컨트롤박스 위로 다시 이동
+            // 헤더바를 S1 컨트롤박스 위로 다시 이동
              if (headerBar) {
                 document.body.insertBefore(headerBar, section1);
             }
@@ -2442,8 +2876,9 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             // 페이지 최상단으로 스크롤
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        // ▲▲▲ [수정된 부분] S1/S2 보이기/숨기기 함수 추가 ▲▲▲
-/* ================================================================= */
+        // ▲▲▲ [수정된 부분] S1/S2/S3 보이기/숨기기 함수 최종 수정 ▲▲▲
+        
+        /* ================================================================= */
         /* [Section 2] 승무 일지 JavaScript (새로운 배차표-25.html 기반) */
         /* ================================================================= */
         
@@ -2489,6 +2924,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
 
         function printSection2() {
             document.body.classList.remove('printing-section1');
+            document.body.classList.remove('printing-section3');
             document.body.classList.add('printing-section2'); // S2 인쇄용 클래스 추가
 
             const handleAfterPrint = () => {
@@ -2816,7 +3252,7 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             if (editControls) editControls.classList.add('hidden');
         }
         
-        // --- S2: 스케줄 및 파일 로드 함수 (S1 연동 로직 포함) ---
+        // --- S2: 스케줄 및 파일 로드 함수 (S1 데이터 연동 포함) ---
 // --- S2: 시간 포맷팅 헬퍼 함수 ---
         function s2_formatTime(date) {
             const h = String(date.getHours()).padStart(2, '0');
@@ -3467,7 +3903,6 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             if (pmWorkHoursEl) pmWorkHoursEl.value = rowData[`work_hours_${routeId}_${carNumber}_pm`] || '';
         }
 
-
         /**
          * S2: 백업 파일로부터 S2의 한 쪽(8열) HTML을 복구 (s2_createRowSideHTML과 유사)
          * [참고] 이 함수는 이제 '일지 복구' 시 S1 데이터만 업데이트하므로, 직접 S2 화면을 그리는 데 사용되지 않습니다.
@@ -3637,6 +4072,34 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
             }
         }
 
+        // --- S3: 정비일지 전용 함수 ---
+        function clearForm(){
+          if(!confirm('정비일지 폼을 초기화할까요? 입력한 내용은 사라집니다.')) return;
+          document.getElementById('maintenanceForm').reset();
+        }
+
+        /**
+         * S3 인쇄 함수 (A4 세로 모드)
+         */
+        function printSection3() {
+            document.body.classList.remove('printing-section1');
+            document.body.classList.remove('printing-section2');
+            document.body.classList.add('printing-section3'); // S3 인쇄용 클래스 추가
+
+            // 인쇄 모드에서는 인쇄 버튼을 폼 초기화 버튼으로 대체
+            const originalPrintButtonText = document.querySelector('#section3 button.primary').textContent;
+            document.querySelector('#section3 button.primary').textContent = '인쇄 중...';
+            
+            const handleAfterPrint = () => {
+                document.body.classList.remove('printing-section3');
+                document.querySelector('#section3 button.primary').textContent = originalPrintButtonText;
+                window.removeEventListener('afterprint', handleAfterPrint);
+            };
+            window.addEventListener('afterprint', handleAfterPrint);
+            
+            window.print();
+        }
+
 
         /* ================================================================= */
         /* [공통] 페이지 로드 시 실행 (S1, S2 순차 초기화) */
@@ -3660,5 +4123,4 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
 
     </script>
 </body>
-
 </html>
