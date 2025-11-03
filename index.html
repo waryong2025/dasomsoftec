@@ -9,6 +9,18 @@
         /* ================================================================= */
         /* [공통] Global Styles */
         /* ================================================================= */
+        :root {
+            /* ★ [S3] S3 폰트 크기 변수 */
+            --s3-font-size-base: 14pt; 
+            --s3-print-font-size: 11pt;
+            
+            /* ★ [S3] 인쇄 여백 CSS 변수 */
+            --s3-print-margin-top: 10mm;
+            --s3-print-margin-bottom: 10mm;
+            --s3-print-margin-left: 10mm;
+            --s3-print-margin-right: 10mm;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 10px;
@@ -29,7 +41,7 @@
             border-radius: 8px;
         }
         #header-logo {
-            height: 24px; /* [수정] 14px -> 24px 크기 늘림 */
+            height: 24px; 
             width: auto;
             margin-right: 8px;
         }
@@ -206,13 +218,12 @@
             width: 100px;
         }
 
-        /* ★ [수정 1] S1 PC 너비 90%로 변경 */
         #section1 #scheduleContainer {
             background-color: white;
             padding: 10px; 
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin: 20px auto;
-            max-width: 90%;   /* 100% -> 90% (PC) */
+            max-width: 90%;
             overflow-x: auto;
             border-radius: 8px;
             box-sizing: border-box; 
@@ -361,23 +372,16 @@
 /* [Section 1] 컨트롤 박스 UI 개선 (2025-10-31 최종 수정) */
 /* ================================================================= */
 
-/* 1. 조회설정: 년/월 입력칸 높이 통일 (버튼과 맞춤) */
 #section1 .controls input[type="number"] {
     padding: 8px; 
     font-size: 1em;
 }
-
-/* 2. [수정] '년도' 입력 박스 너비 확장 */
 #section1 .controls input#yearInput {
     width: 90px;
 }
-
-/* 3. 노선설정: '노선 추가/수정' + '삭제' 버튼 2개 너비 동일하게 */
 #section1 .controls fieldset:nth-of-type(1) .control-group:nth-of-type(3) button {
     flex: 1 1 auto; 
 }
-
-/* 4. 데이터관리(fieldset 3): 기본적으로 세로 정렬 */
 #section1 .controls fieldset:nth-of-type(3) .control-group {
     flex-direction: column;
     align-items: stretch;
@@ -388,19 +392,15 @@
 #section1 .controls fieldset:nth-of-type(3) .control-group > *:last-child {
     margin-bottom: 0;
 }
-
-/* 5. [수정] '차량/근무' 선택 박스만 가로로 배열 */
 #section1 .controls fieldset:nth-of-type(3) .control-group:nth-of-type(2) {
-    flex-direction: row; /* 이 그룹만 가로로 */
+    flex-direction: row; 
     align-items: center;
-    gap: 10px; /* 두 select 박스 사이 간격 */
+    gap: 10px; 
 }
 #section1 .controls fieldset:nth-of-type(3) .control-group:nth-of-type(2) > select {
-    flex: 1 1 auto; /* 공간을 나눠 갖도록 */
-    margin-bottom: 0; /* 세로 마진 제거 */
+    flex: 1 1 auto; 
+    margin-bottom: 0; 
 }
-
-/* 6. 차량설정(fieldset 4): '차량 수' 제외한 옵션들을 세로로 쌓기 */
 #section1 .controls fieldset:nth-of-type(4) .control-group:not(:first-of-type) {
      flex-direction: column;
     align-items: stretch;
@@ -408,27 +408,23 @@
 #section1 .controls fieldset:nth-of-type(4) .control-group:not(:first-of-type) > * {
     margin-bottom: 5px;
 }
-
-/* 7. [수정] 인쇄 섹션: 가로 정렬로 높이 축소 (세로 정렬 코드 모두 제거) */
 #section1 .controls .control-group[style*="border-top"] {
-    flex-direction: row; /* '인쇄' 버튼과 'div'를 가로로 */
-    align-items: center; /* '인쇄' 버튼과 'div'를 세로 중앙 정렬 */
-    flex-wrap: wrap; /* 모바일에서 줄바꿈되도록 */
+    flex-direction: row; 
+    align-items: center; 
+    flex-wrap: wrap; 
 }
 #section1 .controls .control-group[style*="border-top"] > div[style*="flex-direction: row"] {
-    flex-direction: row !important; /* '여백'과 '글자크기'를 가로로 */
-    align-items: center !important; /* 내부 항목들도 세로 중앙 정렬 (inline style 덮어쓰기) */
+    flex-direction: row !important; 
+    align-items: center !important; 
     gap: 10px !important; 
-    margin-left: 10px !important; /* '인쇄' 버튼과 여백 그룹 사이 간격 (inline 5px 덮어쓰기) */
-    flex-wrap: wrap; /* 모바일에서 줄바꿈되도록 */
+    margin-left: 10px !important; 
+    flex-wrap: wrap; 
 }
-
-/* 8. [추가] 인쇄 여백 박스(좌/우) 너비 확장 */
 #section1 .controls select.margin-select {
-    width: 60px; /* 너비 확장 */
+    width: 60px; 
     min-width: 60px;
-    padding: 4px; /* 패딩 추가 */
-    font-size: 0.95em; /* 폰트 크기 살짝 조절 */
+    padding: 4px; 
+    font-size: 0.95em; 
 }
 /* ================================================================= */
 /* 컨트롤 박스 UI 개선 종료 */
@@ -441,13 +437,11 @@
             }
         }
 
-        /* [수정] S1 모바일 화면 대응 */
         @media screen and (max-width: 768px) {
             
-            /* ★ [수정 2] S1 컨테이너 모바일 100% 너비 */
             #section1 #scheduleContainer {
                 max-width: 100%;
-                margin: 10px 0; /* 상하 10px, 좌우 0px */
+                margin: 10px 0; 
             }
             
             #section1 .controls {
@@ -479,28 +473,26 @@
             #section1 .name-entry { font-size: 9pt; }
         }
 /* ================================================================= */
-        /* [Section 2] 승무 일지 Styles (새로운 배차표-25.html) */
+        /* [Section 2] 승무 일지 Styles */
         /* ================================================================= */
 
-        /* S2의 body 스타일을 #section2 컨테이너에 적용 */
         #section2 {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 10px; 
             color: #333;
-            font-size: 9pt; /* S2의 기본 폰트 크기 */
+            font-size: 9pt; 
         }
 
-        /* ★ [수정 3] S2 PC 너비 90%로 변경 및 스크롤 추가 */
         #section2 .journal-container {
             background-color: white;
             padding: 15px; 
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            max-width: 90%;      /* 980px -> 90% (PC) */
+            max-width: 90%;
             margin: 10px auto;
-            overflow-x: auto;      /* S1처럼 가로 스크롤 추가 */
-            box-sizing: border-box;/* S1처럼 box-sizing 추가 */
+            overflow-x: auto;
+            box-sizing: border-box;
         }
 
         #section2 .header-title {
@@ -588,7 +580,7 @@
             border: 1px solid #ced4da;
             border-radius: 0;
             cursor: pointer;
-            transition: background-color 0.1s;
+            transition: background-color: 0.1s;
         }
 
         #section2 .dispatch-button:first-of-type {
@@ -751,7 +743,7 @@
             background-color: #f5c6cb;
         }
         
-        #section2 table { /* S2의 테이블 스타일 */
+        #section2 table { 
             width: 100%; 
             border-collapse: collapse;
             table-layout: fixed; 
@@ -759,7 +751,7 @@
             background-color: #fff;
         }
 
-        #section2 th, #section2 td { /* S2의 셀 스타일 */
+        #section2 th, #section2 td { 
             border: 1px solid #ddd;
             padding: 2px 1px; 
             text-align: center;
@@ -918,27 +910,18 @@
             display: none !important;
         }
         
-        /* ★ [수정 4] S2 모바일 너비 100% 및 폰트 축소 CSS (새로 추가) */
-        /* ================================================================= */
-        /* [Section 2] 모바일 화면 대응 (새로 추가) */
-        /* ================================================================= */
         @media screen and (max-width: 768px) {
-            /* [추가] S2 컨테이너 모바일 100% 너비 */
             #section2 .journal-container {
                 max-width: 100%;
-                margin: 10px 0; /* 상하 10px, 좌우 0px */
-                padding: 5px; /* 모바일에서 여백 줄임 */
+                margin: 10px 0; 
+                padding: 5px; 
             }
-
-            /* S2의 기본 폰트 크기를 줄여서 전체적으로 작아지게 함 */
             #section2 {
                 font-size: 8pt; 
             }
-            
-            /* 컨트롤 버튼들이 너무 커지지 않게 조정 */
             #section2 .options-right {
                 gap: 5px;
-                flex-wrap: wrap; /* 버튼들 줄바꿈 허용 */
+                flex-wrap: wrap; 
                 justify-content: flex-end;
             }
             #section2 .print-button {
@@ -948,13 +931,10 @@
             #section2 .dispatch-buttons-container label {
                 margin: 0 4px;
             }
-            
-            /* 테이블 셀 높이/패딩 S1과 비슷하게 줄임 */
             #section2 th, #section2 td {
                 height: 30px;
                 padding: 2px 0;
             }
-            /* 입력창 높이/폰트 줄임 */
             #section2 input[type="number"], #section2 input[type="text"],
             #section2 .s2-work-hours-select,
             #section2 .driver-input,
@@ -974,198 +954,209 @@
             border: 1px solid #ccc;
             text-align: center;
             background-color: white; 
-            -moz-appearance: none; /* 기본 화살표 숨기기 */
-            -webkit-appearance: none; /* 기본 화살표 숨기기 */
+            -moz-appearance: none; 
+            -webkit-appearance: none; 
             appearance: none;
         }
         
+        /* ★ [삭제] 기존 S3 스타일 영역 (새로운 S3 스타일로 대체됨) */
+
         /* ================================================================= */
-        /* [Section 3] 정비일지 Styles (정비일지-1.html 기반) */
+        /* ★ [교체] [Section 3] 정비일지 Styles (s3정비일지-1.4.1.html 기반) */
         /* ================================================================= */
-        /* S3의 body 스타일을 #section3 컨테이너에 적용 */
+        
         #section3 {
             font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
             padding: 10px; 
             color: #333;
-            font-size: 14pt; /* S1과 유사하게 설정 */
-            /* display: none; 초기에는 숨김 */
+            font-size: var(--s3-font-size-base); 
         }
-
-        /* S3 컨테이너 스타일 */
         #section3 .maintenance-container {
-            max-width: 900px; /* PC 너비 제한 */
+            max-width: 900px; 
             margin: 18px auto;
             background: #fff;
             padding: 10px;
             border: 1px solid #000;
             box-shadow: 0 6px 18px rgba(0,0,0,0.06);
         }
-
-        #section3 header{
+        
+        #section3 header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-wrap: wrap; 
+            align-items: center; 
         }
-        #section3 header h1{
+        #section3 header h1 {
+            flex-basis: 100%; 
+            text-align: center; 
+            order: -1; 
+            margin-bottom: 10px;
             font-size: 20px;
-            margin: 6px 0;
+            margin-top: 6px;
         }
-        #section3 .controls{
+        #section3 .controls {
+            flex-basis: 100%; 
             display: flex;
             gap: 8px;
+            flex-wrap: wrap; 
+            justify-content: flex-end; 
+            align-items: center; 
         }
-        #section3 button{
+        
+        #section3 button {
             padding: 8px 12px;
-            border-radius: 6px;
+            border-radius: 4px;
             border: 1px solid #444;
             background: #fff;
             cursor: pointer;
-            font-size: 14pt; /* 버튼 크기 통일 */
+            font-size: 13pt; 
         }
-        #section3 button.primary{
-            background: #222;
+        #section3 button.primary {
+            background: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+        #section3 button.success {
+            background: #28a745;
             color: #fff;
         }
-        #section3 .form-table{
+        #section3 button.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        #section3 .margin-control-group {
+            display: flex;
+            flex-direction: row; 
+            align-items: center; 
+            gap: 6px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        #section3 .margin-control-group > label {
+            font-size: 11pt; 
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        #section3 .margin-control {
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+        }
+        #section3 .margin-control label {
+            font-size: 9pt; 
+            font-weight: bold;
+            color: #333;
+        }
+        #section3 .margin-select {
+            width: 45px;
+            font-size: 10pt;
+            padding: 1px;
+            border: 1px solid #aaa;
+            border-radius: 3px;
+        }
+        
+        #section3 .form-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 8px;
+            border: 1px solid #000; 
+            table-layout: fixed; 
         }
-        #section3 .form-table td, #section3 .form-table th{
-            border: 1px solid #000;
+        #section3 .form-table td, #section3 .form-table th {
+            border: 1px solid #000; 
             padding: 6px;
-            vertical-align: top;
-        }
-        #section3 .form-table thead th{
-            border-width: 3px 1px 1px 1px;
-            text-align: center;
-        }
-        #section3 .left-col{
-            width: 120px;
-        }
-        #section3 .date-col{
-            width: 170px;
-        }
-        #section3 .wide{
-            width: 100%;
-        }
-        #section3 .entry-row td{
+            vertical-align: middle;
+            font-size: calc(var(--s3-font-size-base) * 0.9);
             height: 28px;
+            box-sizing: border-box;
+            word-break: break-all; 
         }
-        #section3 .section-title{
-            font-weight: 700;
-            padding: 12px;
-            text-align: left;
+        #section3 .form-table thead th {
+            text-align: center;
+            border-top-width: 1px; 
         }
-        #section3 input[type=text], #section3 textarea, #section3 select{
+        
+        #section3 .route-col { width: 15%; } /* 노선/차량 */
+        #section3 .item-col { width: 20%; } /* 항목 */
+        #section3 .detail-col { width: 25%; } /* 정비내역 */
+        #section3 .parts-col { width: 15%; } /* 부품내역 */
+        #section3 .price-col { width: 10%; } /* 부품가격 */
+        #section3 .worker-col { width: 15%; } /* 작업자 */
+        #section3 .date-col { width: 150px; }
+        
+        
+        #section3 .route-select-cell {
+            vertical-align: top !important; 
+            padding: 4px !important;
+        }
+        #section3 .header-select {
+            font-size: 11px; 
+            padding: 2px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 3px;
+        }
+        #section3 .vehicle-display {
+            font-weight: bold;
+            font-size: 12px;
+            color: #0056b3;
+            margin-top: 4px;
+            height: 1.2em; 
+        }
+        
+        #section3 input[type=text], #section3 input[type=number], #section3 textarea, #section3 select {
             width: 100%;
             box-sizing: border-box;
             border: none;
             outline: none;
-            font-size: 13px;
+            font-size: 11pt; 
+            color: #000; 
             background: transparent;
-        }
-        #section3 textarea{
             resize: none;
-            height: 100%;
         }
-        #section3 .thin-text{
-            font-size: 12px;
-            color: #333;
+        #section3 textarea.auto-resize {
+            overflow-y: hidden;
+            min-height: 28px;
+            line-height: 1.4;
         }
-        /* 두꺼운 구분선 스타일 */
-        #section3 .form-table th, 
-        #section3 .form-table td {
-            border: 1px solid #000;
+        
+        #section3 .price-input {
+            text-align: right;
         }
-        #section3 .form-table thead th {
-            border-top: 3px solid #000; 
+        
+        #section3 .s3_added-row {
+            background-color: #f0f8ff; /* AliceBlue */
         }
-        #section3 .entry-row:first-child .section-title {
-             border-top: 3px solid #000; /* 첫 줄 좌측 상단선 */
-        }
-        #section3 .entry-row td:nth-child(2) {
-            border-left: 3px solid #000; /* 첫 줄 항목 좌측선 */
-        }
-        #section3 .entry-row td:last-child {
-            border-right: 3px solid #000; /* 마지막 열 우측선 */
-        }
-
-        /* S3 모바일 대응 (S1, S2와 동일한 너비 100% 로직 적용) */
-        @media screen and (max-width: 768px) {
-            #section3 .maintenance-container {
-                max-width: 100%;
-                margin: 10px 0;
-                padding: 5px;
-            }
-            #section3 header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            #section3 .controls {
-                flex-wrap: wrap;
-                margin-top: 5px;
-                gap: 5px;
-            }
-            #section3 button {
-                padding: 5px 8px;
-                font-size: 12pt;
-            }
-            #section3 .left-col {
-                width: 80px;
-            }
-            #section3 .date-col {
-                width: 120px;
-            }
-            #section3 .form-table td, #section3 .form-table th {
-                padding: 4px;
-                font-size: 12px;
-            }
-            #section3 input[type=text], #section3 textarea, #section3 select {
-                font-size: 11px;
-            }
-        }
+        
         /* ================================================================= */
         /* [공통] 인쇄 스타일 (S1, S2, S3 통합) */
         /* ================================================================= */
         @media print {
             
-            /* [추가] 인쇄 시 헤더바 숨기기 */
             #header-bar {
                 display: none !important;
             }
 
-            /* --- START: Scoped Printing (수정) --- */
-            
-            /* 1. 인쇄 시 body의 모든 직계 자식을 기본적으로 숨깁니다. */
             body > * {
                 display: none !important;
             }
-
-            /* 2. S1 인쇄 시: #section1만 강제로 표시합니다. */
             body.printing-section1 #section1 {
                 display: block !important;
             }
-            
-            /* 3. S1 내부의 .controls는 확실하게 숨깁니다. */
             body.printing-section1 #section1 .controls {
                 display: none !important;
             }
-
-            /* 4. S2 인쇄 시: #section2만 강제로 표시합니다. */
             body.printing-section2 #section2 {
                 display: block !important;
             }
-
-            /* 5. S3 인쇄 시: #section3만 강제로 표시합니다. */
             body.printing-section3 #section3 {
                 display: block !important;
             }
             
-            /* --- END: Scoped Printing (수정) --- */
-
-
             /* ----- S1 인쇄 규칙 ----- */
             body.printing-section1 @page {
                 size: A4;
@@ -1180,25 +1171,19 @@
             }
             body.printing-section1 #scheduleContainer { box-shadow: none; margin: 0;
                 padding: 0; }
-
-            /* [수정] 인쇄 시 S1 캡션(제목) 글자 크기 줄이기 */
             body.printing-section1 #section1 caption {
-                font-size: 1.0em; /* 기존 1.5em에서 약 1/3 줄임 */
-                margin-bottom: 5px; /* 아래 여백도 줄임 */
+                font-size: 1.0em; 
+                margin-bottom: 5px; 
             }
-
-            /* [수정] S1 인쇄 시 테이블 스타일 (페이지 나누기 포함) */
             body.printing-section1 #section1 table { 
                 width: 100%;
                 min-width: unset; 
                 font-size: 0.8em; 
                 border: 1px solid #000; 
                 table-layout: fixed;
-                /* [추가] 페이지 나누기 속성 */
                 page-break-inside: auto;
             }
             body.printing-section1 #section1 tr {
-                /* [추가] 행이 페이지 중간에 잘리지 않도록 */
                 page-break-inside: avoid;
                 page-break-after: auto;
             }
@@ -1267,17 +1252,16 @@
                          display: none !important;
             }
             
-            /* [수정] S2 인쇄 시 선명한 라인을 위해 !important 추가 */
             body.printing-section2 #section2 table { 
                 font-size: 7pt; 
-                border-collapse: collapse !important; /* 확실하게 collapse */
-                border: 1px solid #000 !important; /* 테이블 외곽선 */
+                border-collapse: collapse !important; 
+                border: 1px solid #000 !important; 
             }
             body.printing-section2 #section2 th, 
             body.printing-section2 #section2 td { 
                 height: 16px;
                 padding: 1px 0px; 
-                border: 1px solid #000 !important; /* [수정] !important 추가 */
+                border: 1px solid #000 !important; 
             }
             
             body.printing-section2 #section2 .header-title, 
@@ -1299,7 +1283,6 @@
                 appearance: none;
             }
             
-            /* [수정] 인쇄 시 S2 근무시간 select 박스 테두리 제거 */
             body.printing-section2 #section2 .s2-work-hours-select {
                 border: none;
                 background: transparent;
@@ -1324,67 +1307,53 @@
                 padding: 2px 1px;
             }
 
-            /* ----- S3 인쇄 규칙 ----- */
-            body.printing-section3 @page {
-                size: A4 portrait; /* A4 세로 모드 */
-                margin: 10mm; 
-            }
-            body.printing-section3 { 
-                background-color: white; 
-                padding: 0; 
-                margin: 0; 
-                font-size: 11pt; /* S3 인쇄 폰트 크기 조정 */
-                color: #000;
-            }
-            body.printing-section3 .maintenance-container {
-                box-shadow: none;
+            /* ★ [교체] S3 인쇄 규칙 (s3정비일지-1.4.1.html 기반) ----- */
+            body.printing-section3 #section3 .maintenance-container {
+                max-width: 100%;
                 border: none;
+                box-shadow: none;
                 margin: 0;
                 padding: 0;
             }
-            body.printing-section3 .no-print {
+            body.printing-section3 #section3 .form-table {
+                font-size: var(--s3-print-font-size);
+                border: 2px solid #000 !important; 
+            }
+            body.printing-section3 #section3 .form-table td, 
+            body.printing-section3 #section3 .form-table th {
+                border: 1px solid #000 !important;
+                padding: 4px !important; 
+                height: auto !important; 
+                vertical-align: top; 
+            }
+            body.printing-section3 #section3 input, 
+            body.printing-section3 #section3 textarea {
+                border: none !important;
+                background: transparent !important;
+                font-size: calc(var(--s3-print-font-size) * 0.9) !important;
+                height: auto !important;
+                overflow: visible !important;
+                color: #000 !important; 
+            }
+            
+            body.printing-section3 #section3 .no-print,
+            body.printing-section3 #section3 .header-select {
                 display: none !important;
             }
             
-            /* S3 폼 테이블 인쇄 스타일 조정 */
-            body.printing-section3 #section3 .form-table{
-                width: 100%;
-                border-collapse: collapse;
-                table-layout: fixed; 
+            body.printing-section3 #section3 .vehicle-display {
+                font-size: 11px !important; 
+                color: #000 !important; 
+                height: auto !important;
+                margin-top: 0;
             }
-            body.printing-section3 #section3 .form-table td, 
-            body.printing-section3 #section3 .form-table th{
-                border: 1px solid #000 !important;
-                padding: 4px; 
-                height: 18px; /* 인쇄 시 높이 고정 */
-                vertical-align: middle;
-            }
-            body.printing-section3 #section3 .form-table thead th{
-                border-width: 3px 1px 1px 1px !important;
-            }
-            body.printing-section3 #section3 input[type=text], 
-            body.printing-section3 #section3 textarea{
-                border: none !important;
-                background: transparent !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                font-size: 11px;
-            }
-            body.printing-section3 #section3 .thin-text {
-                display: none;
-            }
-            /* S3 두꺼운 구분선 인쇄 시 적용 */
-            body.printing-section3 #section3 .entry-row:first-child .section-title {
-                 border-top: 3px solid #000 !important;
-            }
-            body.printing-section3 #section3 .entry-row td:nth-child(2) {
-                border-left: 3px solid #000 !important;
-            }
-            body.printing-section3 #section3 .entry-row td:last-child {
-                border-right: 3px solid #000 !important;
-            }
-            body.printing-section3 #section3 tr[style*="border-top:3px"] td {
-                border-top: 3px solid #000 !important;
+            
+            body.printing-section3 @page { 
+                size: A4 portrait; 
+                margin-top: var(--s3-print-margin-top);
+                margin-bottom: var(--s3-print-margin-bottom);
+                margin-left: var(--s3-print-margin-left);
+                margin-right: var(--s3-print-margin-right);
             }
         }
     </style>
@@ -1392,7 +1361,7 @@
 <body>
 
     <div id="header-bar">
-        <img id="header-logo" src="https://github.com/waryong2025/dasomsoftec/blob/main/dasom.png" alt="DasomSoftec">
+        <img id="header-logo" src="https://raw.githubusercontent.com/waryong2025/dasomsoftec/main/dasom.png" alt="DasomSoftec">
         <span id="version-display">Ver 3.3.4</span> </div>
 
 
@@ -1553,8 +1522,7 @@
             </table>
         </div>
     </div>
-
-    <hr class="divider">
+<hr class="divider">
 
     <div id="section2">
         <div class="journal-container">
@@ -1634,15 +1602,50 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
     </div>
 
     <hr class="divider">
-
-    <div id="section3" style="display: none;">
+<div id="section3" style="display: none;">
         <div class="maintenance-container">
             <header>
-                <h1>차량점검정비일지</h1>
+                <h1 id="s3_title" style="flex-basis: 100%; text-align: center; order: -1; margin-bottom: 10px;">
+                    차량점검정비일지
+                </h1>
                 <div class="controls no-print">
-                    <button onclick="clearForm()">폼 초기화</button>
-                    <button onclick="printSection3()" class="primary">PDF로 저장 / 인쇄</button> 
-                    <button onclick="showAllSections()" class="print-button" style="background-color: #6c757d;">전체보기</button>
+                    
+                    <button onclick="s3_saveMaintenanceData()" class="success">일지 저장</button>
+                    <input type="file" id="s3_restoreFile" style="display: none;" onchange="s3_handleRestore(this.files[0])" accept=".json">
+                    <button onclick="s3_showRestoreModal()" class="warning">일지 복구</button>
+                    
+                    <button onclick="s3_showCalculator()">부품가격 계산</button>
+                    <button onclick="s3_clearForm()">폼 초기화</button>
+                    <button onclick="printSection3()" class="primary">인쇄</button> 
+
+                    <div class="margin-control-group no-print">
+                        <label>인쇄여백</label>
+                        <div class="margin-control">
+                            <label for="s3_marginLeft">좌</label>
+                            <select id="s3_marginLeft" class="margin-select">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+                        <div class="margin-control">
+                            <label for="s3_marginRight">우</label>
+                            <select id="s3_marginRight" class="margin-select">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 5px; font-size: 13pt;">
+                        <label for="s3_fontSizeInput">글자크기:</label>
+                        <input type="number" id="s3_fontSizeInput" value="11" min="8" max="14" onchange="s3_applyFontSize(this.value)" style="width: 50px; padding: 4px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+
+                    <button onclick="showAllSections()" style="background-color: #6c757d; color: white;">전체보기</button>
                 </div>
             </header>
 
@@ -1650,192 +1653,189 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
                 <table class="form-table">
                     <thead>
                     <tr>
-                        <th class="left-col">작업자</th>
                         <th class="date-col">년/월/일</th>
-                        <th colspan="4">2024-04-15 월요일</th>
+                        <th colspan="5" id="s3_dateDisplay">날짜 자동 입력</th>
                     </tr>
                     <tr>
-                        <th>와룡운수(주)</th>
-                        <th>항목</th>
-                        <th>정비내역</th>
-                        <th>부품내역</th>
-                        <th>부품가격</th>
-                        <th>예정사항</th>
+                        <th class="route-col">노선/차량</th>
+                        <th class="item-col">항목</th>
+                        <th class="detail-col">정비내역</th>
+                        <th class="parts-col">부품내역</th>
+                        <th class="price-col">부품가격</th>
+                        <th class="worker-col">작업자</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr class="entry-row">
-                        <td rowspan="6" class="section-title" style="width:120px">&nbsp;</td>
-                        <td><input type="text" name="item_1_1" placeholder="" /></td>
-                        <td><textarea name="detail_1_1"></textarea></td>
-                        <td><input type="text" name="parts_1_1" /></td>
-                        <td><input type="text" name="price_1_1" /></td>
-                        <td><input type="text" name="note_1_1" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_1_1" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_1_1" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_1_1" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_1_1" class="price-input" /></td>
+                        <td><textarea name="worker_1_1" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_1_2" /></td>
-                        <td><textarea name="detail_1_2"></textarea></td>
-                        <td><input type="text" name="parts_1_2" /></td>
-                        <td><input type="text" name="price_1_2" /></td>
-                        <td><input type="text" name="note_1_2" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_1_2" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_1_2" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_1_2" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_1_2" class="price-input" /></td>
+                        <td><textarea name="worker_1_2" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_1_3" /></td>
-                        <td><textarea name="detail_1_3"></textarea></td>
-                        <td><input type="text" name="parts_1_3" /></td>
-                        <td><input type="text" name="price_1_3" /></td>
-                        <td><input type="text" name="note_1_3" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_1_3" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_1_3" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_1_3" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_1_3" class="price-input" /></td>
+                        <td><textarea name="worker_1_3" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_1_4" /></td>
-                        <td><textarea name="detail_1_4"></textarea></td>
-                        <td><input type="text" name="parts_1_4" /></td>
-                        <td><input type="text" name="price_1_4" /></td>
-                        <td><input type="text" name="note_1_4" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_1_4" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_1_4" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_1_4" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_1_4" class="price-input" /></td>
+                        <td><textarea name="worker_1_4" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_1_5" /></td>
-                        <td><textarea name="detail_1_5"></textarea></td>
-                        <td><input type="text" name="parts_1_5" /></td>
-                        <td><input type="text" name="price_1_5" /></td>
-                        <td><input type="text" name="note_1_5" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_1_5" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_1_5" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_1_5" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_1_5" class="price-input" /></td>
+                        <td><textarea name="worker_1_5" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_1_6" /></td>
-                        <td><textarea name="detail_1_6"></textarea></td>
-                        <td><input type="text" name="parts_1_6" /></td>
-                        <td><input type="text" name="price_1_6" /></td>
-                        <td><input type="text" name="note_1_6" /></td>
-                    </tr>
-
-                    <tr style="border-top:3px solid #000">
-                        <td style="height:10px;border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                    </tr>
-
-                    <tr class="entry-row">
-                        <td rowspan="6" class="section-title">낙산운수(주)</td>
-                        <td><input type="text" name="item_2_1" value="머플러청소" /></td>
-                        <td><input type="text" name="detail_2_1" value="검사준비 - 이부장검사" /></td>
-                        <td><input type="text" name="parts_2_1" /></td>
-                        <td><input type="text" name="price_2_1" /></td>
-                        <td><input type="text" name="note_2_1" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_1_6" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_1_6" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_1_6" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_1_6" class="price-input" /></td>
+                        <td><textarea name="worker_1_6" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_2_2" value="토인조정" /></td>
-                        <td><textarea name="detail_2_2"></textarea></td>
-                        <td><input type="text" name="parts_2_2" /></td>
-                        <td><input type="text" name="price_2_2" /></td>
-                        <td><input type="text" name="note_2_2" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_2_1" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_2_1" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_2_1" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_2_1" class="price-input" /></td>
+                        <td><textarea name="worker_2_1" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_2_3" value="브레이크조정" /></td>
-                        <td><textarea name="detail_2_3"></textarea></td>
-                        <td><input type="text" name="parts_2_3" /></td>
-                        <td><input type="text" name="price_2_3" /></td>
-                        <td><input type="text" name="note_2_3" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_2_2" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_2_2" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_2_2" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_2_2" class="price-input" /></td>
+                        <td><textarea name="worker_2_2" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_2_4" /></td>
-                        <td><textarea name="detail_2_4"></textarea></td>
-                        <td><input type="text" name="parts_2_4" /></td>
-                        <td><input type="text" name="price_2_4" /></td>
-                        <td><input type="text" name="note_2_4" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_2_3" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_2_3" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_2_3" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_2_3" class="price-input" /></td>
+                        <td><textarea name="worker_2_3" class="auto-resize"></textarea></td>
                     </tr>
                     <tr class="entry-row">
-                        <td><input type="text" name="item_2_5" /></td>
-                        <td><textarea name="detail_2_5"></textarea></td>
-                        <td><input type="text" name="parts_2_5" /></td>
-                        <td><input type="text" name="price_2_5" /></td>
-                        <td><input type="text" name="note_2_5" /></td>
+                        <td class="route-select-cell">
+                            <select class="header-select s3_routeSelect_row no-print" onchange="s3_populateVehicleSelect_row(this)"></select>
+                            <select class="header-select s3_vehicleSelect_row no-print" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                            <div class="vehicle-display"></div>
+                        </td>
+                        <td><textarea name="item_2_4" class="auto-resize"></textarea></td>
+                        <td><textarea name="detail_2_4" class="auto-resize"></textarea></td>
+                        <td><textarea name="parts_2_4" class="auto-resize"></textarea></td>
+                        <td><input type="text" inputmode="numeric" name="price_2_4" class="price-input" /></td>
+                        <td><textarea name="worker_2_4" class="auto-resize"></textarea></td>
                     </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_2_6" /></td>
-                        <td><textarea name="detail_2_6"></textarea></td>
-                        <td><input type="text" name="parts_2_6" /></td>
-                        <td><input type="text" name="price_2_6" /></td>
-                        <td><input type="text" name="note_2_6" /></td>
-                    </tr>
-
-                    <tr style="border-top:3px solid #000">
-                        <td style="height:10px;border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                        <td style="border-top:3px solid #000"></td>
-                    </tr>
-
-                    <tr class="entry-row">
-                        <td class="section-title" rowspan="8">기타</td>
-                        <td><input type="text" name="item_3_1" /></td>
-                        <td><textarea name="detail_3_1"></textarea></td>
-                        <td><input type="text" name="parts_3_1" /></td>
-                        <td><input type="text" name="price_3_1" /></td>
-                        <td><input type="text" name="note_3_1" /></td>
-                    </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_3_2" /></td>
-                        <td><textarea name="detail_3_2"></textarea></td>
-                        <td><input type="text" name="parts_3_2" /></td>
-                        <td><input type="text" name="price_3_2" /></td>
-                        <td><input type="text" name="note_3_2" /></td>
-                    </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_3_3" /></td>
-                        <td><textarea name="detail_3_3"></textarea></td>
-                        <td><input type="text" name="parts_3_3" /></td>
-                        <td><input type="text" name="price_3_3" /></td>
-                        <td><input type="text" name="note_3_3" /></td>
-                    </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_3_4" /></td>
-                        <td><textarea name="detail_3_4"></textarea></td>
-                        <td><input type="text" name="parts_3_4" /></td>
-                        <td><input type="text" name="price_3_4" /></td>
-                        <td><input type="text" name="note_3_4" /></td>
-                    </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_3_5" /></td>
-                        <td><textarea name="detail_3_5"></textarea></td>
-                        <td><input type="text" name="parts_3_5" /></td>
-                        <td><input type="text" name="price_3_5" /></td>
-                        <td><input type="text" name="note_3_5" /></td>
-                    </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_3_6" /></td>
-                        <td><textarea name="detail_3_6"></textarea></td>
-                        <td><input type="text" name="parts_3_6" /></td>
-                        <td><input type="text" name="price_3_6" /></td>
-                        <td><input type="text" name="note_3_6" /></td>
-                    </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_3_7" /></td>
-                        <td><textarea name="detail_3_7"></textarea></td>
-                        <td><input type="text" name="parts_3_7" /></td>
-                        <td><input type="text" name="price_3_7" /></td>
-                        <td><input type="text" name="note_3_7" /></td>
-                    </tr>
-                    <tr class="entry-row">
-                        <td><input type="text" name="item_3_8" /></td>
-                        <td><textarea name="detail_3_8"></textarea></td>
-                        <td><input type="text" name="parts_3_8" /></td>
-                        <td><input type="text" name="price_3_8" /></td>
-                        <td><input type="text" name="note_3_8" /></td>
-                    </tr>
-
                     </tbody>
+                    <tfoot class="no-print">
+                        <tr>
+                            <td colspan="6" style="text-align: right; padding: 5px;">
+                                <button type="button" onclick="s3_addRow()" style="font-size: 11pt; padding: 4px 8px; background-color: #007bff; color: white; border: none;">
+                                    행 추가 (+)
+                                </button>
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </form>
 
             <p class="thin-text" style="margin-top:8px">사용법: 셀에 내용을 입력한 뒤 'PDF로 저장 / 인쇄' 버튼을 눌러 A4로 저장하세요. 모바일에서는 가로 모드에서 인쇄 결과가 더 잘 맞을 수 있습니다.</p>
         </div>
     </div>
-    <script>
+
+    <div id="s3_restoreDateModal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 10px;">정비일지 복구 날짜 선택</h3>
+            <p>복구할 데이터가 저장된 날짜를 선택 후, 파일을 업로드하세요.</p>
+            <input type="date" id="s3_restoreSelectedDate" style="width: 95%; padding: 8px; font-size: 1.1em; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="s3_cancelRestoreBtn" type="button" style="padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+                <button id="s3_triggerRestoreBtn" type="button" style="padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">파일 선택</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="s3_calculatorModal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 10px;">부품가격 계산기</h3>
+            <p>기간을 설정하고 부품 가격 합계를 확인합니다.</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+                <label>시작일:</label><input type="date" id="s3_startDate" style="flex-grow: 1; padding: 8px;">
+                <label>종료일:</label><input type="date" id="s3_endDate" style="flex-grow: 1; padding: 8px;">
+                <button onclick="s3_calculatePrices()" style="padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px;">계산</button>
+            </div>
+
+            <div style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa;">
+                <strong>총 합계: <span id="s3_totalPrice" style="color: #dc3545;">0원</span></strong>
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button onclick="document.getElementById('s3_calculatorModal').style.display='none';" style="padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">닫기</button>
+            </div>
+        </div>
+    </div>
+   <script>
         /* ================================================================= */
         /* [공통] 데이터 공유 로직 (Global) */
         /* ================================================================= */
@@ -1863,17 +1863,14 @@ onclick="s2_changeDispatchOrder('1')">1. 올림차순</button>
           if (e.key === window.MASTER_STORAGE_KEY) {
             console.log('데이터 동기화 감지:', e.key);
             
-            // ★ S1에서 데이터 변경 시 S2(승무일지)도 새로고침
+            // S1에서 데이터 변경 시 S2(승무일지)도 새로고침
             if (typeof initializeDispatchLog === 'function') {
-                 // [수정] S2가 현재 보고 있는 날짜(s2_currentDate)로 갱신
                  initializeDispatchLog();
             }
             
-            // ★ S2에서 데이터 변경 시 S1(현황표)도 새로고침 (데이터만 다시 로드)
+            // S2에서 데이터 변경 시 S1(현황표)도 새로고침 (데이터만 다시 로드)
             if (typeof loadMasterData === 'function' && typeof generateSchedule === 'function') {
-                // S1의 데이터를 다시 로드하고 S1 테이블을 다시 그립니다.
                 loadMasterData();
-                // S1의 전역 변수(fixedScheduleData 등)를 S1 데이터로 갱신
                 if (currentRoute && allRoutesData.routes[currentRoute]) {
                     const routeData = allRoutesData.routes[currentRoute];
                     fixedScheduleData = routeData.fixedSchedule;
@@ -1983,6 +1980,8 @@ function saveMasterData() {
                 
                 // ★ [실시간 연동] S2(승무일지) 새로고침
                 if (typeof initializeDispatchLog === 'function') initializeDispatchLog(); 
+                // ★ [실시간 연동] S3(정비일지) 새로고침
+                if (typeof s3_initialize === 'function') s3_initialize(null); 
                 return;
             }
 
@@ -2008,11 +2007,12 @@ function saveMasterData() {
                 routeNavSelect.value = routeName;
             }
             
-            // loadRouteData에서는 저장을 하지 않음 (데이터 변경이 없으므로)
             generateSchedule(); 
             
              // ★ [실시간 연동] S2(승무일지) 새로고침
             if (typeof initializeDispatchLog === 'function') initializeDispatchLog();
+            // ★ [실시간 연동] S3(정비일지) 새로고침 (S1의 회사명 전달)
+            if (typeof s3_initialize === 'function') s3_initialize(routeData.companyName); 
         }
 
         function addOrUpdateRoute() {
@@ -2044,9 +2044,6 @@ function saveMasterData() {
             }
 
             currentRoute = routeName;
-            
-            // (참고: '오늘 날짜 자동 배정' 로직은 안정성을 위해 제거되었습니다.
-            //  S2에서 직접 데이터를 가져오는 편이 낫습니다.)
             
             saveMasterData();
             populateRouteSelect(); 
@@ -2221,8 +2218,7 @@ function saveMasterData() {
                 }
             }
         }
-
-        function getNamesAndBoldStateFromCell(cellElement) {
+function getNamesAndBoldStateFromCell(cellElement) {
             const morningInput = cellElement.querySelector('.morning-input');
             const afternoonInput = cellElement.querySelector('.afternoon-input');
             const morningText = morningInput.value.trim();
@@ -2396,12 +2392,8 @@ function saveMasterData() {
             reader.readAsText(file);
         }
 
-        /**
-         * [수정] S1 인쇄 시 12대씩 페이지 나누기 기능
-         */
         function generateSchedule() {
             if (!currentRoute || !allRoutesData.routes[currentRoute]) {
-                // [수정] 컨테이너를 직접 수정
                 const scheduleContainer = document.getElementById('scheduleContainer');
                 scheduleContainer.innerHTML = '<table><caption id="tableCaption">표시할 노선을 선택하거나 추가해주세요.</caption></table>';
                 return;
@@ -2415,39 +2407,33 @@ function saveMasterData() {
             const companyName = routeData.companyName || '회사명 없음';
             const VEHICLE_COLS = routeData.vehicleColumns || [];
             
-            // [수정] 컨테이너 전체를 비웁니다 (여러 테이블을 생성하기 위함)
             const scheduleContainer = document.getElementById('scheduleContainer');
             scheduleContainer.innerHTML = ''; 
 
             const startDate = new Date(year, month - 1, selectedOption === '1' ? 1 : 16);
             const endDate = (selectedOption === '1') ? new Date(year, month - 1, 15) : new Date(year, month, 0);
             
-            // [추가] 차량 번호를 12개씩 나눕니다.
-            const colsPerPage = 12; // 페이지 당 12개의 차량
+            const colsPerPage = 12; 
             const colChunks = [];
             for (let i = 0; i < VEHICLE_COLS.length; i += colsPerPage) {
                 colChunks.push(VEHICLE_COLS.slice(i, i + colsPerPage));
             }
             
-            // [추가] 차량이 0대일 경우, 빈 테이블 1개는 표시되도록
             if (colChunks.length === 0) {
                  colChunks.push([]); 
             }
 
-            // [추가] 날짜 데이터를 미리 한 번만 계산합니다.
             const dateRange = [];
             for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                 dateRange.push(new Date(d));
             }
             
-            scheduleData = {}; // 전역 scheduleData는 계속 채워야 함 (editCell 등에서 사용)
+            scheduleData = {}; 
 
-            // [수정] 각 차량 "묶음(chunk)" 별로 테이블을 1개씩 생성합니다.
             colChunks.forEach((vehicleChunk, chunkIndex) => {
                 
                 const table = document.createElement('table');
                 
-                // [추가] 첫 번째 테이블이 아니면 인쇄 시 페이지를 나눕니다.
                 if (chunkIndex > 0) {
                     table.style.pageBreakBefore = 'always';
                 }
@@ -2458,7 +2444,6 @@ function saveMasterData() {
                 if (colChunks.length > 1) {
                     captionText += ` (페이지 ${chunkIndex + 1}/${colChunks.length})`;
                 }
-                // [수정] 첫 번째 테이블의 캡션에만 id 할당
                 if (chunkIndex === 0) {
                     caption.id = 'tableCaption';
                 }
@@ -2467,31 +2452,26 @@ function saveMasterData() {
 
                 // 2. 헤더 생성
                 const thead = document.createElement('thead');
-                // [수정] 첫 번째 테이블의 헤더에만 id 할당
                 if (chunkIndex === 0) {
                     thead.id = 'scheduleHeader';
                 }
-                // [수정] 현재 묶음(chunk)의 차량만 헤더로 만듦
                 const headerHTML = `<tr><th style="width: 4%;">월일</th><th style="width: 4%;">요일</th>${vehicleChunk.map(c => c === '미입력' ? `<th></th>` : `<th>${c}</th>`).join('')}</tr>`;
                 thead.innerHTML = headerHTML;
                 table.appendChild(thead);
 
                 // 3. 바디 생성
                 const tbody = document.createElement('tbody');
-                // [수정] 첫 번째 테이블의 바디에만 id 할당
                 if (chunkIndex === 0) {
                     tbody.id = 'scheduleBody';
                 }
 
-                // [수정] 미리 계산된 날짜 범위를 순회
                 dateRange.forEach(d => {
                     const dateString = d.toISOString().slice(0, 10);
                     const dayOfWeek = d.getDay();
                     
-                    // [수정] 날짜별 데이터가 없으면 (처음이면) 전체 차량에 대해 계산
                     if (!scheduleData[dateString]) { 
                         let cellsContent = {};
-                        VEHICLE_COLS.forEach(colId => { // [수정] 전체 VEHICLE_COLS 기준
+                        VEHICLE_COLS.forEach(colId => { 
                             if (colId === '미입력') {
                                 cellsContent[colId] = [];
                                 return;
@@ -2535,10 +2515,9 @@ function saveMasterData() {
                             }
                             cellsContent[colId] = appliedNames;
                         });
-                        scheduleData[dateString] = cellsContent; // 전역 데이터에 저장
+                        scheduleData[dateString] = cellsContent; 
                     }
 
-                    // --- 요일 셀 생성 (기존 로직) ---
                     const holidayName = applyHolidays ? isPublicHoliday(d) : false;
                     const isHoliday = !!holidayName;
                     let rowClass = '';
@@ -2572,13 +2551,10 @@ function saveMasterData() {
                                 <span class="sub-day-info" style="color: ${mainColor};"></span>
                             </div>`;
                     }
-                    // --- 요일 셀 생성 종료 ---
 
-                    // [수정] 현재 묶음(chunk)의 차량 데이터만 HTML로 만듦
                     const dataCellsHTML = vehicleChunk.map(colId =>
                         colId === '미입력' 
                         ? `<td></td>` 
-                        // [수정] scheduleData[dateString]에는 모든 차량 데이터가 있으므로 [colId]로 정확히 찾음
                         : `<td onclick="editCell(this, '${colId}', '${dateString}', ${dayOfWeek})">${renderCellContent(scheduleData[dateString][colId])}</td>`
                     ).join('');
 
@@ -2588,13 +2564,12 @@ function saveMasterData() {
                             <td>${dayCellContent}</td> 
                             ${dataCellsHTML}
                         </tr>`);
-                }); // end date loop
+                }); 
 
                 table.appendChild(tbody);
                 
-                // [수정] 완성된 테이블을 컨테이너에 추가
                 scheduleContainer.appendChild(table);
-            }); // end chunk loop
+            }); 
         }
 
         function calculateWorkdays() {
@@ -2716,9 +2691,9 @@ function saveMasterData() {
                 newTitle = `${currentRoute} 근무현황표`;
             }
             
-            document.body.classList.remove('printing-section2'); // S2 클래스 제거
-            document.body.classList.remove('printing-section3'); // S3 클래스 제거
-            document.body.classList.add('printing-section1'); // S1 인쇄용 클래스 추가
+            document.body.classList.remove('printing-section2'); 
+            document.body.classList.remove('printing-section3'); 
+            document.body.classList.add('printing-section1'); 
 
             const handleAfterPrint = () => {
                 document.title = originalTitle;
@@ -2820,10 +2795,9 @@ function saveMasterData() {
             document.addEventListener('click', clearEditMode);
         }
 
-        // ▼▼▼ [수정된 부분] S1/S2/S3 보이기/숨기기 함수 최종 수정 ▼▼▼
-        /**
-         * 특정 섹션(S1, S2, S3)만 표시하고 나머지는 숨깁니다.
-         */
+        /* ================================================================= */
+        /* [공통] 보이기/숨기기 함수 */
+        /* ================================================================= */
         function showSection(sectionId) {
             const sections = {
                 'S1': document.getElementById('section1'),
@@ -2843,19 +2817,14 @@ function saveMasterData() {
             const targetSection = sections[sectionId];
             if (targetSection) {
                 targetSection.style.display = 'block';
-                // S2의 시작점으로 화면 스크롤
                 targetSection.scrollIntoView({ behavior: 'smooth' });
             }
             
-            // 3. 헤더바 위치 이동 (항상 body 최상단에 보이도록)
             if (headerBar) {
                 document.body.prepend(headerBar); 
             }
         }
 
-        /**
-         * 숨겨진 S1(현황표)을 다시 표시하여 전체 화면으로 복구합니다.
-         */
         function showAllSections() {
             const section1 = document.getElementById('section1');
             const divider = document.querySelector('.divider');
@@ -2866,24 +2835,20 @@ function saveMasterData() {
             if (section1) section1.style.display = 'block';
             if (divider) divider.style.display = 'block';
             if (section2) section2.style.display = 'block';
-            if (section3) section3.style.display = 'none'; // S3는 기본적으로 숨김
+            if (section3) section3.style.display = 'none'; 
             
-            // 헤더바를 S1 컨트롤박스 위로 다시 이동
              if (headerBar) {
                 document.body.insertBefore(headerBar, section1);
             }
             
-            // 페이지 최상단으로 스크롤
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        // ▲▲▲ [수정된 부분] S1/S2/S3 보이기/숨기기 함수 최종 수정 ▲▲▲
         
         /* ================================================================= */
-        /* [Section 2] 승무 일지 JavaScript (새로운 배차표-25.html 기반) */
+        /* [Section 2] 승무 일지 JavaScript */
         /* ================================================================= */
         
         // --- S2: Global Variables ---
-        // S2의 로컬 노선/차량 맵 (S1의 데이터와 별개로 S2의 UI를 그림)
         const S2_ROUTE_MAP = {
             '종로07번': '07',
             '종로08번': '08',
@@ -2891,14 +2856,11 @@ function saveMasterData() {
             '성동 3-2번': 'sd32'
         };
         const S2_USED_VEHICLES = {};
-        let s2_currentDate = new Date(); // [추가] S2가 표시하는 현재 날짜 (복구 시 변경됨)
+        let s2_currentDate = new Date(); 
 
         // --- S2: 기존 JavaScript 함수 (이름 충돌 방지를 위해 's2_' 접두사 추가) ---
-        /**
-         * [수정] S2의 기준 날짜를 포맷팅하는 함수
-         */
         function s2_getTodayDateString(dateObj = null) {
-            const dateToFormat = dateObj || s2_currentDate; // 파라미터가 없으면 전역 변수 사용
+            const dateToFormat = dateObj || s2_currentDate; 
             return dateToFormat.toLocaleDateString('ko-KR', { 
                 year: 'numeric', 
                 month: '2-digit', 
@@ -2914,7 +2876,6 @@ function saveMasterData() {
             }
         }
 
-        /* ★ [이전 단계 수정] 올바른 함수 이름 사용 */
         function s2_changeDispatchOrder(order) {
             document.querySelectorAll('#section2 .dispatch-button').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.querySelector(`#section2 .dispatch-button[onclick="s2_changeDispatchOrder('${order}')"]`);
@@ -2925,7 +2886,7 @@ function saveMasterData() {
         function printSection2() {
             document.body.classList.remove('printing-section1');
             document.body.classList.remove('printing-section3');
-            document.body.classList.add('printing-section2'); // S2 인쇄용 클래스 추가
+            document.body.classList.add('printing-section2'); 
 
             const handleAfterPrint = () => {
                 document.body.classList.remove('printing-section2');
@@ -2949,7 +2910,6 @@ function saveMasterData() {
             return used;
         }
         
-        // S2 ID 정규화
         function s2_sanitizeForId(text) {
             if (!text) return 'unknown';
             return text.toLowerCase().replace(/[^a-z0-9]/g, ''); 
@@ -2975,7 +2935,6 @@ function saveMasterData() {
                 carDisplay.classList.add('hidden');
                 carControls.classList.remove('hidden');
                 
-                // S1의 데이터를 기반으로 드롭다운 채우기
                 s2_populateCarSelect(carSelect, routeName, td.dataset.carNumber);
             }
         }
@@ -2992,7 +2951,6 @@ function saveMasterData() {
         function s2_populateCarSelect(selectElement, routeName, currentCarNumber) {
             selectElement.innerHTML = '';
             
-            // S1 데이터 로드
             const masterData = window.sharedData.load(window.MASTER_STORAGE_KEY);
             const allVehiclesForRoute = masterData?.routes?.[routeName]?.vehicleColumns || [];
             const routeId = S2_ROUTE_MAP[routeName] || s2_sanitizeForId(routeName);
@@ -3014,9 +2972,6 @@ function saveMasterData() {
             });
         }
 
-        /**
-         * [수정] 좌/우 독립적으로 차번 변경
-         */
         function s2_changeCarNumber(selectElement, event, routeName) {
             event.stopPropagation();
             const newCarNumber = selectElement.value;
@@ -3033,19 +2988,14 @@ function saveMasterData() {
                 td.dataset.carNumber = newCarNumber;
                 td.querySelector('.car-display').textContent = newCarNumber;
 
-                // [핵심 수정]
-                // td.parentNode (tr 전체) 대신, 해당 '쪽'의 셀들만 순회하며 name 속성을 업데이트합니다.
-                
                 const row = td.parentNode;
                 const isLeft = (td.cellIndex === 0);
-                // 좌측(0)이면 1~7번 셀, 우측(8)이면 9~15번 셀을 대상으로 합니다.
                 const startIndex = isLeft ? 1 : 9;
                 const endIndex = isLeft ? 7 : 15;
 
                 for (let i = startIndex; i <= endIndex; i++) {
                     const cell = row.cells[i];
                     if (cell) {
-                        // input, textarea, select, 그리고 span.driver-name의 data-name-for 까지 모두 변경
                         cell.querySelectorAll('input, textarea, select, span.driver-name[data-name-for]').forEach(el => {
                             let name = '';
                             if (el.name) name = el.name;
@@ -3076,7 +3026,6 @@ function saveMasterData() {
             const routeId = S2_ROUTE_MAP[routeName] || s2_sanitizeForId(routeName);
 
             if (confirm(`[${routeName}] 노선의 차번 ${carNumber} 행을 완전히 삭제하시겠습니까?`)) {
-                // S2의 테이블에서 행 제거 (S1 데이터는 변경하지 않음, S2의 UI만 변경)
                 row.remove();
                 s2_getUsedCarNumbers(routeId);
                 alert(`차번 ${carNumber} 행이 S2(승무일지) 화면에서 삭제되었습니다. (S1 데이터는 유지됨)`);
@@ -3125,15 +3074,12 @@ function saveMasterData() {
                 driverNameSpan.innerHTML = newName.replace(/\n/g, '<br>'); 
             }
 
-            // ★ 중요: S2에서 변경된 근무자 이름을 S1(localStorage) '오늘 날짜'의 'tempSchedule'에 저장
             try {
-                // [수정] S2의 기준 날짜(s2_currentDate)를 사용
                 const targetDate = s2_currentDate.toISOString().slice(0, 10);
                 
                 const routeSection = td.closest('.route-section');
                 const routeName = routeSection.dataset.routeName;
                 
-                // [수정] 차번 셀을 찾을 때 좌/우 구분
                 const row = td.closest('tr');
                 const isLeft = (td.cellIndex >= 1 && td.cellIndex <= 7);
                 const carCellIndex = isLeft ? 0 : 8;
@@ -3146,7 +3092,6 @@ function saveMasterData() {
                 }
                 const carNumber = carNumberCell.dataset.carNumber;
                 
-                // S1 데이터에 접근
                 const routeData = allRoutesData.routes[routeName];
                 if (!routeData) {
                     console.error(`S2->S1 연동 실패: S1 데이터에 ${routeName} 노선이 없습니다.`);
@@ -3162,23 +3107,21 @@ function saveMasterData() {
                      scheduleToUpdate[targetDate][carNumber] = [{ text: '', bold: false }, { text: '', bold: false }];
                 }
 
-                // name 속성으로 '오전', '오후', '휴무자' 구분 (S2의 고유한 DOM 구조 활용)
-                const nameAttr = driverInput.name || td.querySelector('.driver-name').dataset.nameFor; // dataset.nameFor는 연동 시 추가됨
+                const nameAttr = driverInput.name || td.querySelector('.driver-name').dataset.nameFor; 
 
-                if (nameAttr.includes('_am_driver')) { // 오전
+                if (nameAttr.includes('_am_driver')) { 
                     scheduleToUpdate[targetDate][carNumber][0].text = newName; 
                     scheduleToUpdate[targetDate][carNumber][0].bold = true;
-                } else if (nameAttr.includes('_pm_driver')) { // 오후
+                } else if (nameAttr.includes('_pm_driver')) { 
                     scheduleToUpdate[targetDate][carNumber][1].text = newName; 
                     scheduleToUpdate[targetDate][carNumber][1].bold = true;
-                } else if (nameAttr.includes('_rest_driver')) { // 휴무자
-                    // 여기서는 S1의 오전/오후를 '휴무'로 처리
+                } else if (nameAttr.includes('_rest_driver')) { 
                     scheduleToUpdate[targetDate][carNumber][0].text = '휴무';
                     scheduleToUpdate[targetDate][carNumber][1].text = '휴무';
                     console.log(`[S2->S1] ${carNumber} 휴무자(${newName}) 등록. S1 데이터를 '휴무'로 임시 저장`);
                 }
                 
-                saveMasterData(); // ★ 변경사항 S1 데이터에 저장
+                saveMasterData(); 
                 console.log(`[S2->S1] ${targetDate} ${carNumber} 임시 데이터 저장:`, newName);
 
             } catch (e) {
@@ -3196,14 +3139,11 @@ function saveMasterData() {
             if (driverNameSpan) driverNameSpan.textContent = '';
             if (driverInput) driverInput.value = '';
 
-            // ★ 중요: S2에서 삭제된 근무자 이름을 S1(localStorage) '오늘 날짜'의 'tempSchedule'에 반영
              try {
-                // [수정] S2의 기준 날짜(s2_currentDate)를 사용
                 const targetDate = s2_currentDate.toISOString().slice(0, 10);
                 const routeSection = td.closest('.route-section');
                 const routeName = routeSection.dataset.routeName;
 
-                // [수정] 차번 셀을 찾을 때 좌/우 구분
                 const row = td.closest('tr');
                 const isLeft = (td.cellIndex >= 1 && td.cellIndex <= 7);
                 const carCellIndex = isLeft ? 0 : 8;
@@ -3220,19 +3160,18 @@ function saveMasterData() {
                 if (scheduleToUpdate && scheduleToUpdate[targetDate] && scheduleToUpdate[targetDate][carNumber]) {
                     const nameAttr = driverInput.name || driverNameSpan.dataset.nameFor;
                     
-                    if (nameAttr.includes('_am_driver')) { // 오전
+                    if (nameAttr.includes('_am_driver')) { 
                         scheduleToUpdate[targetDate][carNumber][0].text = ''; 
                         scheduleToUpdate[targetDate][carNumber][0].bold = false;
-                    } else if (nameAttr.includes('_pm_driver')) { // 오후
+                    } else if (nameAttr.includes('_pm_driver')) { 
                         scheduleToUpdate[targetDate][carNumber][1].text = ''; 
                         scheduleToUpdate[targetDate][carNumber][1].bold = false;
-                    } else if (nameAttr.includes('_rest_driver')) { // 휴무자
-                        // 휴무자 삭제 시 S1도 비움
+                    } else if (nameAttr.includes('_rest_driver')) { 
                         scheduleToUpdate[targetDate][carNumber][0].text = '';
                         scheduleToUpdate[targetDate][carNumber][1].text = '';
                     }
                     
-                    saveMasterData(); // ★ 변경사항 S1 데이터에 저장
+                    saveMasterData(); 
                     console.log(`[S2->S1] ${targetDate} ${carNumber} 임시 데이터 삭제`);
                 }
             } catch (e) {
@@ -3253,7 +3192,6 @@ function saveMasterData() {
         }
         
         // --- S2: 스케줄 및 파일 로드 함수 (S1 데이터 연동 포함) ---
-// --- S2: 시간 포맷팅 헬퍼 함수 ---
         function s2_formatTime(date) {
             const h = String(date.getHours()).padStart(2, '0');
             const m = String(date.getMinutes()).padStart(2, '0');
@@ -3263,7 +3201,6 @@ function saveMasterData() {
             const routeSection = document.getElementById(`route-${routeId}`);
             if (!routeSection) return;
 
-            // 1. [수정] 이 노선에 표시된 모든 차번을 *화면 순서대로* 가져오기
             const tableRows = routeSection.querySelectorAll('.journal-table tbody tr');
             const leftColumnVehicles = [];
             const rightColumnVehicles = [];
@@ -3278,18 +3215,14 @@ function saveMasterData() {
                 }
             });
 
-            // 2. [수정] 좌측 -> 우측 순서로 차량 목록 최종 완성
             const orderedVehicleNumbers = [...leftColumnVehicles, ...rightColumnVehicles];
 
-            // 3. 오전 설정값 가져오기
             const amStartVehicle = routeSection.querySelector(`select[name="vehicle_select_${routeId}_am"]`).value;
             const amStartHour = routeSection.querySelector(`input[name="hour_${routeId}_am"]`).value;
             const amStartMinute = routeSection.querySelector(`input[name="minute_${routeId}_am"]`).value;
             const amInterval = routeSection.querySelector(`input[name="interval_${routeId}_am"]`).value;
 
-            // 4. 오전 스케줄 적용 (모든 값이 입력되었을 때만)
             if (amStartVehicle && amStartHour !== '' && amStartMinute !== '' && amInterval !== '') {
-                // [수정] 정렬된 목록 대신 'orderedVehicleNumbers' 사용
                 const startIndex = orderedVehicleNumbers.indexOf(amStartVehicle);
                 if (startIndex === -1) {
                     alert('오전 첫 차로 선택한 차량을 목록에서 찾을 수 없습니다.');
@@ -3301,7 +3234,6 @@ function saveMasterData() {
                     for (let i = 0; i < orderedVehicleNumbers.length; i++) {
                         const carNumber = orderedVehicleNumbers[i];
                         
-                        // [수정] 순서는 'orderedVehicleNumbers' 리스트의 index를 따름
                         const vehicleOrderIndex = (i - startIndex + orderedVehicleNumbers.length) % orderedVehicleNumbers.length;
                         
                         const minutesToAdd = vehicleOrderIndex * amIntervalMin;
@@ -3316,15 +3248,12 @@ function saveMasterData() {
                 }
             }
 
-            // 5. 오후 설정값 가져오기
             const pmStartVehicle = routeSection.querySelector(`select[name="vehicle_select_${routeId}_pm"]`).value;
             const pmStartHour = routeSection.querySelector(`input[name="hour_${routeId}_pm"]`).value;
             const pmStartMinute = routeSection.querySelector(`input[name="minute_${routeId}_pm"]`).value;
             const pmInterval = routeSection.querySelector(`input[name="interval_${routeId}_pm"]`).value;
 
-            // 6. 오후 스케줄 적용 (오전과 로직 동일)
             if (pmStartVehicle && pmStartHour !== '' && pmStartMinute !== '' && pmInterval !== '') {
-                // [수정] 정렬된 목록 대신 'orderedVehicleNumbers' 사용
                 const startIndex = orderedVehicleNumbers.indexOf(pmStartVehicle);
                 if (startIndex === -1) {
                     alert('오후 막 차로 선택한 차량을 목록에서 찾을 수 없습니다.');
@@ -3375,21 +3304,10 @@ function saveMasterData() {
         }
 
         function s2_triggerFileLoad(routeId) {
-            // S2의 파일 로드 기능은 S1 데이터와 충돌하므로, S1의 백업/복구 기능을 사용하도록 안내
             alert(`[연동 모드] S2의 개별 파일 로드 기능은 비활성화되었습니다.\nS1(근무 현황표)의 '근무전체데이타관리옵션 -> 전체 데이터 복구' 기능을 이용해주세요.`);
-            // document.getElementById(`fileInput-${routeId}`).click(); // 기존 로직 비활성화
         }
-
         
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-        // ★ [핵심 연동] S1 -> S2 데이터 자동 연동 로직
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-
-        /**
-         * [수정] S2: 'S2 기준 날짜'의 근무 데이터를 S1(localStorage)에서 가져옴
-         */
         function s2_getTodayScheduleData(routeData) {
-            // [수정] s2_currentDate(S2의 기준 날짜)를 사용
             const dateString = s2_currentDate.toISOString().slice(0, 10);
             const dayOfWeek = s2_currentDate.getDay();
             
@@ -3398,22 +3316,19 @@ function saveMasterData() {
             
             let todayData = {};
 
-            // 1. 임시 데이터(temp)가 고정 데이터(fixed)보다 우선
             if (tempSchedule[dateString]) {
                 todayData = JSON.parse(JSON.stringify(tempSchedule[dateString]));
             }
             
-            // 2. 임시 데이터가 없는 차량에 한해 고정 데이터 적용
             const vehicleColumns = routeData.vehicleColumns || [];
             vehicleColumns.forEach(colId => {
                 if (colId === '미입력' || todayData[colId]) {
-                    return; // 임시 데이터가 이미 있거나 '미입력' 차량이면 건너뜀
+                    return; 
                 }
 
                 const recurringKey = `${dayOfWeek}-${colId}`;
                 if (fixedSchedule[recurringKey]) {
                      for (const entry of fixedSchedule[recurringKey]) {
-                        // S1의 고정 데이터 날짜가 오늘보다 과거이거나 같아야 적용
                         if (new Date(dateString) >= new Date(entry.dateString)) {
                             todayData[colId] = JSON.parse(JSON.stringify(entry.names));
                             break;
@@ -3425,10 +3340,6 @@ function saveMasterData() {
             return todayData;
         }
 
-        /**
-         * [추가] S2: 'S2 기준 요일'의 '고정' 근무 데이터를 S1(localStorage)에서 가져옴
-         * (휴무자 자동 계산용)
-         */
         function s2_getTodayFixedWorkersForCar(routeData, carNumber, dayOfWeek) {
             const fixedSchedule = routeData.fixedSchedule || {};
             let fixedNames = [{ text: '' }, { text: '' }];
@@ -3436,47 +3347,37 @@ function saveMasterData() {
             const recurringKey = `${dayOfWeek}-${carNumber}`;
             
             if (fixedSchedule[recurringKey] && fixedSchedule[recurringKey].length > 0) {
-                 // 고정 스케줄은 날짜와 상관없이 가장 최근 것 (첫 번째 것)을 기준으로 함
                  fixedNames = fixedSchedule[recurringKey][0].names;
             }
             
             return fixedNames;
         }
 
-       /**
-         * [수정] S2: 휴무자 자동 계산 로직 추가
-         */
-        function s2_createRowSideHTML(routeName, carNumber, todayData) {
+       function s2_createRowSideHTML(routeName, carNumber, todayData) {
             const routeId = S2_ROUTE_MAP[routeName] || s2_sanitizeForId(routeName); 
             
             if (!carNumber || carNumber === '미입력') {
                 return '<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>';
             }
 
-            // S1의 '오늘 날짜' 데이터 (temp 또는 fixed)
             const s1CarData = todayData[carNumber] || [{ text: '' }, { text: '' }];
             const amDriver = (s1CarData[0].text || '').replace(/\n/g, '<br>');
             const pmDriver = (s1CarData[1].text || '').replace(/\n/g, '<br>');
             const isRest = (amDriver === '휴무' || pmDriver === '휴무');
             
-            // S2 포맷에 맞게 재배치
             let s2_amDriver_html = isRest ? '' : amDriver;
             let s2_pmDriver_html = isRest ? '' : pmDriver;
             let s2_restDriver_html = isRest ? (amDriver === '휴무' ? amDriver : pmDriver) : '';
 
-            // --- [추가] 휴무자 자동 계산 로직 ---
-            // 근무(오전/오후)가 비어있고, '휴무' 상태도 아니라면
             if (!amDriver && !pmDriver && !isRest) {
                 try {
-                    const dayOfWeek = s2_currentDate.getDay(); // [수정] S2 기준 날짜 사용
+                    const dayOfWeek = s2_currentDate.getDay(); 
                     const routeData = allRoutesData.routes[routeName];
                     if (routeData) {
-                        // 이 차의 '고정' 근무자를 가져옴
                         const fixedWorkers = s2_getTodayFixedWorkersForCar(routeData, carNumber, dayOfWeek);
                         const fixedAm = (fixedWorkers[0].text || '');
                         const fixedPm = (fixedWorkers[1].text || '');
 
-                        // 고정 근무자가 있고, 그들이 '휴무'가 아니라면, 휴무자 칸에 표시
                         if (fixedAm && fixedPm && fixedAm !== '휴무' && fixedPm !== '휴무') {
                             s2_restDriver_html = `${fixedAm}<br>${fixedPm}`;
                         } else if (fixedAm && fixedAm !== '휴무') {
@@ -3489,10 +3390,7 @@ function saveMasterData() {
                     console.error(`[${carNumber}] 휴무자 자동 계산 오류:`, e);
                 }
             }
-            // --- 휴무자 자동 계산 로직 종료 ---
 
-
-            // '근무시간'을 <select>로 변경 (기본값에 'selected' 추가)
             const workHoursSelect = `
                 <option value="" selected>기본</option>
                 ${Array.from({length: 19}, (_, i) => `<option value="${i}">${i}</option>`).join('')}
@@ -3547,58 +3445,41 @@ function saveMasterData() {
                 </td> 
             `;
         }
-// --- S2: 드래그 앤 드롭 기능 (차번 순서 변경) ---
+
         let s2_draggedCell = null;
         let s2_draggedRoute = null;
 
         function s2_dragStart(event, routeName) {
-            // 드래그 시작 시, 현재 셀(td)을 저장
             s2_draggedCell = event.target.closest('td');
             s2_draggedRoute = routeName;
-            // event.dataTransfer.setData('text/plain', null); // Firefox 호환성
             event.target.style.opacity = '0.5';
         }
 
         function s2_dragOver(event) {
-            event.preventDefault(); // 필수: onDrop 이벤트를 허용하기 위함
-            const targetCell = event.target.closest('td.car-number-cell');
-            if (targetCell && targetCell !== s2_draggedCell) {
-                // 드롭 대상 위에 있을 때 시각적 피드백 (옵션)
-                // targetCell.style.border = '2px dashed #007bff'; 
-            }
+            event.preventDefault(); 
         }
 
-        /**
-         * [수정] 드래그 앤 드롭 시 좌/우 독립적으로 교환
-         */
         function s2_drop(event, routeName) {
             event.preventDefault();
             const dropTargetCell = event.target.closest('td.car-number-cell');
             
-            // 같은 노선 내에서, 드래그한 셀과 드롭 대상 셀이 모두 유효할 때
             if (s2_draggedCell && dropTargetCell && s2_draggedCell !== dropTargetCell && s2_draggedRoute === routeName) {
                 
                 const draggedRow = s2_draggedCell.parentNode;
                 const targetRow = dropTargetCell.parentNode;
                 
-                // 3. 드래그한 셀이 있던 위치(좌/우)와 드롭 대상 셀의 위치(좌/우) 찾기
                 const draggedIsLeft = s2_draggedCell.cellIndex === 0;
                 const targetIsLeft = dropTargetCell.cellIndex === 0;
 
-                // 4. [수정] 두 셀의 위치(HTML) 교환
-                
-                // 드래그한 쪽(8칸)의 모든 셀을 가져옵니다.
                 const draggedCols = Array.from(draggedRow.cells).slice(
                     draggedIsLeft ? 0 : 8, 
                     draggedIsLeft ? 8 : 16
                 );
-                // 드롭 대상 쪽(8칸)의 모든 셀을 가져옵니다.
                 const targetCols = Array.from(targetRow.cells).slice(
                     targetIsLeft ? 0 : 8, 
                     targetIsLeft ? 8 : 16
                 );
                 
-                // 두 쪽(8칸 vs 8칸)의 innerHTML을 통째로 교환합니다.
                 const tempHTMLs = draggedCols.map(c => c.innerHTML);
                 
                 draggedCols.forEach((col, i) => {
@@ -3608,7 +3489,6 @@ function saveMasterData() {
                     col.innerHTML = tempHTMLs[i];
                 });
 
-                // 교환 후 S2의 '사용된 차량 번호' 목록 갱신
                 const routeId = S2_ROUTE_MAP[routeName] || s2_sanitizeForId(routeName);
                 s2_getUsedCarNumbers(routeId);
             }
@@ -3621,7 +3501,6 @@ function saveMasterData() {
         }
 
         function s2_dragEnd(event) {
-            // 드래그가 취소되거나 완료되었을 때 투명도 복원
             if (s2_draggedCell) {
                 s2_draggedCell.style.opacity = '1';
             }
@@ -3629,18 +3508,12 @@ function saveMasterData() {
             s2_draggedRoute = null;
         }
 
-
-        // --- S2: 승무일지 데이터 백업/복구 (S1과 별개로 S2의 현재 상태 저장) ---
         const S2_LOG_STORAGE_KEY = 'busDispatchLogData';
 
-        /**
-         * [수정] 한글 키, 한글 파일명으로 백업
-         */
         function s2_backupLogData() {
             const logData = {};
             const today = new Date().toISOString().slice(0, 10);
             
-            // [수정] 키를 한글로 변경
             logData.백업날짜 = today;
             logData.노선데이터 = {};
 
@@ -3651,20 +3524,15 @@ function saveMasterData() {
                 logData.노선데이터[routeName] = [];
                 section.querySelectorAll('.journal-table tbody tr').forEach(row => {
                     const rowData = {};
-                    // input, select, textarea 값 저장
                     row.querySelectorAll('input, select, textarea').forEach(el => {
                         if (el.name) {
-                            // (참고: 이 부분은 프로그램이 읽어야 하므로 한글로 바꾸지 않습니다)
                             rowData[el.name] = el.value;
                         }
                     });
-                    // span (근무자명) 값 저장
                     row.querySelectorAll('.driver-name[data-name-for]').forEach(span => {
-                        // (참고: 이 부분은 프로그램이 읽어야 하므로 한글로 바꾸지 않습니다)
-                        rowData[span.dataset.nameFor] = span.innerHTML; // <br> 포함
+                        rowData[span.dataset.nameFor] = span.innerHTML; 
                     });
                     
-                    // 차번 저장 (키를 한글로 변경)
                     const carCells = row.querySelectorAll('.car-number-cell[data-car-number]');
                     if (carCells[0]) rowData.좌측차량 = carCells[0].dataset.carNumber;
                     if (carCells[1]) rowData.우측차량 = carCells[1].dataset.carNumber;
@@ -3676,7 +3544,6 @@ function saveMasterData() {
             const jsonString = JSON.stringify(logData, null, 2);
             const now = new Date();
             
-            // [수정] 파일명에 시간/분/초 추가 및 한글 파일명으로 변경
             const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}시${String(now.getMinutes()).padStart(2, '0')}분${String(now.getSeconds()).padStart(2, '0')}초`;
             const filename = `승무일지_백업_${timestamp}.json`;
             
@@ -3691,68 +3558,44 @@ function saveMasterData() {
             alert('승무일지 백업이 완료되었습니다.');
         }
 
-        // --- S2: [추가] 일지 복구 모달 관련 함수 ---
 
-        /**
-         * (1) '일지 복구' 버튼 클릭 시: 날짜 선택 모달 표시
-         */
         function s2_showRestoreModal() {
-            // 파일 입력(input) 초기화
             const fileInput = document.getElementById('s2_restoreFile');
             fileInput.value = ''; 
             
-            // 날짜 입력(input) 초기화 (S2의 현재 날짜로 설정)
             const dateInput = document.getElementById('s2_restoreSelectedDate');
-            dateInput.value = s2_currentDate.toISOString().slice(0, 10); // [수정]
+            dateInput.value = s2_currentDate.toISOString().slice(0, 10); 
 
-            // 모달 표시
             const modal = document.getElementById('s2_restoreDateModal');
             modal.style.display = 'block';
 
-            // '취소' 버튼 이벤트
             document.getElementById('s2_cancelRestoreBtn').onclick = s2_hideRestoreModal;
             
-            // '복구 실행' 버튼 이벤트
             document.getElementById('s2_confirmRestoreBtn').onclick = () => {
-                // 파일 입력을 먼저 클릭하도록 유도
                 s2_triggerRestore();
             };
             
-            // 파일이 선택되면 자동으로 복구 함수 실행
             fileInput.onchange = () => {
                 const file = fileInput.files[0];
-                const selectedDate = dateInput.value; // 모달에 입력된 날짜
+                const selectedDate = dateInput.value; 
                 
                 if (file) {
-                    // 날짜와 파일을 s2_restoreLogData 함수로 전달
                     s2_restoreLogData(file, selectedDate);
-                    s2_hideRestoreModal(); // 복구 실행 후 모달 닫기
+                    s2_hideRestoreModal(); 
                 }
             };
         }
         
-        /**
-         * (2) 모달의 '취소' 버튼 클릭 시: 모달 숨기기
-         */
         function s2_hideRestoreModal() {
             const modal = document.getElementById('s2_restoreDateModal');
             modal.style.display = 'none';
-            // 파일 입력 이벤트 핸들러 제거
             document.getElementById('s2_restoreFile').onchange = null;
         }
 
-        /**
-         * (3) 모달의 '복구 실행' 버튼 클릭 시: 파일 선택창 열기
-         */
         function s2_triggerRestore() {
             document.getElementById('s2_restoreFile').click();
         }
 
-        /**
-         * [수정] 한글 키, 날짜 선택 기능 적용 (새로고침 버그 수정)
-         * [버그 수정] input/select 값 (출발시간 등)도 복구되도록 수정
-         * [버그 수정] S2의 날짜 표시도 복구한 날짜로 변경
-         */
         function s2_restoreLogData(file, selectedDate) {
             const fileInput = document.getElementById('s2_restoreFile');
             if (!file) {
@@ -3760,18 +3603,13 @@ function saveMasterData() {
                 return;
             }
 
-            // [수정] targetDate가 YYYY-MM-DD 형식임을 보장
             const targetDate = selectedDate || new Date().toISOString().slice(0, 10);
             
-            // [수정] S2의 기준 날짜(s2_currentDate)를 복구할 날짜로 변경
-            // new Date('YYYY-MM-DD')는 UTC 기준으로 해석되어 하루 전 날짜가 될 수 있음.
-            // YYYY, MM, DD를 분리하여 로컬 시간으로 Date 객체를 생성
             const dateParts = targetDate.split('-').map(Number);
             s2_currentDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
             if (!confirm(`[${file.name}] 파일을 복구합니다.\n\n[적용 날짜: ${targetDate}] \n\n이 날짜의 근무 현황표(S1) 데이터가 덮어쓰여집니다. 계속하시겠습니까?`)) {
                 fileInput.value = '';
-                // [수정] 취소 시 S2 날짜를 오늘로 복원
                 s2_currentDate = new Date();
                 return;
             }
@@ -3807,7 +3645,6 @@ function saveMasterData() {
                             const leftCar = rowData.좌측차량;
                             const rightCar = rowData.우측차량;
 
-                            // 좌측 차량 데이터 처리
                             if (leftCar && leftCar !== '미입력') {
                                 const amDriver = rowData[`s2_${routeId}_${leftCar}_am_driver`] || '';
                                 const pmDriver = rowData[`s2_${routeId}_${leftCar}_pm_driver`] || '';
@@ -3826,7 +3663,6 @@ function saveMasterData() {
                                 ];
                             }
                             
-                            // 우측 차량 데이터 처리 (로직 동일)
                             if (rightCar && rightCar !== '미입력') {
                                 const amDriver = rowData[`s2_${routeId}_${rightCar}_am_driver`] || '';
                                 const pmDriver = rowData[`s2_${routeId}_${rightCar}_pm_driver`] || '';
@@ -3847,7 +3683,7 @@ function saveMasterData() {
                         }); 
                         
                         restoredRouteCount++;
-                    } // end for (route loop)
+                    } 
 
                     saveMasterData();
 
@@ -3857,13 +3693,10 @@ function saveMasterData() {
 
                     alert(`[${file.name}] 파일 복구를 완료했습니다.\n\n[적용 날짜: ${targetDate}]\n총 ${restoredRouteCount}개 노선의 데이터가 S1(근무 현황표) 임시 데이터로 저장되었습니다.`);
                     
-                    // S1 테이블 새로고침 (S1이 targetDate를 보고 있을 경우를 대비)
                     generateSchedule();
 
-                    // S2 화면 갱신 (근무자 이름이 먼저 적용되어야 함)
                     initializeDispatchLog();
                     
-                    // S2 화면에 input/select 값 다시 적용 (DOM이 재생성되었으므로)
                     for (const routeName in loadedData.노선데이터) {
                         const routeData = loadedData.노선데이터[routeName]; 
                         const routeId = S2_ROUTE_MAP[routeName] || s2_sanitizeForId(routeName);
@@ -3886,9 +3719,6 @@ function saveMasterData() {
             reader.readAsText(file);
         }
         
-        /**
-         * [추가] S2: 복구 시 input/select 값을 화면에 적용하는 헬퍼 함수
-         */
         function s2_applyRestoredInputs(routeId, carNumber, rowData) {
             if (!carNumber || carNumber === '미입력') return;
             
@@ -3903,19 +3733,6 @@ function saveMasterData() {
             if (pmWorkHoursEl) pmWorkHoursEl.value = rowData[`work_hours_${routeId}_${carNumber}_pm`] || '';
         }
 
-        /**
-         * S2: 백업 파일로부터 S2의 한 쪽(8열) HTML을 복구 (s2_createRowSideHTML과 유사)
-         * [참고] 이 함수는 이제 '일지 복구' 시 S1 데이터만 업데이트하므로, 직접 S2 화면을 그리는 데 사용되지 않습니다.
-         */
-        function s2_createRowSideHTML_fromBackup(routeName, carNumber, rowData) {
-            // (이 함수는 현재 복구 로직에서 사용되지 않지만, 만약을 위해 유지합니다.)
-        }
-
-
-        // --- S2: 테이블 헤더 (Colgroup, Thead) HTML 생성 함수 ---
-        /**
-         * [수정] S2 헤더 이름 변경 (출근->오전출발 등)
-         */
         function s2_createTableHeaderHTML(routeId) {
             return `
                 <colgroup>
@@ -3935,9 +3752,7 @@ function saveMasterData() {
             `;
         }
         
-        // --- S2: 노선별 스케줄 옵션 (상단 컨트롤) HTML 생성 함수 ---
         function s2_createOptionsHTML(routeId, vehicleNumbers) {
-            // S1의 차량 목록 (미입력 제외)
             const validVehicles = vehicleNumbers.filter(v => v && v !== '미입력');
             const vehicleOptions = validVehicles.map(v => `<option value="${v}">${v}</option>`).join('');
             
@@ -3966,18 +3781,12 @@ function saveMasterData() {
         }
 
 
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-        // ★ [핵심] S2: 승무일지 전체 초기화 (S1 데이터 연동)
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-        
         function initializeDispatchLog() {
-            // 0. S2 오늘 날짜 표시 (s2_currentDate 기준)
             const dateDisplay = document.getElementById('today-date');
             if (dateDisplay) {
                 dateDisplay.textContent = s2_getTodayDateString();
             }
 
-            // 1. S1 마스터 데이터 로드 (allRoutesData 전역 변수 사용)
             if (!allRoutesData || !allRoutesData.routes) {
                 console.error("S2 초기화 실패: S1의 마스터 데이터(allRoutesData)를 찾을 수 없습니다.");
                 return;
@@ -3986,26 +3795,21 @@ function saveMasterData() {
             const container = document.getElementById('dispatch-log-body');
             if (!container) return;
             
-            container.innerHTML = ''; // S2 컨테이너 비우기
+            container.innerHTML = ''; 
 
-            // 2. S1에 정의된 모든 노선(routes)을 순회
             for (const routeName in allRoutesData.routes) {
                 const routeData = allRoutesData.routes[routeName];
                 if (!routeData) continue;
                 
                 const routeId = S2_ROUTE_MAP[routeName] || s2_sanitizeForId(routeName);
                 
-                // 3. S1의 'S2 기준 날짜' 근무 데이터 가져오기 (temp + fixed)
                 const todayScheduleData = s2_getTodayScheduleData(routeData);
 
-                // 4. S1의 차량 목록 가져오기
                 const vehicleColumns = routeData.vehicleColumns || [];
                 const validVehicles = vehicleColumns.filter(v => v && v !== '미입력');
                 
-                // 5. S2 테이블 헤더 생성
                 const tableHeader = s2_createTableHeaderHTML(routeId);
 
-                // 6. S2 테이블 바디 생성 (S1 데이터 연동)
                 let tableBodyHTML = '';
                 const halfCount = Math.ceil(validVehicles.length / 2);
 
@@ -4013,17 +3817,14 @@ function saveMasterData() {
                     const leftCar = validVehicles[i] || '미입력';
                     const rightCar = validVehicles[i + halfCount] || '미입력';
                     
-                    // S1 데이터를 기반으로 S2의 행(좌/우) HTML 생성
                     const leftHTML = s2_createRowSideHTML(routeName, leftCar, todayScheduleData);
                     const rightHTML = s2_createRowSideHTML(routeName, rightCar, todayScheduleData);
                     
                     tableBodyHTML += `<tr>${leftHTML}${rightHTML}</tr>`;
                 }
                 
-                // 7. S2 노선별 옵션 컨트롤 생성 (S1 차량 목록 전달)
                 const s2_optionsHTML = s2_createOptionsHTML(routeId, validVehicles);
 
-                // 8. S2 노선 섹션 HTML 조립
                 container.insertAdjacentHTML('beforeend', `
                     <div class="route-section" id="route-${routeId}" data-route-name="${routeName}">
                         <div class="route-header-flex">
@@ -4038,30 +3839,25 @@ function saveMasterData() {
                         </table>
                     </div>
                 `);
-            } // end for (route loop)
+            } 
             
             console.log("S2: 승무일지 초기화 및 S1 데이터 연동 완료.");
         }
 
-        /**
-         * [추가] 페이지 제목(파일명)에서 버전 정보를 추출하여 표시
-         */
         function setVersion() {
             try {
-                const title = document.title; // 예: "통합 근무 관리 시스템 (현황표 + 승무일지)"
-                const url = window.location.pathname; // 예: "/C:/.../통합실패-3.3.4.html"
+                const title = document.title; 
+                const url = window.location.pathname; 
                 
-                // 파일명에서 "통합실패-3.3.4.html" 같은 부분을 찾습니다.
                 const fileNameMatch = url.match(/[\w-]+\.html/i);
                 if (!fileNameMatch) return;
 
-                const fileName = fileNameMatch[0]; // "통합실패-3.3.4.html"
+                const fileName = fileNameMatch[0]; 
                 
-                // 파일명에서 숫자와 점(.)으로 된 버전 번호를 찾습니다. (예: 3.3.4)
                 const versionMatch = fileName.match(/(\d+\.\d+\.\d+)/);
                 
                 if (versionMatch && versionMatch[1]) {
-                    const version = versionMatch[1]; // "3.3.4"
+                    const version = versionMatch[1]; 
                     const versionDisplay = document.getElementById('version-display');
                     if (versionDisplay) {
                         versionDisplay.textContent = 'Ver ' + version;
@@ -4071,43 +3867,517 @@ function saveMasterData() {
                 console.error("버전 정보를 읽어오는 데 실패했습니다.", e);
             }
         }
-
-        // --- S3: 정비일지 전용 함수 ---
-        function clearForm(){
-          if(!confirm('정비일지 폼을 초기화할까요? 입력한 내용은 사라집니다.')) return;
-          document.getElementById('maintenanceForm').reset();
+/* ================================================================= */
+        /* ★ [교체] [Section 3] 정비일지 JavaScript (s3정비일지-1.4.1.html 기반) */
+        /* ================================================================= */
+        
+        // --- S3: 유틸리티 함수 ---
+        
+        function s3_getTodayDateString() {
+             return new Date().toLocaleDateString('ko-KR', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                weekday: 'long' 
+            }).replace(/\. /g, '.').replace(/\.$/, '').replace(/(\d{4})년 (\d{2})월 (\d{2})일/, '$1년 $2월 $3일');
         }
 
-        /**
-         * S3 인쇄 함수 (A4 세로 모드)
-         */
+        function s3_applyFontSize(size) {
+            const sizePt = parseFloat(size) + 'pt';
+            document.documentElement.style.setProperty('--s3-font-size-base', sizePt);
+        }
+
+        function s3_formatPrice(number) {
+            if (isNaN(number) || number === 0) return '0원';
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '원';
+        }
+
+        function s3_unformatPrice(text) {
+            if (!text) return 0;
+            return parseInt(text.replace(/,|원/g, '')) || 0;
+        }
+        
+        // --- S3: CRUD & 데이터 관리 함수 ---
+
+        function s3_loadFormData(dateString) {
+            const storedData = window.sharedData.load(S3_LOG_STORAGE_KEY);
+            const dailyLog = storedData?.[dateString];
+            const form = document.getElementById('maintenanceForm');
+
+            if (!form) return;
+
+            form.reset();
+            
+            document.querySelectorAll('.s3_added-row').forEach(row => row.remove());
+            
+            document.querySelectorAll('.s3_routeSelect_row').forEach(select => {
+                s3_populateRouteSelect_row(select); // 노선 목록 채우기
+            });
+            document.querySelectorAll('.s3_vehicleSelect_row').forEach(select => {
+                select.innerHTML = '<option value="">-- 차량 선택 --</option>';
+                select.style.display = 'none';
+            });
+            document.querySelectorAll('.vehicle-display').forEach(div => {
+                div.textContent = '';
+            });
+            
+            document.querySelectorAll('textarea.auto-resize').forEach(s3_autoResizeTextarea);
+
+
+            if (!dailyLog) {
+                console.log(`S3 일지 데이터 (${dateString}) 없음. 초기화 완료.`);
+                s3_applyPriceFormatting(); 
+                return;
+            }
+
+            // 1. 폼 필드 로드 (기본 10행)
+            for (const key in dailyLog) {
+                const input = form.elements[key];
+                if (input) {
+                    input.value = dailyLog[key];
+                    
+                    if (input.classList.contains('s3_routeSelect_row') && input.value) {
+                        s3_populateVehicleSelect_row(input); 
+                        const vehicleName = key.replace('route_', 'vehicle_');
+                        if (dailyLog[vehicleName]) {
+                            input.closest('td').querySelector('.s3_vehicleSelect_row').value = dailyLog[vehicleName];
+                            s3_updateVehicleDisplay_row(input.closest('td').querySelector('.s3_vehicleSelect_row'));
+                        }
+                    }
+                }
+            }
+            
+            // 2. 동적으로 추가된 행 로드
+            if (dailyLog.addedRows) {
+                for (const rowData of dailyLog.addedRows) {
+                    s3_restoreRow(rowData.name, rowData.values);
+                }
+            }
+            
+            s3_applyPriceFormatting(); 
+            
+            document.querySelectorAll('textarea.auto-resize').forEach(s3_autoResizeTextarea);
+            
+            console.log(`S3 일지 데이터 (${dateString}) 로드 완료.`);
+        }
+
+        function s3_saveMaintenanceData() {
+            const form = document.getElementById('maintenanceForm');
+            if (!form) return;
+
+            const dateString = new Date().toISOString().slice(0, 10);
+            const formData = {
+                addedRows: [] 
+            };
+
+            const elements = form.elements;
+            for (let i = 0; i < elements.length; i++) {
+                const element = elements[i];
+                if (!element.name) continue;
+
+                if (element.name.includes('_NEW_')) {
+                    const parts = element.name.split('_'); 
+                    const type = parts[0]; 
+                    const uid = parts[2]; 
+                    const rowName = `${parts[1]}_${uid}`; 
+                    
+                    let rowData = formData.addedRows.find(r => r.name === rowName);
+                    if (!rowData) {
+                        rowData = { name: rowName, values: {} };
+                        formData.addedRows.push(rowData);
+                    }
+                    
+                    if (element.classList.contains('price-input')) {
+                        rowData.values[type] = s3_unformatPrice(element.value);
+                    } else {
+                        rowData.values[type] = element.value.trim();
+                    }
+                    
+                } else {
+                    if (element.classList.contains('price-input')) {
+                        formData[element.name] = s3_unformatPrice(element.value);
+                    } else {
+                        formData[element.name] = element.value.trim();
+                    }
+                }
+            }
+            
+            window.sharedData.merge(S3_LOG_STORAGE_KEY, { [dateString]: formData });
+            
+            s3_applyPriceFormatting(); 
+            alert("차량점검정비일지 데이터가 저장되었습니다.");
+        }
+
+        function s3_clearForm() {
+            if (confirm("정비일지 폼의 모든 내용을 지우고 초기화하시겠습니까? (저장된 데이터는 유지됨)")) {
+                s3_initialize(S3_CURRENT_COMPANY, true);
+            }
+        }
+        
+        // --- S3: 복구 로직 ---
+
+        function s3_showRestoreModal() {
+            const modal = document.getElementById('s3_restoreDateModal');
+            modal.style.display = 'block';
+            
+            document.getElementById('s3_restoreSelectedDate').valueAsDate = new Date();
+            
+            document.getElementById('s3_cancelRestoreBtn').onclick = () => {
+                modal.style.display = 'none';
+            };
+            
+            document.getElementById('s3_triggerRestoreBtn').onclick = () => {
+                modal.style.display = 'none';
+                document.getElementById('s3_restoreFile').click();
+            };
+        }
+        
+        function s3_handleRestore(file) {
+            if (!file) return;
+
+            const targetDate = document.getElementById('s3_restoreSelectedDate').value;
+            if (!targetDate) {
+                alert("복구할 날짜를 선택해주세요.");
+                return;
+            }
+
+            if (!confirm(`[${file.name}] 파일을 업로드하여 ${targetDate}의 정비일지 데이터를 복구하시겠습니까?`)) {
+                document.getElementById('s3_restoreFile').value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const loadedData = JSON.parse(event.target.result);
+                    if (!loadedData || typeof loadedData !== 'object' || Array.isArray(loadedData)) {
+                         throw new Error('Invalid backup file structure');
+                    }
+                    
+                    const dailyDataToRestore = loadedData[targetDate];
+                    
+                    if (dailyDataToRestore) {
+                        window.sharedData.merge(S3_LOG_STORAGE_KEY, { [targetDate]: dailyDataToRestore });
+                        
+                        const todayString = new Date().toISOString().slice(0, 10);
+                        if (targetDate === todayString) {
+                             s3_loadFormData(todayString);
+                        }
+
+                        alert(`[${file.name}] 파일로부터 ${targetDate}의 데이터 복구를 완료했습니다.`);
+                    } else {
+                        alert(`복구 파일에 선택된 날짜(${targetDate})의 데이터가 없습니다. 복구를 취소합니다.`);
+                    }
+                } catch (e) {
+                    alert('파일을 읽는 도중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.');
+                } finally {
+                    document.getElementById('s3_restoreFile').value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // --- S3: 인쇄 및 초기화 (S1 연동 포함) ---
+
         function printSection3() {
+            // ★ [수정] 인쇄 여백 설정 (S1의 allRoutesData 변수 사용)
+            const s3_marginLeft = document.getElementById('s3_marginLeft').value;
+            const s3_marginRight = document.getElementById('s3_marginRight').value;
+            
+            document.documentElement.style.setProperty('--s3-print-margin-left', `${s3_marginLeft}mm`);
+            document.documentElement.style.setProperty('--s3-print-margin-right', `${s3_marginRight}mm`);
+
+            s3_removePriceFormatting(); 
+            s3_saveMaintenanceData(); 
+            
             document.body.classList.remove('printing-section1');
             document.body.classList.remove('printing-section2');
-            document.body.classList.add('printing-section3'); // S3 인쇄용 클래스 추가
-
-            // 인쇄 모드에서는 인쇄 버튼을 폼 초기화 버튼으로 대체
-            const originalPrintButtonText = document.querySelector('#section3 button.primary').textContent;
-            document.querySelector('#section3 button.primary').textContent = '인쇄 중...';
+            document.body.classList.add('printing-section3'); 
             
+            const originalTitle = document.title;
+            const titleText = document.getElementById('s3_title').textContent;
+            const dateText = document.getElementById('s3_dateDisplay').textContent;
+            document.title = `${titleText} (${dateText})`;
+
             const handleAfterPrint = () => {
+                document.title = originalTitle;
                 document.body.classList.remove('printing-section3');
-                document.querySelector('#section3 button.primary').textContent = originalPrintButtonText;
+                s3_applyPriceFormatting(); 
+                
+                document.documentElement.style.removeProperty('--s3-print-margin-left');
+                document.documentElement.style.removeProperty('--s3-print-margin-right');
+
                 window.removeEventListener('afterprint', handleAfterPrint);
             };
             window.addEventListener('afterprint', handleAfterPrint);
             
             window.print();
         }
+        
+        /**
+         * S3 섹션의 UI 및 데이터를 초기화합니다.
+         */
+        function s3_initialize(companyName, clearFormOnly = false) {
+            
+            // ★ [수정] S1의 실제 데이터(allRoutesData) 사용
+            S3_CURRENT_COMPANY = (allRoutesData && allRoutesData.companyName) 
+                                 ? allRoutesData.companyName 
+                                 : (companyName || '회사명 없음');
 
+            document.getElementById('s3_title').textContent = `${S3_CURRENT_COMPANY} 차량정비정검일지`;
+            document.getElementById('s3_dateDisplay').textContent = s3_getTodayDateString();
+            
+            s3_initializeDropdowns();
+            
+            if (!clearFormOnly) {
+                 s3_loadFormData(new Date().toISOString().slice(0, 10));
+            } else {
+                 document.getElementById('maintenanceForm').reset();
+                 document.querySelectorAll('.s3_added-row').forEach(row => row.remove());
+                 s3_initializeDropdowns();
+                 s3_applyPriceFormatting(); 
+                 document.querySelectorAll('textarea.auto-resize').forEach(s3_autoResizeTextarea);
+            }
+        }
+        
+        // --- S3: 가격 관리 로직 ---
+        
+        function s3_applyPriceFormatting() {
+            document.querySelectorAll('#section3 .price-input').forEach(input => {
+                const numericValue = s3_unformatPrice(input.value); 
+                input.value = s3_formatPrice(numericValue); 
+            });
+        }
 
+        function s3_removePriceFormatting() {
+            document.querySelectorAll('#section3 .price-input').forEach(input => {
+                input.value = s3_unformatPrice(input.value); 
+            });
+        }
+        
+        function s3_showCalculator() {
+            const modal = document.getElementById('s3_calculatorModal');
+            modal.style.display = 'block';
+            
+            const today = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            document.getElementById('s3_startDate').valueAsDate = thirtyDaysAgo;
+            document.getElementById('s3_endDate').valueAsDate = today;
+            document.getElementById('s3_totalPrice').textContent = '0원';
+        }
+
+        function s3_calculatePrices() {
+            const startDateString = document.getElementById('s3_startDate').value;
+            const endDateString = document.getElementById('s3_endDate').value;
+
+            const start = new Date(startDateString);
+            const end = new Date(endDateString);
+
+            if (isNaN(start) || isNaN(end) || start > end) {
+                alert("유효한 날짜 범위를 선택해주세요.");
+                return;
+            }
+
+            const storedData = window.sharedData.load(S3_LOG_STORAGE_KEY) || {};
+            let totalPrice = 0;
+
+            for (const dateString in storedData) {
+                const date = new Date(dateString);
+                const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+                if (localDate >= start && localDate <= end) {
+                    const dailyLog = storedData[dateString];
+                    
+                    for (const key in dailyLog) {
+                        if (key.startsWith('price_')) {
+                            const price = parseInt(dailyLog[key]) || 0;
+                            totalPrice += price;
+                        }
+                    }
+                    
+                    if (dailyLog.addedRows) {
+                        dailyLog.addedRows.forEach(row => {
+                            if (row.values.price) {
+                                totalPrice += parseInt(row.values.price) || 0;
+                            }
+                        });
+                    }
+                }
+            }
+
+            document.getElementById('s3_totalPrice').textContent = s3_formatPrice(totalPrice);
+        }
+        
+        // --- S3: S1 데이터 연동 및 행 추가 관련 함수 ---
+        
+        /**
+         * (S1 연동) *모든* 행의 노선 목록 채우기 (초기화 시 1회 실행)
+         */
+        function s3_initializeDropdowns() {
+            const routeSelects = document.querySelectorAll('.s3_routeSelect_row');
+            routeSelects.forEach(select => {
+                s3_populateRouteSelect_row(select);
+                
+                const tr = select.closest('tr');
+                const baseInput = tr.querySelector('textarea, input'); 
+                if (baseInput) {
+                    const baseName = baseInput.name.substring(baseInput.name.indexOf('_') + 1); 
+                    select.name = `route_${baseName}`;
+                    const vehicleSelect = tr.querySelector('.s3_vehicleSelect_row');
+                    if (vehicleSelect) {
+                        vehicleSelect.name = `vehicle_${baseName}`;
+                    }
+                }
+            });
+        }
+        
+        /**
+         * (S1 연동) *단일* 행의 노선 목록 채우기
+         */
+        function s3_populateRouteSelect_row(routeSelectElement) {
+            const currentValue = routeSelectElement.value;
+            
+            routeSelectElement.innerHTML = '<option value="">-- 노선 선택 --</option>'; 
+            
+            // ★ [수정] S1의 실제 데이터(allRoutesData) 사용
+            if (allRoutesData.routes) {
+                Object.keys(allRoutesData.routes).forEach(routeName => {
+                    routeSelectElement.innerHTML += `<option value="${routeName}">${routeName}</option>`;
+                });
+            }
+            
+            routeSelectElement.value = currentValue;
+        }
+        
+        /**
+         * (S1 연동) 노선 선택 시 *해당 행*의 차량 목록 채우기
+         */
+        function s3_populateVehicleSelect_row(routeSelectElement) {
+            const routeName = routeSelectElement.value;
+            const td = routeSelectElement.closest('td');
+            const vehicleSelect = td.querySelector('.s3_vehicleSelect_row');
+            
+            vehicleSelect.innerHTML = '<option value="">-- 차량 선택 --</option>'; 
+            
+            // ★ [수정] S1의 실제 데이터(allRoutesData) 사용
+            if (routeName && allRoutesData.routes[routeName]) {
+                const vehicles = allRoutesData.routes[routeName].vehicleColumns || [];
+                vehicles.forEach(vehicle => {
+                    if (vehicle && vehicle !== '미입력') {
+                        vehicleSelect.innerHTML += `<option value="${vehicle}">${vehicle}</option>`;
+                    }
+                });
+                vehicleSelect.style.display = 'block'; 
+            } else {
+                vehicleSelect.style.display = 'none'; 
+            }
+            td.querySelector('.vehicle-display').textContent = '';
+        }
+        
+        /**
+         * (S1 연동) 차량 선택 시 *해당 행*의 표시부 업데이트
+         */
+        function s3_updateVehicleDisplay_row(vehicleSelectElement) {
+            const vehicleNumber = vehicleSelectElement.value;
+            const td = vehicleSelectElement.closest('td');
+            const routeName = td.querySelector('.s3_routeSelect_row').value;
+            const display = td.querySelector('.vehicle-display');
+            
+            if (vehicleNumber && routeName) {
+                display.textContent = `${routeName} - ${vehicleNumber}호`;
+            } else {
+                display.textContent = '';
+            }
+        }
+
+        /**
+         * (행 추가) '행 추가 (+)' 버튼 클릭 시
+         */
+        function s3_addRow() {
+            const tbody = document.getElementById('maintenanceForm').querySelector('tbody');
+            const uid = Date.now().toString().slice(-5) + Math.floor(Math.random() * 100);
+            
+            const newRow = document.createElement('tr');
+            newRow.className = 'entry-row s3_added-row'; 
+            
+            newRow.innerHTML = `
+                <td class="route-select-cell">
+                    <select class="header-select s3_routeSelect_row no-print" name="route_NEW_${uid}" onchange="s3_populateVehicleSelect_row(this)"></select>
+                    <select class="header-select s3_vehicleSelect_row no-print" name="vehicle_NEW_${uid}" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                    <div class="vehicle-display"></div>
+                </td>
+                <td><textarea name="item_NEW_${uid}" class="auto-resize"></textarea></td>
+                <td><textarea name="detail_NEW_${uid}" class="auto-resize"></textarea></td>
+                <td><textarea name="parts_NEW_${uid}" class="auto-resize"></textarea></td>
+                <td><input type="text" inputmode="numeric" name="price_NEW_${uid}" class="price-input" value="0원" /></td>
+                <td><textarea name="worker_NEW_${uid}" class="auto-resize"></textarea></td>
+            `;
+            
+            tbody.appendChild(newRow);
+            
+            s3_populateRouteSelect_row(newRow.querySelector('.s3_routeSelect_row'));
+            
+            newRow.querySelectorAll('textarea.auto-resize').forEach(s3_autoResizeTextarea);
+        }
+        
+        /**
+         * (데이터 로드) 저장된 동적 행 복구
+         */
+        function s3_restoreRow(rowName, values) {
+            const tbody = document.getElementById('maintenanceForm').querySelector('tbody');
+            const uid = rowName.split('_')[1]; 
+            
+            const newRow = document.createElement('tr');
+            newRow.className = 'entry-row s3_added-row';
+            
+            newRow.innerHTML = `
+                <td class="route-select-cell">
+                    <select class="header-select s3_routeSelect_row no-print" name="route_NEW_${uid}" onchange="s3_populateVehicleSelect_row(this)"></select>
+                    <select class="header-select s3_vehicleSelect_row no-print" name="vehicle_NEW_${uid}" onchange="s3_updateVehicleDisplay_row(this)" style="display: none;"></select>
+                    <div class="vehicle-display"></div>
+                </td>
+                <td><textarea name="item_NEW_${uid}" class="auto-resize">${values.item || ''}</textarea></td>
+                <td><textarea name="detail_NEW_${uid}" class="auto-resize">${values.detail || ''}</textarea></td>
+                <td><textarea name="parts_NEW_${uid}" class="auto-resize">${values.parts || ''}</textarea></td>
+                <td><input type="text" inputmode="numeric" name="price_NEW_${uid}" class="price-input" value="${values.price || 0}" /></td>
+                <td><textarea name="worker_NEW_${uid}" class="auto-resize">${values.worker || ''}</textarea></td>
+            `;
+            
+            tbody.appendChild(newRow);
+            
+            const routeSelect = newRow.querySelector('.s3_routeSelect_row');
+            s3_populateRouteSelect_row(routeSelect);
+            if (values.route) {
+                routeSelect.value = values.route;
+                s3_populateVehicleSelect_row(routeSelect); 
+                if (values.vehicle) {
+                    const vehicleSelect = newRow.querySelector('.s3_vehicleSelect_row');
+                    vehicleSelect.value = values.vehicle;
+                    s3_updateVehicleDisplay_row(vehicleSelect); 
+                }
+            }
+        }
+        
+        /**
+         * Textarea 자동 높이 조절
+         */
+        function s3_autoResizeTextarea(textarea) {
+            if (textarea) {
+                textarea.style.height = 'auto'; 
+                textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+            }
+        }
+
+        
         /* ================================================================= */
-        /* [공통] 페이지 로드 시 실행 (S1, S2 순차 초기화) */
+        /* [공통] 페이지 로드 시 실행 (S1, S2, S3 순차 초기화) */
         /* ================================================================= */
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM 로드 완료. S1, S2 초기화 시작.");
+            console.log("DOM 로드 완료. S1, S2, S3 초기화 시작.");
             
-            // [추가] 버전 정보 설정
+            // 0. 버전 정보 설정
             setVersion();
 
             // 1. S1(근무 현황표) 먼저 초기화 (데이터 로드)
@@ -4117,10 +4387,43 @@ function saveMasterData() {
             initializeDispatchLog();
             
             // 3. S2 출차순서 기본값 '1'로 설정
-            /* ★ [이전 단계 수정] 올바른 함수 이름 호출 */
             s2_changeDispatchOrder('1'); 
+            
+            // 4. S3(정비 일지) 초기화 (S1 데이터 기반으로 UI 생성)
+            // ★ [수정] S1의 'allRoutesData'가 로드된 후 S3 초기화
+            const companyName = (allRoutesData && allRoutesData.companyName) ? allRoutesData.companyName : null;
+            s3_initialize(companyName);
+            
+            // 5. ★ [추가] S3의 이벤트 리스너(가격, Textarea)를 form에 위임
+            const s3Form = document.getElementById('maintenanceForm');
+            if (s3Form) {
+                // 가격 입력 필드에 콤마 포맷 이벤트 리스너 추가
+                s3Form.addEventListener('focusin', (event) => {
+                    if (event.target.classList.contains('price-input')) {
+                         const unformatted = s3_unformatPrice(event.target.value);
+                         event.target.value = unformatted === 0 ? '' : unformatted;
+                    }
+                });
+                s3Form.addEventListener('focusout', (event) => {
+                    if (event.target.classList.contains('price-input')) {
+                         const numericValue = parseInt(event.target.value) || 0;
+                         event.target.value = s3_formatPrice(numericValue);
+                    }
+                });
+                
+                // Textarea 자동 높이 조절 이벤트 리스너
+                s3Form.addEventListener('input', (event) => {
+                    if (event.target.tagName.toLowerCase() === 'textarea' && event.target.classList.contains('auto-resize')) {
+                        s3_autoResizeTextarea(event.target);
+                    }
+                });
+            }
+            
+            // 6. 페이지 로드 시 S3의 기존 textarea 높이 조절
+            document.querySelectorAll('#section3 textarea.auto-resize').forEach(s3_autoResizeTextarea);
         });
 
     </script>
 </body>
 </html>
+
