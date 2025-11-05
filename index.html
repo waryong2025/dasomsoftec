@@ -463,13 +463,15 @@
                 min-width: 100%;
                 font-size: 0.8em; 
             }
+            /* === [수정됨] === */
             #section1 th, #section1 td {
                 padding: 3px;
                 height: 30px;
-                font-size: 13px; /* 10pt -> 13px */
+                font-size: 13px !important; /* 10pt -> 13px */
             }
             #section1 .day-name-main { font-size: 1.0em; }
-            #section1 .name-entry { font-size: 12px; } /* 9pt -> 12px */
+            /* === [수정됨] === */
+            #section1 .name-entry { font-size: 12px !important; } /* 9pt -> 12px */
         }
         /* ================================================================= */
         /* [Section 2] 승무 일지 Styles */
@@ -915,8 +917,9 @@
                 margin: 10px 0; 
                 padding: 5px; 
             }
+            /* === [수정됨] === */
             #section2 {
-                font-size: 11px; /* 8pt -> 11px */
+                font-size: 11px !important; /* 8pt -> 11px */
             }
             #section2 .options-right {
                 gap: 5px;
@@ -4062,7 +4065,8 @@
                     }
 
                     // 2. 배차 간격 일괄 적용 (간격이 0보다 클 때)
-                    const allCarCells = Array.from(document.querySelectorAll(`#route-${routeId} .car-number-cell`));
+                    const allCarCells = Array.from
+(document.querySelectorAll(`#route-${routeId} .car-number-cell`));
                     
                     if (amInterval > 0 && amStartTime) {
                         let currentAmTime = new Date(`${dateString}T${amStartTime}`);
