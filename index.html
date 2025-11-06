@@ -1204,22 +1204,37 @@
                 display: none !important;
             }
 
-            /* 인쇄 시 기본적으로 모든 섹션을 숨깁니다. */
-            #section1, #section2, #section3, .divider {
+            /* * [수정된 핵심 로직] 
+             * 기본적으로 아무것도 숨기지 않습니다.
+             * 대신 JS가 body에 클래스를 추가하면, '다른' 섹션들을 숨깁니다.
+             * 이렇게 하면 인쇄할 섹션이 display:none 이었다가 block으로 바뀌는 
+             * '레이스 컨디션' 자체가 발생하지 않습니다.
+             */
+
+            /* S1 인쇄 시: S2, S3, 구분선 숨기기 */
+            body.printing-section1 #section2,
+            body.printing-section1 #section3,
+            body.printing-section1 .divider {
+                display: none !important;
+            }
+
+            /* S2 인쇄 시: S1, S3, 구분선 숨기기 */
+            body.printing-section2 #section1,
+            body.printing-section2 #section3,
+            body.printing-section2 .divider {
+                display: none !important;
+            }
+
+            /* S3 인쇄 시: S1, S2, 구분선 숨기기 */
+            body.printing-section3 #section1,
+            body.printing-section3 #section2,
+            body.printing-section3 .divider {
                 display: none !important;
             }
             
-            /* JS가 body에 추가한 클래스에 따라 해당 섹션만 보여줍니다. */
-            body.printing-section1 #section1 {
-                display: block !important;
-            }
-            body.printing-section2 #section2 {
-                display: block !important;
-            }
-            body.printing-section3 #section3 {
-                display: block !important;
-            }
             /* [수정 끝] */
+
+            /* ... (S1, S2, S3 개별 인쇄 스타일은 그대로 둠) ... */
             
             /* S1 컨트롤 숨기기 */
             body.printing-section1 #section1 .controls {
@@ -3060,10 +3075,11 @@
                 };
                 window.addEventListener('afterprint', handleAfterPrint);
                 
-                document.title = newTitle;
+                document.title = newTitle;                
                 
-                // [수정됨] 4. 인쇄 딜레이 추가 (모바일 반응속도 고려 300ms로 증가)
-                setTimeout(window.print, 300);
+                // [수정됨] 4. 인쇄 딜레이 제거 (CSS 로직 변경으로 불필요)
+                window.print();
+  
             },
             
             /**
@@ -3405,7 +3421,7 @@
                 window.addEventListener('afterprint', handleAfterPrint);
                 
                 // [수정됨] 4. 인쇄 딜레이 추가 (모바일 반응속도 고려 300ms로 증가)
-                setTimeout(window.print, 300);
+                window.print();
             },
             sanitizeForId(text) {
                 if (!text) return 'unknown';
@@ -4795,7 +4811,7 @@
                 window.addEventListener('afterprint', handleAfterPrint);
                 
                 // [수정됨] 4. 인쇄 딜레이 추가 (모바일 반응속도 고려 300ms로 증가)
-                setTimeout(window.print, 300);
+                window.print();
             },
             
             // --- S3 백업/복원 ---
