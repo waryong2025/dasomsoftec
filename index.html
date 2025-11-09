@@ -579,16 +579,21 @@
         }
         
         /* [추가] 순환주기 컨테이너 */
-        #section2 #dispatch-cycle-container {
+        #section2 .dispatch-cycle-container {
              font-size: 0.94em; 
              white-space: nowrap;
+             display: flex; /* [추가] */
+             align-items: center; /* [추가] */
+             border: 1px solid #ced4da; /* [추가] */
+             border-radius: 3px; /* [추가] */
+             padding: 2px; /* [추가] */
         }
-        #section2 #dispatch-cycle-container label {
+        #section2 .dispatch-cycle-container label {
              margin: 0 8px;
              font-weight: normal;
              color: #333;
         }
-        #section2 #dispatch-cycle-select {
+        #section2 .dispatch-cycle-select {
             padding: 3px; 
             font-size: 1em; 
             border: 1px solid #ced4da; 
@@ -1359,7 +1364,7 @@
             }
             
             /* [수정] 순환주기 컨트롤 인쇄 시 숨김 */
-            body.printing-section2 #section2 #dispatch-cycle-container,
+            body.printing-section2 #section2 .dispatch-cycle-container,
             body.printing-section2 #section2 .print-button, 
             body.printing-section2 #section2 .font-selector-container, 
             body.printing-section2 #section2 .dispatch-buttons-container,
@@ -1679,22 +1684,6 @@
                     
                     <button type="button" id="s2-showAll" class="print-button" style="background-color: #6c757d;">전체보기</button>
                     
-                    <div id="dispatch-buttons" class="dispatch-buttons-container">
-                         <label>출차순서:</label>
-                        <button type="button" class="dispatch-button" data-order="manual">1. 수동</button>
-                        <button type="button" class="dispatch-button" data-order="ascending">2. 올림</button>
-                        <button type="button" class="dispatch-button" data-order="descending">3. 내림</button>
-                        <button type="button" class="dispatch-button" data-order="random">4. 랜덤</button>
-                    </div>
-                    <div id="dispatch-cycle-container" class="dispatch-buttons-container">
-                         <label>순환주기:</label>
-                         <select id="dispatch-cycle-select" style="padding: 3px; font-size: 1em; border: 1px solid #ced4da; border-radius: 3px; height: 25px; vertical-align: middle;">
-                            <option value="manual">주기 없음 (고정)</option>
-                            <option value="daily">하루</option>
-                            <option value="weekly">1주일</option>
-                            <option value="monthly">한달</option>
-                         </select>
-                    </div>
                     <div class="font-selector-container">
                         <label for="font-size-select">글자크기조정:</label>
                         <select id="font-size-select">
@@ -3289,12 +3278,12 @@
                 dateDisplay: document.getElementById('today-date'),
                 fontSizeSelect: document.getElementById('font-size-select'),
                 dispatchLogBody: document.getElementById('dispatch-log-body'),
-                dispatchButtons: document.getElementById('dispatch-buttons'),
-                dispatchCycleSelect: document.getElementById('dispatch-cycle-select'), // [추가]
+                // [수정] 공용 버튼 삭제
+                // dispatchButtons: document.getElementById('dispatch-buttons'),
+                // dispatchCycleSelect: document.getElementById('dispatch-cycle-select'), 
                 // 모달
                 restoreModal: document.getElementById('s2_restoreDateModal'),
                 restoreFile: document.getElementById('s2_restoreFile'),
-                restoreSelectedDate: document.getElementById('s2_restoreSelectedDate'), // [수정] 이 요소는 이제 사용되지 않지만 참조는 유지
                 cancelRestoreBtn: document.getElementById('s2_cancelRestoreBtn'),
                 confirmRestoreBtn: document.getElementById('s2_confirmRestoreBtn'),
             },
@@ -3302,7 +3291,8 @@
             // S2 내부 상태
             state: {
                 s2_currentDate: new Date(), // S2는 기본적으로 '오늘' 날짜 기준
-                s2_currentDispatchOrder: 'manual', // [수정] '1' -> 'manual'
+                // [수정] 공용 출차순서 삭제
+                // s2_currentDispatchOrder: 'manual', 
                 S2_ROUTE_MAP: { // S1 노선명 -> S2 ID 매핑 (확장성)
                     '종로07번': '07',
                     '종로08번': '08',
@@ -3383,7 +3373,8 @@
                 DataManager.loadS2Data();    // S2 전용 일지 데이터 로드
 
                 this.bindEventListeners();
-                this.changeDispatchOrder('manual'); // [수정] 출차순서 기본값 'manual'
+                // [수정] 공용 출차순서 설정 삭제
+                // this.changeDispatchOrder('manual'); 
                 
                 // S2의 오늘 날짜 표시
                 this.ui.dateDisplay.textContent = this.getTodayDateString(this.state.s2_currentDate);
@@ -3409,18 +3400,27 @@
              */
             bindEventListeners() {
                 document.getElementById('s2-showAll').onclick = () => S1_Module.showAllSections();
+                // [수정] 공용 출차순서 리스너 삭제
+                /*
                 this.ui.dispatchButtons.onclick = (e) => {
                     if (e.target.classList.contains('dispatch-button')) {
                         this.changeDispatchOrder(e.target.dataset.order);
                     }
                 };
+                */
                 this.ui.fontSizeSelect.onchange = (e) => this.changeFontSize(e.target.value);
                 
                 // [수정] S2 백업/복원 버튼 연결
                 document.getElementById('s2-backupLog').onclick = () => this.backupLogData();
                 document.getElementById('s2-showRestoreModal').onclick = () => this.showRestoreModal();
                 
-                document.getElementById('s2-refreshLog').onclick = () => this.refreshDispatchLog();
+                // [수정] 새로고침 버튼에 확인창 추가
+                document.getElementById('s2-refreshLog').onclick = () => {
+                    if (confirm("승무일지를 새로고침 하시겠습니까?\n\n[확인]을 누르면 오늘 날짜의 승무일지(S2)에 입력된 모든 시간/근무시간 데이터가 삭제되고, 모든 노선의 출차 순서가 '수동'으로 초기화됩니다.\n(S1 근무표는 변경되지 않습니다.)")) {
+                        this.resetS2LogForToday();
+                        this.refreshDispatchLog();
+                    }
+                };
                 document.getElementById('s2-printPage').onclick = () => this.printPage();
 
                 // [수정] 복원 모달 이벤트 (단순화)
@@ -3439,6 +3439,10 @@
                 logBody.onclick = (e) => {
                     const carCell = e.target.closest('.car-number-cell');
                     const driverCell = e.target.closest('td[data-edit-type="driver"]');
+                    
+                    // [수정] 노선별 출차순서 버튼
+                    const dispatchBtn = e.target.closest('.dispatch-button');
+
                     if (carCell) {
                         e.preventDefault();
                         const routeName = carCell.closest('.route-section').dataset.routeName;
@@ -3448,6 +3452,15 @@
                     if (driverCell) {
                         e.preventDefault();
                         this.toggleEditMode(driverCell);
+                        return;
+                    }
+                    // [수정] 노선별 출차순서 버튼 클릭
+                    if (dispatchBtn) {
+                        e.preventDefault();
+                        const routeId = dispatchBtn.closest('.dispatch-buttons-container').dataset.routeId;
+                        const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
+                        const order = dispatchBtn.dataset.order;
+                        this.changeDispatchOrder(routeName, order, dispatchBtn.closest('.dispatch-buttons-container'));
                         return;
                     }
                 };
@@ -3487,10 +3500,21 @@
                     }
                 };
                 logBody.onchange = (e) => {
+                    // [수정] 노선별 순환주기 변경
+                    if (e.target.classList.contains('dispatch-cycle-select')) {
+                        e.stopPropagation();
+                        const routeId = e.target.closest('.dispatch-cycle-container').dataset.routeId;
+                        const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
+                        const cycle = e.target.value;
+                        this.changeDispatchCycle(routeName, cycle);
+                        return; // [추가]
+                    }
+
                     if (e.target.classList.contains('car-select-dropdown')) {
                         e.stopPropagation();
                         const routeName = e.target.closest('.route-section').dataset.routeName;
                         this.changeCarNumber(e.target, routeName);
+                        return; // [추가]
                     }
                 };
                 logBody.ondragstart = (e) => {
@@ -3520,24 +3544,66 @@
             changeFontSize(size) {
                 document.getElementById('section2').style.fontSize = size + 'pt';
             },
-            changeDispatchOrder(order) {
-                if (!order) return;
-                this.state.s2_currentDispatchOrder = order; // [수정] '1' -> 'manual' 등
-                this.ui.dispatchButtons.querySelectorAll('.dispatch-button').forEach(btn => {
+
+            /**
+             * [수정] 노선별 출차 순서 변경 및 저장
+             * @param {string} routeName - 노선 이름
+             * @param {string} order - 'manual', 'ascending' 등
+             * @param {HTMLElement} buttonContainer - .dispatch-buttons-container
+             */
+            changeDispatchOrder(routeName, order, buttonContainer) {
+                if (!routeName || !order) return;
+
+                // 1. UI 업데이트
+                buttonContainer.querySelectorAll('.dispatch-button').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.order === order);
                 });
                 
-                // [추가] 수동/랜덤 선택 시 순환주기 UI 제어
+                const cycleContainer = buttonContainer.nextElementSibling; // .dispatch-cycle-container
+                const cycleSelect = cycleContainer.querySelector('.dispatch-cycle-select');
+
+                // 2. '수동' 선택 시 '순환주기' 비활성화 및 'manual'로 저장
                 if (order === 'manual') {
-                    this.ui.dispatchCycleSelect.value = 'manual';
-                    this.ui.dispatchCycleSelect.disabled = true;
+                    cycleSelect.value = 'manual';
+                    cycleSelect.disabled = true;
+                    this.changeDispatchCycle(routeName, 'manual'); // 순환주기도 'manual'로 저장
                 } else {
-                    this.ui.dispatchCycleSelect.disabled = false;
-                    if (this.ui.dispatchCycleSelect.value === 'manual') {
-                         this.ui.dispatchCycleSelect.value = 'daily'; // 기본값 '하루'
+                    // 3. '수동' 아닐 시 '순환주기' 활성화
+                    cycleSelect.disabled = false;
+                    if (cycleSelect.value === 'manual') {
+                         cycleSelect.value = 'daily'; // 기본값 '하루'
+                         this.changeDispatchCycle(routeName, 'daily'); // '하루'로 저장
                     }
                 }
+
+                // 4. S2 데이터에 'dispatchType' 저장
+                DataManager.updateS2Data(s2_data => {
+                    if (!s2_data[routeName]) s2_data[routeName] = {};
+                    if (!s2_data[routeName]._settings) s2_data[routeName]._settings = {};
+                    s2_data[routeName]._settings.dispatchType = order;
+                });
+
+                // 5. 화면 새로고침 (새 순서 적용)
+                this.refreshDispatchLog();
             },
+
+            /**
+             * [NEW] 노선별 순환 주기 저장
+             * @param {string} routeName - 노선 이름
+             * @param {string} cycle - 'manual', 'daily' 등
+             */
+            changeDispatchCycle(routeName, cycle) {
+                if (!routeName || !cycle) return;
+                
+                // S2 데이터에 'cycle' 저장
+                DataManager.updateS2Data(s2_data => {
+                    if (!s2_data[routeName]) s2_data[routeName] = {};
+                    if (!s2_data[routeName]._settings) s2_data[routeName]._settings = {};
+                    s2_data[routeName]._settings.cycle = cycle;
+                });
+                // (저장만 하고 새로고침은 하지 않음)
+            },
+
             printPage() {
                 document.body.classList.remove('printing-section1', 'printing-section3');
                 document.body.classList.add('printing-section2'); 
@@ -3698,7 +3764,7 @@
                     }
                     
                     // [수정] S1의 원본 차량 목록(baseVehicleList)을 옵션으로 전달
-                    const s2_optionsHTML = this.createOptionsHTML(routeId, baseVehicleList); 
+                    const s2_optionsHTML = this.createOptionsHTML(routeId, routeName, baseVehicleList); 
 
                     container.insertAdjacentHTML('beforeend', `
                         <div class="route-section" id="route-${routeId}" data-route-name="${routeName}">
@@ -3718,6 +3784,33 @@
                 console.log("[S2] 승무일지 새로고침 완료.");
             },
             
+            /**
+             * [NEW] 새로고침 시 오늘 날짜의 S2 로그를 삭제하고,
+             * 모든 노선의 출차 순서를 '수동'으로 초기화합니다.
+             */
+            resetS2LogForToday() {
+                const dateString = this.state.s2_currentDate.toISOString().slice(0, 10);
+                const allRoutes = DataManager.getAllRoutes();
+                
+                DataManager.updateS2Data(s2_data => {
+                    // 1. 오늘 날짜(dateString)의 S2 데이터 삭제
+                    if (s2_data[dateString]) {
+                        delete s2_data[dateString];
+                        console.log(`[S2] ${dateString} 날짜의 승무일지 데이터 삭제 완료.`);
+                    }
+                    
+                    // 2. 모든 노선의 _settings를 '수동'으로 변경
+                    for (const routeName in allRoutes) {
+                        if (!s2_data[routeName]) s2_data[routeName] = {};
+                        if (!s2_data[routeName]._settings) s2_data[routeName]._settings = {};
+                        
+                        s2_data[routeName]._settings.dispatchType = 'manual';
+                        s2_data[routeName]._settings.cycle = 'manual';
+                    }
+                    console.log("[S2] 모든 노선의 출차 순서를 '수동'으로 초기화했습니다.");
+                });
+            },
+
             /**
              * (Util) S1 데이터로부터 특정 날짜의 근무표 계산 (refreshDispatchLog에서 사용)
              */
@@ -3787,13 +3880,39 @@
             /**
              * [수정] createOptionsHTML
              * @param {string} routeId - 노선 ID
+             * @param {string} routeName - 노선 이름
              * @param {Array<string>} vehicleNumbers - S1의 *정렬된 원본* 차량 목록
              */
-            createOptionsHTML(routeId, vehicleNumbers) {
+            createOptionsHTML(routeId, routeName, vehicleNumbers) {
                 // vehicleNumbers는 S1의 기본 정렬 목록 (숫자 -> 문자)
                 const vehicleOptions = vehicleNumbers.map(v => `<option value="${v}">${v}</option>`).join('');
+
+                // [수정] S2 데이터에서 노선별 설정값 불러오기
+                const s2_route_data = DataManager.data.s2[routeName] || {};
+                const s2_settings = s2_route_data._settings || { dispatchType: 'manual', cycle: 'daily' };
+                
+                const dispatchType = s2_settings.dispatchType || 'manual';
+                // [수정] '수동'일 때는 순환주기도 'manual' (고정) / 아닐 때는 'daily' (하루)
+                const cycleType = (dispatchType === 'manual') ? 'manual' : (s2_settings.cycle || 'daily');
+                const isManual = (dispatchType === 'manual');
                 
                 return `
+                    <div class="dispatch-buttons-container" data-route-id="${routeId}">
+                         <label>출차순서:</label>
+                        <button type="button" class="dispatch-button ${dispatchType === 'manual' ? 'active' : ''}" data-order="manual">1. 수동</button>
+                        <button type="button" class="dispatch-button ${dispatchType === 'ascending' ? 'active' : ''}" data-order="ascending">2. 올림</button>
+                        <button type="button" class="dispatch-button ${dispatchType === 'descending' ? 'active' : ''}" data-order="descending">3. 내림</button>
+                        <button type="button" class="dispatch-button ${dispatchType === 'random' ? 'active' : ''}" data-order="random">4. 랜덤</button>
+                    </div>
+                    <div class="dispatch-cycle-container" data-route-id="${routeId}">
+                         <label>순환주기:</label>
+                         <select class="dispatch-cycle-select" ${isManual ? 'disabled' : ''}>
+                            <option value="manual" ${cycleType === 'manual' ? 'selected' : ''}>주기 없음 (고정)</option>
+                            <option value="daily" ${cycleType === 'daily' ? 'selected' : ''}>하루</option>
+                            <option value="weekly" ${cycleType === 'weekly' ? 'selected' : ''}>1주일</option>
+                            <option value="monthly" ${cycleType === 'monthly' ? 'selected' : ''}>한달</option>
+                         </select>
+                    </div>
                     <div class="schedule-options">
                         <div class="am-options">
                             <span>[오전]</span>
@@ -3866,14 +3985,29 @@
                 const pmStartTime = s2CarLog[`start_time_${routeId}_${carNumber}_pm`] || '';
                 const pmWorkHours = s2CarLog[`work_hours_${routeId}_${carNumber}_pm`] || '';
 
-                const workHoursSelect = `
-                    <option value="" selected>기본</option>
-                    ${Array.from({length: 19}, (_, i) => `<option value="${i}" ${amWorkHours == i ? 'selected' : ''}>${i}</option>`).join('')}
-                `;
-                const workHoursSelectPM = `
-                    <option value="" selected>기본</option>
-                    ${Array.from({length: 19}, (_, i) => `<option value="${i}" ${pmWorkHours == i ? 'selected' : ''}>${i}</option>`).join('')}
-                `;
+                // [수정] 근무시간 '0'일 때 '기본'으로 표시하는 로직
+                /**
+                 * 근무시간 드롭다운 옵션을 생성합니다.
+                 * "기본" (value="")은 0, "0", ""일 때 선택됩니다.
+                 */
+                const generateWorkHoursOptions = (selectedValue) => {
+                    // 1. "기본"이 선택되어야 하는지 확인 (값이 없거나 0)
+                    const isDefault = (selectedValue === '' || selectedValue == 0);
+                    
+                    // 2. "기본" 옵션 생성
+                    let options = `<option value="" ${isDefault ? 'selected' : ''}>기본</option>`;
+                    
+                    // 3. 숫자 0-18 옵션 생성
+                    for (let i = 0; i < 19; i++) {
+                        // "기본"이 아닐 때, 그리고 저장된 값(selectedValue)이 현재 숫자(i)와 일치할 때 selected
+                        options += `<option value="${i}" ${!isDefault && selectedValue == i ? 'selected' : ''}>${i}</option>`;
+                    }
+                    return options;
+                };
+
+                const workHoursSelect = generateWorkHoursOptions(amWorkHours);
+                const workHoursSelectPM = generateWorkHoursOptions(pmWorkHours);
+                // [수정 끝]
 
                 return `
                     <td class="car-number-cell" data-car-number="${carNumber}" draggable="true">
