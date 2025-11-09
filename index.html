@@ -1746,7 +1746,7 @@
         <div class="maintenance-container">
             <header>
                 <h1 id="s3_title" style="flex-basis: 100%; text-align: center; order: -1; margin-bottom: 10px;">
-                    차량점검정비일지
+                    차량정비점검일지 및 작업의뢰서
                 </h1>
                 <div class="controls no-print">
         
@@ -1802,7 +1802,7 @@
                     <thead>
                     <tr>
                         <th class="date-col">년/월/일</th>
-                        <th colspan="5" id="s3_dateDisplay">날짜 자동 입력</th>
+                        <th colspan="5" id="s3_dateDisplay">날짜 로딩 중...</th>
                     </tr>
                     <tr>
                         <th class="route-col">노선/차량</th>
@@ -2322,13 +2322,23 @@
 
             /**
              * [데이터 연동] 노선 추가 또는 수정
+             * [MODIFIED] - '번' 자동 추가 기능
              */
             addOrUpdateRoute() {
-                const routeName = this.ui.routeInput.value.trim();
+                let routeName = this.ui.routeInput.value.trim(); // 'let'으로 변경
                 if (!routeName) {
                     alert('노선 번호를 입력하세요.');
                     return;
                 }
+                
+                // [NEW] 요청: "번" 자동 추가 (예: "종로08" -> "종로08번")
+                if (!routeName.endsWith('번')) {
+                    routeName += '번';
+                    console.log(`[S1] 노선 이름에 '번'이 추가되었습니다: ${routeName}`);
+                }
+                // [NEW] 수정된 이름(예: "종로08번")을 입력창에 다시 반영
+                this.ui.routeInput.value = routeName; 
+
                 const companyName = this.ui.companyInput.value.trim();
                 const type = this.ui.typeSelect.value;
                 
@@ -2336,15 +2346,23 @@
                 DataManager.updateS1Data(s1_data => {
                     if (!s1_data.routes[routeName]) {
                         // 새 노선 추가
+                        
+                        // [수정 1] 차량 수를 컨트롤 박스에서 읽어와 기본 차량 목록(예: 차량1, 차량2...)을 생성합니다.
+                        const vehicleCount = parseInt(this.ui.vehicleCountInput.value, 10) || 1;
+                        const newVehicleColumns = Array.from({ length: vehicleCount }, (_, i) => `차량${i + 1}`);
+                        if (newVehicleColumns.length === 0) {
+                             newVehicleColumns.push('차량1');
+                        }
+            
                         s1_data.routes[routeName] = {
                             companyName: companyName,
                             type: type,
-                            vehicleColumns: ['차량1'], 
+                            vehicleColumns: newVehicleColumns, // [수정 1]
                             fixedSchedule: {},
                             tempSchedule: {},
                             workTypeConfig: {}
                         };
-                        alert(`새 노선 [${routeName}]이 추가되었습니다. 차량 수와 차량 번호를 설정하세요.`);
+                        alert(`새 노선 [${routeName}]이 추가되었습니다. 차량 수(${vehicleCount}대)와 차량 번호를 설정하세요.`);
                     } else {
                         // 기존 노선 정보 업데이트
                         s1_data.routes[routeName].companyName = companyName;
@@ -2389,7 +2407,7 @@
                 }
             },
 
-            /**
+           /**
              * [데이터 연동] 차량 번호 저장
              */
             saveRouteConfig() {
@@ -2401,6 +2419,7 @@
                 const inputs = this.ui.vehicleInputsContainer.querySelectorAll('input');
                 const newVehicleColumns = [];
                 inputs.forEach(input => {
+                    // [MODIFIED] 비어있는 값은 '미입력'으로 저장
                     newVehicleColumns.push(input.value.trim() || '미입력');
                 });
 
@@ -2411,17 +2430,16 @@
                         routeData.vehicleColumns = newVehicleColumns;
                     }
                 });
-
-                // S1 상태 업데이트 및 UI 갱신
-                this.state.currentVehicleColumns = newVehicleColumns; 
-                this.updateVehicleSelect(); 
-                this.generateSchedule(); 
+                
+                // [MODIFIED] loadRouteData를 호출하여 S1 상태 및 UI 전체 갱신
+                this.loadRouteData(this.state.currentRoute);
                 
                 alert(`[${this.state.currentRoute}] 노선의 차량 번호가 저장되었습니다.`);
             },
 
             /**
              * (UI) 차량 수 변경 시 입력란 동적 생성
+             * [MODIFIED] - '차량X'를 값 대신 placeholder로 사용
              */
             handleVehicleCountChange(countStr) {
                 const count = parseInt(countStr) || 0;
@@ -2437,13 +2455,27 @@
                     const input = document.createElement('input');
                     input.type = 'text';
                     const existingValue = existingColumns[i] || '';
-                    if (existingValue === '미입력') {
-                        input.placeholder = '미입력';
+                    const defaultPlaceholder = `차량 ${i + 1}`; // 기본 플레이스홀더
+
+                    // [MODIFIED] "차량X", "미입력", "" 인지 확인
+                    const isDefaultValue = /^차량\d+$/.test(existingValue);
+                    const isNotEntered = (existingValue === '미입력');
+
+                    if (isDefaultValue || isNotEntered || existingValue === '') {
+                        // 기본값이거나, "미입력"이거나, 비어있으면 value를 비우고 placeholder를 설정
                         input.value = '';
+                        input.placeholder = isNotEntered ? '미입력' : defaultPlaceholder;
                     } else {
-                        input.placeholder = `차량 ${i + 1}`;
+                        // "5518" 등 실제 데이터가 있으면 value에 설정
                         input.value = existingValue;
+                        input.placeholder = defaultPlaceholder;
                     }
+                    
+                    // [NEW] 사용자가 클릭(포커스)하면 기존 텍스트를 전체 선택하여 바로 입력할 수 있도록 함
+                    input.onfocus = (e) => {
+                        e.target.select();
+                    };
+
                     container.appendChild(input);
                 }
             },
@@ -3240,9 +3272,7 @@
                 }
             }
         };
-
-        
-        /* ================================================================= */
+/* ================================================================= */
         /* [Section 2] 승무 일지 JavaScript */
         /* ================================================================= */
 
@@ -3634,6 +3664,7 @@
                     
                     // 3. S1의 기본 차량 목록 가져오기
                     let vehicleColumns = routeData.vehicleColumns || [];
+                    // [수정 1] '미입력'을 필터링합니다. (S1에서 '차량1' 등으로 생성되므로 '미입력'은 S2에 표시되지 않음)
                     let baseVehicleList = vehicleColumns.filter(v => v && v !== '미입력');
                     
                     // 4. S1 목록 기본 정렬 (숫자먼저, 그다음 문자)
@@ -3850,1267 +3881,1213 @@
                         <div class="car-controls hidden">
                             <select class="car-select-dropdown"></select>
                             <div>
-                                <button class="btn-car-delete">삭제</button>
-                                <button class="btn-car-close">닫기</button>
-                            </div>
-                        </div>
-                    </td>
-                    <td><input type="text" name="start_time_${routeId}_${carNumber}_am" value="${amStartTime}"></td>
-                    <td>
-                        <select name="work_hours_${routeId}_${carNumber}_am" class="s2-work-hours-select">
-                            ${workHoursSelect}
-                        </select>
-                    </td>
-                    <td data-edit-type="driver" data-driver-type="am_driver" data-car-number="${carNumber}">
-                        <span class="driver-name">${s2_amDriver_html}</span>
-                        <textarea class="driver-input hidden"></textarea>
-                        <div class="edit-controls hidden">
-                            <button class="btn-driver-delete">삭제</button>
-                            <button class="btn-driver-save">수정</button>
-                        </div>
-                    </td>
-                    <td><input type="text" name="start_time_${routeId}_${carNumber}_pm" value="${pmStartTime}"></td>
-                    <td>
-                        <select name="work_hours_${routeId}_${carNumber}_pm" class="s2-work-hours-select">
-                            ${workHoursSelectPM}
-                        </select>
-                    </td> 
-                    <td data-edit-type="driver" data-driver-type="pm_driver" data-car-number="${carNumber}">
-                        <span class="driver-name">${s2_pmDriver_html}</span>
-                        <textarea class="driver-input hidden"></textarea>
-                        <div class="edit-controls hidden">
-                            <button class="btn-driver-delete">삭제</button>
-                            <button class="btn-driver-save">수정</button>
-                        </div>
-                    </td> 
-                    <td data-edit-type="driver" data-driver-type="rest_driver" data-car-number="${carNumber}">
-                        <span class="driver-name">${s2_restDriver_html}</span>
-                        <textarea class="driver-input hidden"></textarea>
-                        <div class="edit-controls hidden">
-                            <button class="btn-driver-delete">삭제</button>
-                            <button class="btn-driver-save">수정</button>
-                        </div>
-                    </td> 
-                `;
-            },
+                               <button type="button" class="btn-car-delete">삭제</button>
+                        <button type="button" class="btn-car-close">닫기</button>
+                    </div>
+                </div>
+            </td>
+            <td data-edit-type="time" data-route-id="${routeId}" data-car-number="${carNumber}" data-time-type="am">
+                <input type="text" inputmode="numeric" name="start_time_${routeId}_${carNumber}_am" value="${amStartTime}" placeholder="00:00">
+            </td>
+            <td data-edit-type="work-hours" data-route-id="${routeId}" data-car-number="${carNumber}" data-time-type="am">
+                <select class="s2-work-hours-select" name="work_hours_${routeId}_${carNumber}_am">${workHoursSelect}</select>
+            </td>
+            <td data-edit-type="driver" data-route-id="${routeId}" data-car-number="${carNumber}" data-time-type="am" data-original-name="${s1CarData[0].text || ''}">${s2_amDriver_html}</td>
+            <td data-edit-type="time" data-route-id="${routeId}" data-car-number="${carNumber}" data-time-type="pm">
+                <input type="text" inputmode="numeric" name="start_time_${routeId}_${carNumber}_pm" value="${pmStartTime}" placeholder="00:00">
+            </td>
+            <td data-edit-type="work-hours" data-route-id="${routeId}" data-car-number="${carNumber}" data-time-type="pm">
+                <select class="s2-work-hours-select" name="work_hours_${routeId}_${carNumber}_pm">${workHoursSelectPM}</select>
+            </td>
+            <td data-edit-type="driver" data-route-id="${routeId}" data-car-number="${carNumber}" data-time-type="pm" data-original-name="${s1CarData[1].text || ''}">${s2_pmDriver_html}</td>
+            <td data-edit-type="rest" data-route-id="${routeId}" data-car-number="${carNumber}">${s2_restDriver_html}</td>
+        `;
+    },
 
-            // --- S2 차번 변경/삭제 (S1 연동 없음, S2 화면에서만) ---
-            getUsedCarNumbers(routeId) {
-                const used = [];
-                document.querySelectorAll(`#route-${routeId} .car-number-cell`).forEach(cell => {
-                    const carNum = cell.dataset.carNumber;
-                    if (carNum) used.push(carNum);
-                });
-                this.state.S2_USED_VEHICLES[routeId] = used;
-                return used;
-            },
-            toggleCarNumberEditMode(td, routeName) {
-                const carDisplay = td.querySelector('.car-display');
-                const carControls = td.querySelector('.car-controls');
-                if (!carControls || !carDisplay) return;
-                const carSelect = carControls.querySelector('select');
-                this.closeAllEditModes(td);
-                if (carControls.classList.contains('hidden')) {
-                    carDisplay.classList.add('hidden');
-                    carControls.classList.remove('hidden');
-                    this.populateCarSelect(carSelect, routeName, td.dataset.carNumber);
-                }
-            },
-            exitCarNumberEditMode(td) {
-                if (!td) return;
-                const carDisplay = td.querySelector('.car-display');
-                const carControls = td.querySelector('.car-controls');
-                if (carDisplay) carDisplay.classList.remove('hidden');
-                if (carControls) carControls.classList.add('hidden');
-            },
-            
-            /**
-             * (Util) S2 차번 변경 시 사용 가능한 차량 목록 채우기
-             */
-            populateCarSelect(selectElement, routeName, currentCar) {
-                const routeData = DataManager.getAllRoutes()[routeName];
-                if (!routeData) return;
-                const allVehicles = routeData.vehicleColumns || [];
-                const routeId = this.sanitizeForId(routeName);
-                const usedVehicles = this.getUsedCarNumbers(routeId);
-                
-                selectElement.innerHTML = `<option value="${currentCar}">${currentCar} (현재)</option>`;
-                allVehicles.forEach(v => {
-                    if (v && v !== '미입력' && v !== currentCar && !usedVehicles.includes(v)) {
-                        selectElement.innerHTML += `<option value="${v}">${v}</option>`;
+
+    // --- [수정] S2 배차시간 자동 적용 ---
+    /**
+     * '시간 적용' 버튼 클릭 시 배차 시간을 계산하여 적용합니다.
+     */
+    applyScheduleSettings(routeId) {
+        const section = document.getElementById(`route-${routeId}`);
+        if (!section) return;
+
+        const routeName = section.dataset.routeName;
+
+        // 1. 오전 설정값 읽기
+        const amStartVehicle = section.querySelector(`select[name="vehicle_select_${routeId}_am"]`).value;
+        const amStartHour = parseInt(section.querySelector(`input[name="hour_${routeId}_am"]`).value, 10);
+        const amStartMinute = parseInt(section.querySelector(`input[name="minute_${routeId}_am"]`).value, 10);
+        const amInterval = parseInt(section.querySelector(`input[name="interval_${routeId}_am"]`).value, 10);
+
+        // 2. 오후 설정값 읽기
+        const pmStartVehicle = section.querySelector(`select[name="vehicle_select_${routeId}_pm"]`).value;
+        const pmStartHour = parseInt(section.querySelector(`input[name="hour_${routeId}_pm"]`).value, 10);
+        const pmStartMinute = parseInt(section.querySelector(`input[name="minute_${routeId}_pm"]`).value, 10);
+        const pmInterval = parseInt(section.querySelector(`input[name="interval_${routeId}_pm"]`).value, 10);
+
+        // 3. 현재 표시된 차량 순서 읽기
+        const carCells = section.querySelectorAll('td.car-number-cell');
+        const vehicleOrder = Array.from(carCells).map(cell => cell.dataset.carNumber).filter(Boolean);
+
+        // 4. S2 데이터 저장을 위한 준비
+        const dateString = this.state.s2_currentDate.toISOString().slice(0, 10);
+
+        DataManager.updateS2Data(s2_data => {
+            if (!s2_data[dateString]) s2_data[dateString] = {};
+            if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
+
+            const s2_log = s2_data[dateString][routeName];
+
+            // 5. 오전 시간 적용 (첫차, 간격 기준)
+            if (amStartVehicle && !isNaN(amStartHour) && !isNaN(amStartMinute) && !isNaN(amInterval)) {
+                const startIndex = vehicleOrder.indexOf(amStartVehicle);
+                if (startIndex > -1) {
+                    let currentTime = new Date();
+                    currentTime.setHours(amStartHour, amStartMinute, 0, 0);
+
+                    // 첫차부터 순서대로
+                    for (let i = startIndex; i < vehicleOrder.length; i++) {
+                        const carNum = vehicleOrder[i];
+                        const timeStr = currentTime.toTimeString().slice(0, 5);
+                        section.querySelector(`input[name="start_time_${routeId}_${carNum}_am"]`).value = timeStr;
+                        if (!s2_log[carNum]) s2_log[carNum] = {};
+                        s2_log[carNum][`start_time_${routeId}_${carNum}_am`] = timeStr;
+                        currentTime.setMinutes(currentTime.getMinutes() + amInterval);
                     }
-                });
-                selectElement.innerHTML += `<option value="" style="color:red; font-weight:bold;">[이 줄에서 삭제]</option>`;
-            },
-
-            /**
-             * (UI) S2 차번 변경 (S1 근무자 데이터 연동)
-             */
-            changeCarNumber(selectElement, routeName) {
-                const newCarNumber = selectElement.value;
-                const td = selectElement.closest('.car-number-cell');
-                if (!td) return;
-                const oldCarNumber = td.dataset.carNumber;
-                
-                if (newCarNumber === "") {
-                    this.deleteCarRow(td);
-                    return;
-                }
-                
-                if (newCarNumber === oldCarNumber) {
-                    this.exitCarNumberEditMode(td);
-                    return;
-                }
-
-                const dateString = this.state.s2_currentDate.toISOString().slice(0, 10);
-                
-                // 1. S2 로그 데이터(시간 등) 마이그레이션
-                DataManager.updateS2Data(s2_data => {
-                    if(!s2_data[dateString]) s2_data[dateString] = {};
-                    if(!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
-                    const s2CarLog = s2_data[dateString][routeName];
-                    if (s2CarLog[oldCarNumber]) {
-                        s2CarLog[newCarNumber] = s2CarLog[oldCarNumber];
-                        delete s2CarLog[oldCarNumber];
+                    // 첫차 이전 차량들
+                    for (let i = 0; i < startIndex; i++) {
+                        const carNum = vehicleOrder[i];
+                        const timeStr = currentTime.toTimeString().slice(0, 5);
+                        section.querySelector(`input[name="start_time_${routeId}_${carNum}_am"]`).value = timeStr;
+                        if (!s2_log[carNum]) s2_log[carNum] = {};
+                        s2_log[carNum][`start_time_${routeId}_${carNum}_am`] = timeStr;
+                        currentTime.setMinutes(currentTime.getMinutes() + amInterval);
                     }
-                });
-                
-                // 2. S1 데이터(근무자)를 새 차번에 맞게 다시 가져와서 행 재구성
-                const routeData = DataManager.getAllRoutes()[routeName];
-                const dayOfWeek = this.state.s2_currentDate.getDay();
-                const todayS1Schedule = this.getTodayS1Schedule(routeData, dateString, dayOfWeek);
-                const s2LogData = DataManager.data.s2[dateString] || {};
-                const todayS2RouteLog = s2LogData[routeName] || {};
-
-                const tr = td.closest('tr');
-                const cellIndex = td.cellIndex;
-                
-                let newSideHTML = this.createRowSideHTML(routeName, newCarNumber, todayS1Schedule, todayS2RouteLog);
-                let startIndex = (cellIndex === 0) ? 0 : 8; // 0 (왼쪽) 또는 8 (오른쪽)
-
-                // 8개의 <td> HTML을 파싱하여 기존 셀 교체
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = `<table><tbody><tr>${newSideHTML}</tr></tbody></table>`;
-                const newCells = Array.from(tempDiv.querySelector('tr').cells);
-                
-                for(let i=0; i<8; i++) {
-                    tr.cells[startIndex + i].replaceWith(newCells[i].cloneNode(true));
                 }
-            },
+            }
 
-            /**
-             * (UI) S2 차번 삭제 (S1 연동 없음, S2 화면에서만)
-             */
-            deleteCarRow(td) {
-                if (!confirm(`[${td.dataset.carNumber}] 차량을 이 줄에서 삭제(숨김)하시겠습니까? (S1 근무표에는 영향이 없습니다.)`)) {
-                    this.exitCarNumberEditMode(td);
-                    return;
-                }
-                
-                const routeName = td.closest('.route-section').dataset.routeName;
-                const oldCarNumber = td.dataset.carNumber;
-                const dateString = this.state.s2_currentDate.toISOString().slice(0, 10);
+            // 6. 오후 시간 적용 (막차, 간격 기준)
+            if (pmStartVehicle && !isNaN(pmStartHour) && !isNaN(pmStartMinute) && !isNaN(pmInterval)) {
+                const startIndex = vehicleOrder.indexOf(pmStartVehicle);
+                if (startIndex > -1) {
+                    let currentTime = new Date();
+                    currentTime.setHours(pmStartHour, pmStartMinute, 0, 0);
 
-                // S2 데이터에서 삭제
-                DataManager.updateS2Data(s2_data => {
-                     if (s2_data[dateString]?.[routeName]?.[oldCarNumber]) {
-                        delete s2_data[dateString][routeName][oldCarNumber];
+                    // 막차부터 역순으로
+                    for (let i = startIndex; i >= 0; i--) {
+                        const carNum = vehicleOrder[i];
+                        const timeStr = currentTime.toTimeString().slice(0, 5);
+                        section.querySelector(`input[name="start_time_${routeId}_${carNum}_pm"]`).value = timeStr;
+                        if (!s2_log[carNum]) s2_log[carNum] = {};
+                        s2_log[carNum][`start_time_${routeId}_${carNum}_pm`] = timeStr;
+                        currentTime.setMinutes(currentTime.getMinutes() - pmInterval);
                     }
-                });
-
-                // 8개 셀을 공백으로 교체
-                const tr = td.closest('tr');
-                const cellIndex = td.cellIndex;
-                const blankHTML = '<td></td>'.repeat(8);
-                
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = `<table><tbody><tr>${blankHTML}</tr></tbody></table>`;
-                const newCells = Array.from(tempDiv.querySelector('tr').cells);
-                
-                const startIndex = (cellIndex === 0) ? 0 : 8;
-                for(let i=0; i<8; i++) {
-                    tr.cells[startIndex + i].replaceWith(newCells[i].cloneNode(true));
-                }
-            },
-            
-            /**
-             * (Util) 모든 S2 편집창 닫기
-             */
-            closeAllEditModes(exceptCell = null) {
-                document.querySelectorAll('#section2 td.car-number-cell').forEach(td => {
-                    if (td !== exceptCell) this.exitCarNumberEditMode(td);
-                });
-                document.querySelectorAll('#section2 td[data-edit-type="driver"]').forEach(td => {
-                    if (td !== exceptCell) this.exitEditMode(td);
-                });
-            },
-
-            // --- S2 근무자 이름 변경 (S1 연동) ---
-            
-            /**
-             * (UI) 근무자 이름 편집 모드 진입
-             */
-            toggleEditMode(td) {
-                this.closeAllEditModes(td); // 다른 편집창 닫기
-                const span = td.querySelector('.driver-name');
-                const textarea = td.querySelector('.driver-input');
-                const controls = td.querySelector('.edit-controls');
-                
-                span.classList.add('hidden');
-                textarea.classList.remove('hidden');
-                controls.classList.remove('hidden');
-                
-                // <br> 태그를 줄바꿈(\n)으로 변경하여 textarea에 설정
-                textarea.value = span.innerText; 
-                textarea.style.height = 'auto';
-                textarea.style.height = (textarea.scrollHeight) + 'px';
-                textarea.focus();
-            },
-            
-            /**
-             * (UI) 근무자 이름 편집 모드 종료
-             */
-            exitEditMode(td) {
-                if (!td) return;
-                const span = td.querySelector('.driver-name');
-                const textarea = td.querySelector('.driver-input');
-                const controls = td.querySelector('.edit-controls');
-                
-                span.classList.remove('hidden');
-                textarea.classList.add('hidden');
-                controls.classList.add('hidden');
-            },
-            
-            /**
-             * (UI) 근무자 이름 '수정' (S1 연동)
-             */
-            saveAndExit(td) {
-                const routeName = td.closest('.route-section').dataset.routeName;
-                const carNumber = td.dataset.carNumber;
-                const driverType = td.dataset.driverType; // am_driver, pm_driver, rest_driver
-                const textarea = td.querySelector('.driver-input');
-                const span = td.querySelector('.driver-name');
-                
-                const newName = textarea.value.trim();
-                span.innerHTML = newName.replace(/\n/g, '<br>'); // 줄바꿈을 <br>로 변경하여 표시
-                
-                this.updateS1DataFromS2(routeName, carNumber, driverType, newName);
-                this.exitEditMode(td);
-            },
-            
-            /**
-             * (UI) 근무자 이름 '삭제' (S1 연동)
-             */
-            deleteName(td) {
-                const routeName = td.closest('.route-section').dataset.routeName;
-                const carNumber = td.dataset.carNumber;
-                const driverType = td.dataset.driverType;
-                const span = td.querySelector('.driver-name');
-                
-                span.innerHTML = ''; // 화면에서 삭제
-                
-                this.updateS1DataFromS2(routeName, carNumber, driverType, '');
-                this.exitEditMode(td);
-            },
-            
-            /**
-             * [핵심] S2(승무일지) 수정 -> S1(근무표) '임시' 데이터 업데이트
-             */
-            updateS1DataFromS2(routeName, carNumber, driverType, newName) {
-                const dateString = this.state.s2_currentDate.toISOString().slice(0, 10);
-                
-                // S2에서의 수정은 항상 S1의 '임시' 데이터를 수정/생성합니다.
-                DataManager.updateS1Data(s1_data => {
-                    const routeData = s1_data.routes[routeName]; // [완성]
-                    if (!routeData) return; // [완성]
-
-                    // 1. S1의 '임시' 데이터에 해당 날짜/차량 객체가 있는지 확인
-                    if (!routeData.tempSchedule[dateString]) { // [완성]
-                        routeData.tempSchedule[dateString] = {}; // [완성]
-                    } // [완성]
-
-                    // 2. [중요] '임시' 데이터가 없는 경우, S1의 '고정' 데이터로부터 현재 값을 가져와서 '임시' 객체를 생성해야 함
-                    if (!routeData.tempSchedule[dateString][carNumber]) { // [완성]
-                        // S2의 getTodayS1Schedule와 유사한 로직을 여기서 수행 (S1 데이터만 사용)
-                        const dayOfWeek = this.state.s2_currentDate.getDay(); // [완성]
-                        let baseNames = [{ text: '', bold: false }, { text: '', bold: false }]; // [완성]
-                        
-                        // S1의 고정 데이터 확인
-                        const recurringKey = `${dayOfWeek}-${carNumber}`; // [완성]
-                        if (routeData.fixedSchedule[recurringKey]) { // [완성]
-                            for (const entry of routeData.fixedSchedule[recurringKey]) { // [완성]
-                                if (new Date(dateString) >= new Date(entry.dateString)) { // [완성]
-                                    baseNames = JSON.parse(JSON.stringify(entry.names)); // [완성]
-                                    break; // [완성]
-                                } // [완성]
-                            } // [완성]
-                        } // [완성]
-                        
-                        // 고정 데이터(baseNames)를 기반으로 임시 데이터 생성
-                        routeData.tempSchedule[dateString][carNumber] = baseNames; // [완성]
-                    } // [완성]
-
-                    // 3. '임시' 데이터에 S2에서 변경된 새 이름을 적용
-                    const names = routeData.tempSchedule[dateString][carNumber]; // [완성]
-                    
-                    if (driverType === 'am_driver') { // [완성]
-                        names[0].text = newName; // [완성]
-                    } else if (driverType === 'pm_driver') { // [완성]
-                        names[1].text = newName; // [완성]
-                    } else if (driverType === 'rest_driver') { // [완성]
-                        // S2 '휴무자' 칸 수정(rest_driver)은 S1 데이터를 다음과 같이 변경한다:
-                        // 1. S1 오전에 "휴무" 텍스트를 넣는다.
-                        // 2. S1 오후에 newName을 넣는다. 
-                        names[0].text = (newName === '') ? '' : '휴무'; // [완성]
-                        names[1].text = newName; // [완성]
-                    } // [완성]
-                }); // [완성]
-            }, // [완성]
-
-            // --- S2 시간 일괄 적용 ---
-            
-            /**
-             * [수정] '시간 적용' 버튼 로직 (S2 데이터 저장)
-             */
-            applyScheduleSettings(routeId) { // [완성]
-                const routeName = document.getElementById(`route-${routeId}`).dataset.routeName; // [완성]
-                const dateString = this.state.s2_currentDate.toISOString().slice(0, 10); // [완성]
-                
-                // 1. S1 원본 차량 목록 (정렬된)
-                const routeData = DataManager.getAllRoutes()[routeName]; // [완성]
-                if (!routeData) return; // [완성]
-                
-                let vehicleNumbers = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력'); // [완성]
-                const isStandardVehicle = (num) => /^\d+$/.test(num.trim()); // [완성]
-                vehicleNumbers.sort((a, b) => { // [완성]
-                    const aIsStd = isStandardVehicle(a); // [완성]
-                    const bIsStd = isStandardVehicle(b); // [완성]
-                    if (aIsStd && !bIsStd) return -1; // [완성]
-                    else if (!aIsStd && bIsStd) return 1; // [완성]
-                    else if (aIsStd && bIsStd) return parseInt(a, 10) - parseInt(b, 10); // [완성]
-                    else return a.localeCompare(b); // [완성]
-                }); // [완성]
-                
-                // 2. UI에서 설정값 읽기
-                const amFirstCar = document.querySelector(`select[name="vehicle_select_${routeId}_am"]`).value; // [완성]
-                const amHour = document.querySelector(`input[name="hour_${routeId}_am"]`).value.padStart(2, '0'); // [완성]
-                const amMin = document.querySelector(`input[name="minute_${routeId}_am"]`).value.padStart(2, '0'); // [완성]
-                const amInterval = parseInt(document.querySelector(`input[name="interval_${routeId}_am"]`).value) || 0; // [완성]
-                
-                const pmFirstCar = document.querySelector(`select[name="vehicle_select_${routeId}_pm"]`).value; // [완성]
-                const pmHour = document.querySelector(`input[name="hour_${routeId}_pm"]`).value.padStart(2, '0'); // [완성]
-                const pmMin = document.querySelector(`input[name="minute_${routeId}_pm"]`).value.padStart(2, '0'); // [완성]
-                const pmInterval = parseInt(document.querySelector(`input[name="interval_${routeId}_pm"]`).value) || 0; // [완성]
-
-                let updates = {}; // [완성]
-
-                // 3. 오전 시간 계산
-                if (amFirstCar && amInterval > 0 && amHour !== '00' && amMin !== '00') { // [완성]
-                    let startTime = new Date(`${dateString}T${amHour}:${amMin}:00`); // [완성]
-                    let firstCarIndex = vehicleNumbers.indexOf(amFirstCar); // [완성]
-                    if (firstCarIndex > -1) { // [완성]
-                        for (let i = 0; i < vehicleNumbers.length; i++) { // [완성]
-                            let carIdx = (firstCarIndex + i) % vehicleNumbers.length; // [완성]
-                            let carNum = vehicleNumbers[carIdx]; // [완성]
-                            
-                            let appliedTime = new Date(startTime.getTime() + i * amInterval * 60000); // [완성]
-                            let timeStr = `${String(appliedTime.getHours()).padStart(2, '0')}:${String(appliedTime.getMinutes()).padStart(2, '0')}`; // [완성]
-                            
-                            updates[carNum] = { ...updates[carNum], [`start_time_${routeId}_${carNum}_am`]: timeStr }; // [완성]
-                        } // [완성]
-                    } // [완성]
-                } // [완성]
-                
-                // 4. 오후 시간 계산
-                if (pmFirstCar && pmInterval > 0 && pmHour !== '00' && pmMin !== '00') { // [완성]
-                    let startTime = new Date(`${dateString}T${pmHour}:${pmMin}:00`); // [완성]
-                    let firstCarIndex = vehicleNumbers.indexOf(pmFirstCar); // [완성]
-                    if (firstCarIndex > -1) { // [완성]
-                        for (let i = 0; i < vehicleNumbers.length; i++) { // [완성]
-                            let carIdx = (firstCarIndex + i) % vehicleNumbers.length; // [완성]
-                            let carNum = vehicleNumbers[carIdx]; // [완성]
-                            
-                            let appliedTime = new Date(startTime.getTime() + i * pmInterval * 60000); // [완성]
-                            let timeStr = `${String(appliedTime.getHours()).padStart(2, '0')}:${String(appliedTime.getMinutes()).padStart(2, '0')}`; // [완성]
-                            
-                            updates[carNum] = { ...updates[carNum], [`start_time_${routeId}_${carNum}_pm`]: timeStr }; // [완성]
-                        } // [완성]
-                    } // [완성]
-                } // [완성]
-
-                // 5. S2 데이터에 저장 (S1 연동 아님)
-                DataManager.updateS2Data(s2_data => { // [완성]
-                    if (!s2_data[dateString]) s2_data[dateString] = {}; // [완성]
-                    if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {}; // [완성]
-                    
-                    for (const carNum in updates) { // [완성]
-                        if (!s2_data[dateString][routeName][carNum]) s2_data[dateString][routeName][carNum] = {}; // [완성]
-                        // S2 로그 데이터에 시간 업데이트
-                        if (updates[carNum][`start_time_${routeId}_${carNum}_am`]) { // [완성]
-                            s2_data[dateString][routeName][carNum][`start_time_${routeId}_${carNum}_am`] = updates[carNum][`start_time_${routeId}_${carNum}_am`]; // [완성]
-                        } // [완성]
-                        if (updates[carNum][`start_time_${routeId}_${carNum}_pm`]) { // [완성]
-                            s2_data[dateString][routeName][carNum][`start_time_${routeId}_${carNum}_pm`] = updates[carNum][`start_time_${routeId}_${carNum}_pm`]; // [완성]
-                        } // [완성]
-                        
-                        // UI에도 즉시 반영
-                        const amInput = document.querySelector(`input[name="start_time_${routeId}_${carNum}_am"]`); // [완성]
-                        if (amInput && updates[carNum][`start_time_${routeId}_${carNum}_am`]) { // [완성]
-                            amInput.value = updates[carNum][`start_time_${routeId}_${carNum}_am`]; // [완성]
-                        } // [완성]
-                        const pmInput = document.querySelector(`input[name="start_time_${routeId}_${carNum}_pm"]`); // [완성]
-                        if (pmInput && updates[carNum][`start_time_${routeId}_${carNum}_pm`]) { // [완성]
-                            pmInput.value = updates[carNum][`start_time_${routeId}_${carNum}_pm`]; // [완성]
-                        } // [완성]
-                    } // [완성]
-                }); // [완성]
-                
-                alert(`[${routeName}] 노선의 오전/오후 출발 시간이 일괄 적용되었습니다.`); // [완성]
-            }, // [완성]
-            
-            /**
-             * '초기화' 버튼 로직 (S2 데이터 삭제)
-             */
-            resetScheduleSettings(routeId) { // [완성]
-                if (!confirm('현재 노선의 모든 출발 시간 및 근무 시간 입력을 초기화하시겠습니까? (근무자 이름은 S1 데이터이므로 유지됩니다.)')) return; // [완성]
-                
-                const routeName = document.getElementById(`route-${routeId}`).dataset.routeName; // [완성]
-                const dateString = this.state.s2_currentDate.toISOString().slice(0, 10); // [완성]
-                
-                // 1. S2 데이터에서 해당 노선 데이터 삭제
-                DataManager.updateS2Data(s2_data => { // [완성]
-                    if (s2_data[dateString] && s2_data[dateString][routeName]) { // [완성]
-                        // 차량별 로그(시간)만 삭제. _settings(순환주기)는 유지
-                        const settings = s2_data[dateString][routeName]._settings; // [완성]
-                        s2_data[dateString][routeName] = {}; // [완성]
-                        if(settings) { // [완성]
-                            s2_data[dateString][routeName]._settings = settings; // [완성]
-                        } // [완성]
-                    } // [완성]
-                }); // [완성]
-                
-                // 2. UI 초기화 (시간, 근무시간)
-                document.querySelectorAll(`#route-${routeId} input[type="text"]`).forEach(input => input.value = ''); // [완성]
-                document.querySelectorAll(`#route-${routeId} select.s2-work-hours-select`).forEach(select => select.value = ''); // [완성]
-                
-                // 3. UI 초기화 (옵션)
-                document.querySelector(`select[name="vehicle_select_${routeId}_am"]`).value = ""; // [완성]
-                document.querySelector(`input[name="hour_${routeId}_am"]`).value = ""; // [완성]
-                document.querySelector(`input[name="minute_${routeId}_am"]`).value = ""; // [완성]
-                document.querySelector(`input[name="interval_${routeId}_am"]`).value = ""; // [완성]
-                document.querySelector(`select[name="vehicle_select_${routeId}_pm"]`).value = ""; // [완성]
-                document.querySelector(`input[name="hour_${routeId}_pm"]`).value = ""; // [완성]
-                document.querySelector(`input[name="minute_${routeId}_pm"]`).value = ""; // [완성]
-                document.querySelector(`input[name="interval_${routeId}_pm"]`).value = ""; // [완성]
-            }, // [완성]
-
-            // --- S2 데이터 백업/복원 (S2 전용) ---
-            
-            /**
-             * [수정] S2 일지 데이터 백업 (S2_LOG_KEY)
-             */
-            backupLogData() { // [완성]
-                const backupData = DataManager.data.s2; // S2 전체 데이터
-                if (Object.keys(backupData).length === 0) { // [완성]
-                    alert('백업할 승무일지 데이터가 없습니다.'); // [완성]
-                    return; // [완성]
-                } // [완성]
-                const jsonString = JSON.stringify(backupData); // [완성]
-                const now = new Date(); // [완성]
-                const dateString = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`; // [완성]
-                
-                let companyName = "전체"; // [완성]
-                const { routeData } = DataManager.getCurrentRouteData(); // [완성]
-                if (routeData && routeData.companyName) { // [완성]
-                    companyName = routeData.companyName.replace(/\s/g, ''); // [완성]
-                } // [완성]
-
-                const filename = `${companyName}_승무일지(S2)_${dateString}.json`; // [완성]
-                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' }); // [완성]
-                const a = document.createElement('a'); // [완성]
-                a.href = URL.createObjectURL(blob); // [완성]
-                a.download = filename; // [완성]
-                document.body.appendChild(a); // [완성]
-                a.click(); // [완성]
-                document.body.removeChild(a); // [완성]
-                alert(`승무일지(S2) 전체 데이터 파일 (${filename})이 다운로드 폴더에 JSON 파일로 저장됩니다.`); // [완성]
-            }, // [완성]
-
-            /**
-             * [수정] S2 복원 모달 표시 (단순화)
-             */
-            showRestoreModal() { // [완성]
-                this.ui.restoreModal.style.display = 'block'; // [완성]
-            }, // [완성]
-            hideRestoreModal() { // [완성]
-                this.ui.restoreModal.style.display = 'none'; // [완성]
-                this.ui.restoreFile.value = ''; // [완성]
-            }, // [완성]
-            triggerRestore() { // [완성]
-                this.ui.restoreFile.click(); // [완성]
-            }, // [완성]
-
-            /**
-             * [수정] S2 일지 데이터 복원 (S2_LOG_KEY 덮어쓰기)
-             */
-            restoreLogData(file) { // [완성]
-                if (!file) return; // [완성]
-                if (!confirm(`[${file.name}] 파일을 업로드하여 *모든* 날짜의 승무일지(S2) 데이터를 덮어쓰시겠습니까? (S1 근무표에는 영향이 없습니다.)`)) { // [완성]
-                    this.ui.restoreFile.value = ''; // [완성]
-                    return; // [완성]
-                } // [완성]
-
-                const reader = new FileReader(); // [완성]
-                reader.onload = (event) => { // [완성]
-                    try { // [완성]
-                        const loadedData = JSON.parse(event.target.result); // [완성]
-                        if (typeof loadedData !== 'object' || loadedData === null) { // [완성]
-                             alert('파일 형식이 올바르지 않습니다. (JSON 객체 필요)'); // [완성]
-                             throw new Error('Invalid S2 file structure'); // [완성]
-                        } // [완성]
-                        
-                        // S2 데이터 전체 덮어쓰기
-                        DataManager.updateS2Data(s2_data => { // [완성]
-                            // s2_data를 비우고 loadedData로 채움
-                            Object.keys(s2_data).forEach(key => delete s2_data[key]); // [완성]
-                            Object.assign(s2_data, loadedData); // [완성]
-                        }); // [완성]
-                        
-                        // 현재 날짜 화면 새로고침
-                        this.refreshDispatchLog(); // [완성]
-                        alert(`[${file.name}] 파일로부터 승무일지(S2) 전체 데이터 복원을 완료했습니다.`); // [완성]
-                    } catch (e) { // [완성]
-                        alert('S2 파일 복원 중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.'); // [완성]
-                        console.error('S2 Restore Error:', e); // [완성]
-                    } finally { // [완성]
-                        this.ui.restoreFile.value = ''; // [완성]
-                    } // [완성]
-                }; // [완성]
-                reader.onerror = () => { // [완성]
-                    alert('S2 파일을 읽을 수 없습니다.'); // [완성]
-                    this.ui.restoreFile.value = ''; // [완성]
-                }; // [완성]
-                reader.readAsText(file); // [완성]
-            }, // [완성]
-
-            // --- S2 드래그 앤 드롭 (차번 순서 변경) ---
-            dragStart(e, routeName) { // [완성]
-                const cell = e.target.closest('td.car-number-cell'); // [완성]
-                if (!cell || !cell.dataset.carNumber || cell.dataset.carNumber === '미입력') { // [완성]
-                    e.preventDefault(); // [완성]
-                    return; // [완성]
-                } // [완성]
-                this.state.s2_draggedCell = cell; // [완성]
-                this.state.s2_draggedRoute = routeName; // [완성]
-                e.dataTransfer.effectAllowed = 'move'; // [완성]
-                e.dataTransfer.setData('text/plain', cell.dataset.carNumber); // [완성]
-                cell.style.opacity = '0.5'; // [완성]
-            }, // [완성]
-            dragOver(e) { // [완성]
-                e.preventDefault(); // [완성]
-                e.dataTransfer.dropEffect = 'move'; // [완성]
-                const targetCell = e.target.closest('td.car-number-cell'); // [완성]
-                if (targetCell && targetCell !== this.state.s2_draggedCell) { // [완성]
-                    targetCell.style.border = '2px dashed #007bff'; // [완성]
-                } // [완성]
-            }, // [완성]
-            dragEnd(e) { // [완성]
-                if (this.state.s2_draggedCell) { // [완성]
-                    this.state.s2_draggedCell.style.opacity = '1'; // [완성]
-                } // [완성]
-                document.querySelectorAll('#section2 td.car-number-cell').forEach(c => c.style.border = '1px solid #ddd'); // [완성]
-                this.state.s2_draggedCell = null; // [완성]
-                this.state.s2_draggedRoute = null; // [완성]
-            }, // [완성]
-            drop(e, routeName) { // [완성]
-                e.preventDefault(); // [완성]
-                e.stopPropagation(); // [완성]
-                
-                const dropCell = e.target.closest('td.car-number-cell'); // [완성]
-                const dragCell = this.state.s2_draggedCell; // [완성]
-                
-                if (!dragCell || !dropCell || dragCell === dropCell || this.state.s2_draggedRoute !== routeName) { // [완성]
-                    this.dragEnd(e); // [완성]
-                    return; // [완성]
-                } // [완성]
-
-                // [수정] 수동(manual) 정렬이 아니면 드롭 금지
-                if (this.state.s2_currentDispatchOrder !== 'manual') { // [완성]
-                    alert('출차순서가 [수동]일 때만 차량 순서를 변경할 수 있습니다.'); // [완성]
-                    this.dragEnd(e); // [완성]
-                    return; // [완성]
-                } // [완성]
-
-                const dragCar = dragCell.dataset.carNumber; // [완성]
-                const dropCar = dropCell.dataset.carNumber; // [완성]
-
-                if (!dragCar || !dropCar || dragCar === '미입력' || dropCar === '미입력') { // [완성]
-                    this.dragEnd(e); // [완성]
-                    return; // [완성]
-                } // [완성]
-
-                // [수정] 순환주기(S2) 데이터의 baseOrder 순서를 변경
-                DataManager.updateS2Data(s2_data => { // [완성]
-                    if (!s2_data[routeName]) s2_data[routeName] = {}; // [완성]
-                    if (!s2_data[routeName]._settings) s2_data[routeName]._settings = {}; // [완성]
-                    
-                    let baseOrder = s2_data[routeName]._settings.baseOrder || []; // [완성]
-                    if (baseOrder.length === 0) { // [완성]
-                        // S1 데이터에서 가져와야 함 (S2에 데이터가 없는 초기 상태)
-                        const routeData = DataManager.getAllRoutes()[routeName]; // [완성]
-                        if (routeData) { // [완성]
-                            baseOrder = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력'); // [완성]
-                            // S1 정렬 적용
-                            const isStandardVehicle = (num) => /^\d+$/.test(num.trim()); // [완성]
-                            baseOrder.sort((a, b) => { // [완성]
-                                const aIsStd = isStandardVehicle(a); // [완성]
-                                const bIsStd = isStandardVehicle(b); // [완성]
-                                if (aIsStd && !bIsStd) return -1; // [완성]
-                                else if (!aIsStd && bIsStd) return 1; // [완성]
-                                else if (aIsStd && bIsStd) return parseInt(a, 10) - parseInt(b, 10); // [완성]
-                                else return a.localeCompare(b); // [완성]
-                            }); // [완성]
-                        } // [완성]
-                    } // [완성]
-
-                    const dragIndex = baseOrder.indexOf(dragCar); // [완성]
-                    const dropIndex = baseOrder.indexOf(dropCar); // [완성]
-
-                    if (dragIndex > -1 && dropIndex > -1) { // [완성]
-                        // 배열에서 dragCar 제거
-                        baseOrder.splice(dragIndex, 1); // [완성]
-                        // dropIndex 위치에 dragCar 삽입
-                        baseOrder.splice(dropIndex, 0, dragCar); // [완성]
-                        
-                        s2_data[routeName]._settings.baseOrder = baseOrder; // [완성]
-                    } // [완성]
-                    
-                    // 수동 변경 시 순환주기 설정도 수동으로 변경
-                    s2_data[routeName]._settings.dispatchType = 'manual'; // [완성]
-                    s2_data[routeName]._settings.cycle = 'manual'; // [완성]
-                }); // [완성]
-                
-                // UI 갱신 (출차순서: 수동, 순환주기: 없음(고정))
-                this.changeDispatchOrder('manual'); // [완성]
-                this.ui.dispatchCycleSelect.value = 'manual'; // [완성]
-
-                // 화면 즉시 새로고침
-                this.refreshDispatchLog(); // [완성]
-            } // [완성]
-        }; // [완성]
-/* ================================================================= */
-        /* [Section 3] 정비일지 JavaScript */
-        /* ================================================================= */
-
-        /**
-         * 4. S3(정비일지) 모듈
-         * - S1 데이터 변경 시(onDataChanged) 노선/차량 드롭다운을 갱신합니다.
-         * - S3 일지 데이터를 날짜별로 백업/복원합니다.
-         */
-        const S3_Module = { // [완성]
-            // S3 UI 요소
-            ui: { // [완성]
-                container: document.getElementById('section3'), // [완성]
-                maintenanceContainer: document.querySelector('#section3 .maintenance-container'), // [완성]
-                dateDisplay: document.getElementById('s3_dateDisplay'), // [완성]
-                formTable: document.querySelector('#section3 .form-table'), // [완성]
-                formBody: document.querySelector('#section3 .form-table tbody'), // [완성]
-                marginLeftSelect: document.getElementById('s3_marginLeft'), // [완성]
-                marginRightSelect: document.getElementById('s3_marginRight'), // [완성]
-                fontSizeInput: document.getElementById('s3_fontSizeInput'), // [완성]
-                title: document.getElementById('s3_title'), // [완성]
-                
-                // [수정] 모달 (복원) - UI 요소 참조는 유지
-                restoreFile: document.getElementById('s3_restoreFile'), // [완성]
-                
-                // 모달 (계산기)
-                calculatorModal: document.getElementById('s3_calculatorModal'), // [완성]
-                startDateInput: document.getElementById('s3_startDate'), // [완성]
-                endDateInput: document.getElementById('s3_endDate'), // [완성]
-                totalPriceDisplay: document.getElementById('s3_totalPrice'), // [완성]
-            }, // [완성]
-
-            // S3 내부 상태
-            state: { // [완성]
-                s3_currentDate: new Date(), // S3는 '오늘' 날짜 기준
-                s3_rowCount: 10, // 기본 10줄
-            }, // [완성]
-
-            /**
-             * S3 모듈 초기화
-             */
-            initialize() { // [완성]
-                console.log("S3: 초기화 시작"); // [완성]
-                DataManager.subscribe(this); // DataManager에 S3 모듈 등록
-                DataManager.loadS3Data(); // S3 전용 일지 데이터 로드
-
-                // 오늘 날짜 설정
-                const today = this.state.s3_currentDate; // [완성]
-                const dateStr = today.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, ''); // [완성]
-                this.ui.dateDisplay.textContent = dateStr; // [완성]
-                this.ui.title.textContent = `차량점검정비일지 (${today.getFullYear()}년 ${today.getMonth() + 1}월)`; // [완성]
-                
-                // 계산기 날짜 기본값 (이번 달 1일 ~ 오늘)
-                this.ui.startDateInput.value = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10); // [완성]
-                this.ui.endDateInput.value = today.toISOString().slice(0, 10); // [완성]
-
-                this.bindEventListeners(); // [완성]
-                
-                // S1 데이터 기준으로 S3 화면(드롭다운) 첫 그리기
-                const { routeName } = DataManager.getCurrentRouteData(); // [완성]
-                this.populateAllRouteSelects(routeName); // [완성]
-                
-                // S3 데이터 로드 (오늘 날짜)
-                this.loadLogData(today.toISOString().slice(0, 10)); // [완성]
-                console.log("S3: 초기화 완료."); // [완성]
-            }, // [완성]
-            
-            /**
-             * [핵심] DataManager로부터 알림을 처리 (S1에서 노선/차량 변경 시)
-             */
-            onDataChanged(event, payload) { // [완성]
-                if (event === 's1_data_changed') { // [완성]
-                    console.log("[S3] S1로부터 데이터 변경 알림 수신. S3 드롭다운 갱신."); // [완성]
-                    const s1_data = payload; // [완성]
-                    // S1 데이터(노선, 차량)가 변경되었으므로 S3의 드롭다운을 새로고침
-                    this.populateAllRouteSelects(s1_data.currentRoute); // [완성]
-                } // [완성]
-            }, // [완성]
-
-            /**
-             * S3 이벤트 리스너 바인딩
-             */
-            bindEventListeners() { // [완성]
-                // 헤더 버튼
-                document.getElementById('s3-showAll').onclick = () => S1_Module.showAllSections(); // [완성]
-                document.getElementById('s3-backupFile').onclick = () => this.backupLogData(); // [완성]
-                
-                // [수정] '일지복구' 버튼 클릭 시 파일 입력을 직접 트리거
-                document.getElementById('s3-triggerRestore').onclick = () => this.ui.restoreFile.click(); // [수정됨]
-                
-                document.getElementById('s3-showCalculator').onclick = () => this.showCalculatorModal(); // [완성]
-                document.getElementById('s3-clearForm').onclick = () => this.clearForm(); // [완성]
-                document.getElementById('s3-printPage').onclick = () => this.printPage(); // [완성]
-                document.getElementById('s3-addRow').onclick = () => this.addRow(); // [완성]
-                
-                // 폰트/여백
-                this.ui.fontSizeInput.onchange = (e) => this.applyFontSize(e.target.value); // [완성]
-                this.ui.marginLeftSelect.onchange = (e) => document.documentElement.style.setProperty('--s3-print-margin-left', `${e.target.value}mm`); // [완성]
-                this.ui.marginRightSelect.onchange = (e) => document.documentElement.style.setProperty('--s3-print-margin-right', `${e.target.value}mm`); // [완성]
-                
-                // [수정] s3_restoreFile onchange 핸들러 (모달 숨기기 로직 제거)
-                this.ui.restoreFile.onchange = (e) => { // [수정됨]
-                    const file = e.target.files[0]; // [완성]
-                    if (file) { // [완성]
-                        this.restoreLogData(file); // [완성]
-                    } // [완성]
-                }; // [완성]
-                
-                // 계산기 모달
-                document.getElementById('s3-calculatePrices').onclick = () => this.calculatePrices(); // [완성]
-                document.getElementById('s3-closeCalculator').onclick = () => this.hideCalculatorModal(); // [완성]
-
-                // 테이블 이벤트 위임 (입력, 변경)
-                this.ui.formBody.addEventListener('input', (e) => { // [완성]
-                    // 자동 저장
-                    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') { // [완성]
-                        this.autoSave(); // [완성]
-                        // Textarea 높이 자동 조절
-                        if (e.target.classList.contains('auto-resize')) { // [완성]
-                            this.autoResizeTextarea(e.target); // [완성]
-                        } // [완성]
-                        // 가격 포맷
-                        if (e.target.classList.contains('price-input')) { // [완성]
-                            this.formatPrice(e.target); // [완성]
-                        } // [완성]
-                    } // [완성]
-                }); // [완성]
-                
-                this.ui.formBody.addEventListener('change', (e) => { // [완성]
-                    // 노선 -> 차량 드롭다운 연동
-                    if (e.target.classList.contains('s3_routeSelect_row')) { // [완성]
-                        this.handleRouteSelectChange(e.target); // [완성]
-                        this.autoSave(); // [완성]
-                    } else if (e.target.classList.contains('s3_vehicleSelect_row')) { // [완성]
-                        this.handleVehicleSelectChange(e.target); // [완성]
-                        this.autoSave(); // [완성]
-                    } // [완성]
-                }); // [완성]
-            }, // [완성]
-
-            // --- S3 UI 갱신 ---
-            
-            /**
-             * (Util) S1 데이터를 기반으로 S3의 모든 '노선' 드롭다운 채우기
-             */
-            populateAllRouteSelects(currentS1Route) { // [완성]
-                const allRoutes = DataManager.getAllRoutes(); // [완성]
-                const routeNames = Object.keys(allRoutes); // [완성]
-                
-                let optionsHTML = '<option value="">노선 선택</option>'; // [완성]
-                routeNames.forEach(name => { // [완성]
-                    optionsHTML += `<option value="${name}" ${name === currentS1Route ? 'selected' : ''}>${name}</option>`; // [완성]
-                }); // [완성]
-                
-                this.ui.formBody.querySelectorAll('.s3_routeSelect_row').forEach(select => { // [완성]
-                    const currentValue = select.value; // [완성]
-                    select.innerHTML = optionsHTML; // [완성]
-                    // S1 노선이 삭제되었을 수도 있으므로, 현재 값이 유효한지 확인
-                    if (allRoutes[currentValue]) { // [완성]
-                        select.value = currentValue; // [완성]
-                        // 노선이 유효하면 차량 드롭다운도 갱신
-                        this.handleRouteSelectChange(select, true); // [완성]
-                    } else { // [완성]
-                        select.value = ''; // [완성]
-                        this.handleRouteSelectChange(select, true); // [완성]
-                    } // [완성]
-                }); // [완성]
-            }, // [완성]
-
-            /**
-             * (UI) S3 노선 선택 시 -> S3 차량 드롭다운 갱신
-             */
-            handleRouteSelectChange(routeSelect, isSilent = false) { // [완성]
-                const routeName = routeSelect.value; // [완성]
-                const cell = routeSelect.closest('td'); // [완성]
-                const vehicleSelect = cell.querySelector('.s3_vehicleSelect_row'); // [완성]
-                const vehicleDisplay = cell.querySelector('.vehicle-display'); // [완성]
-                
-                if (!routeName) { // [완성]
-                    vehicleSelect.innerHTML = ''; // [완성]
-                    vehicleSelect.style.display = 'none'; // [완성]
-                    vehicleDisplay.textContent = ''; // [완성]
-                    return; // [완성]
-                } // [완성]
-                
-                const routeData = DataManager.getAllRoutes()[routeName]; // [완성]
-                if (!routeData) return; // [완성]
-                
-                const vehicles = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력'); // [완성]
-                let vehicleOptionsHTML = '<option value="">차량 선택</option>'; // [완성]
-                vehicles.forEach(v => { // [완성]
-                    vehicleOptionsHTML += `<option value="${v}">${v}</option>`; // [완성]
-                }); // [완성]
-                
-                const currentVehicleValue = vehicleSelect.value; // [완성]
-                vehicleSelect.innerHTML = vehicleOptionsHTML; // [완성]
-                
-                // 현재 선택된 차량이 S1에서 삭제되지 않았다면 유지
-                if (vehicles.includes(currentVehicleValue)) { // [완성]
-                    vehicleSelect.value = currentVehicleValue; // [완성]
-                } else { // [완성]
-                    vehicleSelect.value = ''; // [완성]
-                } // [완성]
-                
-                vehicleSelect.style.display = 'block'; // [완성]
-                
-                if (!isSilent) { // [완성]
-                    this.handleVehicleSelectChange(vehicleSelect); // [완성]
-                } // [완성]
-            }, // [완성]
-
-            /**
-             * (UI) S3 차량 선택 시 -> S3 차량 번호 표시 (인쇄용)
-             */
-            handleVehicleSelectChange(vehicleSelect) { // [완성]
-                const routeSelect = vehicleSelect.closest('td').querySelector('.s3_routeSelect_row'); // [완성]
-                const vehicleDisplay = vehicleSelect.closest('td').querySelector('.vehicle-display'); // [완성]
-                
-                const routeName = routeSelect.value; // [완성]
-                const vehicleNumber = vehicleSelect.value; // [완성]
-                
-                if (routeName && vehicleNumber) { // [완성]
-                    vehicleDisplay.textContent = `${routeName} / ${vehicleNumber}`; // [완성]
-                } else if (routeName) { // [완성]
-                    vehicleDisplay.textContent = `${routeName} / ?`; // [완성]
-                } else { // [완성]
-                    vehicleDisplay.textContent = ''; // [완성]
-                } // [완성]
-            }, // [완성]
-            
-            /**
-             * (UI) Textarea 높이 자동 조절
-             */
-            autoResizeTextarea(textarea) { // [완성]
-                textarea.style.height = 'auto'; // [완성]
-                textarea.style.height = (textarea.scrollHeight) + 'px'; // [완성]
-            }, // [완성]
-
-            /**
-             * (UI) 가격 입력 포맷 (1,000)
-             */
-            formatPrice(input) { // [완성]
-                let value = input.value.replace(/[^0-9]/g, ''); // [완성]
-                if (value) { // [완성]
-                    input.value = parseInt(value, 10).toLocaleString('ko-KR'); // [완성]
-                } else { // [완성]
-                    input.value = ''; // [완성]
-                } // [완성]
-            }, // [완성]
-            
-            /**
-             * (UI) 행 추가
-             */
-            addRow() { // [완성]
-                this.state.s3_rowCount++; // [완성]
-                const rowNum = this.state.s3_rowCount; // [완성]
-                const newRow = document.createElement('tr'); // [완성]
-                newRow.classList.add('entry-row', 's3_added-row'); // [완성]
-                newRow.innerHTML = `
-                    <td class="route-select-cell">
-                        <select class="header-select s3_routeSelect_row no-print" name="route_${rowNum}_1"></select>
-                        <select class="header-select s3_vehicleSelect_row no-print" name="vehicle_${rowNum}_1" style="display: none;"></select>
-                        <div class="vehicle-display"></div>
-                    </td>
-                    <td><textarea name="item_${rowNum}_1" class="auto-resize"></textarea></td>
-                    <td><textarea name="detail_${rowNum}_1" class="auto-resize"></textarea></td>
-                    <td><textarea name="parts_${rowNum}_1" class="auto-resize"></textarea></td>
-                    <td><div class="price-wrapper"><input type="text" inputmode="numeric" name="price_${rowNum}_1" class="price-input" /></div></td>
-                    <td><textarea name="worker_${rowNum}_1" class="auto-resize"></textarea></td>
-                `; // [완성]
-                this.ui.formBody.appendChild(newRow); // [완성]
-                
-                // 새 행의 노선 드롭다운 채우기
-                const { routeName } = DataManager.getCurrentRouteData(); // [완성]
-                this.populateAllRouteSelects(routeName); // [완성]
-            }, // [완성]
-            
-            /**
-             * [수정] (UI) 폼 초기화 (데이터 삭제 + UI 초기화)
-             */
-            clearForm() { // [완성]
-                if (confirm('현재 정비일지 화면의 모든 내용을 삭제하시겠습니까? (저장된 데이터도 삭제됩니다.)')) { // [완성]
-                    const dateString = this.state.s3_currentDate.toISOString().slice(0, 10); // [완성]
-                    // 1. S3 데이터에서 오늘 날짜 데이터 삭제
-                    DataManager.updateS3Data(s3_data => { // [완성]
-                        if (s3_data[dateString]) { // [완성]
-                            delete s3_data[dateString]; // [완성]
-                        } // [완성]
-                    }); // [완성]
-                    
-                    // 2. UI 초기화
-                    this._clearFormUI(); // [수정] UI 초기화 함수 호출
-                    
-                    alert('정비일지가 초기화되었습니다.'); // [완성]
-                } // [완성]
-            }, // [완성]
-
-            /**
-             * [추가] (UI) 폼 UI만 초기화 (데이터 삭제 없음)
-             */
-            _clearFormUI() {
-                // 1. UI 초기화
-                this.ui.formBody.querySelectorAll('textarea, input').forEach(input => {
-                    if (!input.classList.contains('price-input')) {
-                        input.value = '';
+                    // 막차 이후 차량들 (순서상 뒤)
+                    for (let i = vehicleOrder.length - 1; i > startIndex; i--) {
+                        const carNum = vehicleOrder[i];
+                        const timeStr = currentTime.toTimeString().slice(0, 5);
+                        section.querySelector(`input[name="start_time_${routeId}_${carNum}_pm"]`).value = timeStr;
+                        if (!s2_log[carNum]) s2_log[carNum] = {};
+                        s2_log[carNum][`start_time_${routeId}_${carNum}_pm`] = timeStr;
+                        currentTime.setMinutes(currentTime.getMinutes() - pmInterval);
                     }
-                });
-                this.ui.formBody.querySelectorAll('.price-input').forEach(input => input.value = '');
-                this.ui.formBody.querySelectorAll('.auto-resize').forEach(ta => this.autoResizeTextarea(ta));
-                this.ui.formBody.querySelectorAll('.s3_routeSelect_row').forEach(select => {
-                    select.value = '';
-                    this.handleRouteSelectChange(select, true); // true: UI만 조용히 갱신
-                });
-                
-                // 2. 추가된 행 삭제
-                this.ui.formBody.querySelectorAll('.s3_added-row').forEach(row => row.remove());
-                this.state.s3_rowCount = 10; // 행 카운트 초기화
-            },
+                }
+            }
+        });
 
-            /**
-             * (UI) 인쇄
-             */
-            printPage() { // [완성]
-                document.body.classList.remove('printing-section1', 'printing-section2'); // [완성]
-                document.body.classList.add('printing-section3'); // [완성]
-                
-                const originalTitle = document.title; // [완성]
-                document.title = this.ui.title.textContent || "차량점검정비일지"; // [완성]
-
-                const handleAfterPrint = () => { // [완성]
-                    document.body.classList.remove('printing-section3'); // [완성]
-                    document.title = originalTitle; // [완성]
-                    window.removeEventListener('afterprint', handleAfterPrint); // [완성]
-                }; // [완성]
-                window.addEventListener('afterprint', handleAfterPrint); // [완성]
-                
-                window.print(); // [완성]
-            }, // [완성]
-            
-            /**
-             * (UI) 폰트 크기 적용
-             */
-            applyFontSize(size) { // [완성]
-                document.documentElement.style.setProperty('--s3-font-size-base', `${size}pt`); // [완성]
-                document.documentElement.style.setProperty('--s3-print-font-size', `${size}pt`); // [완성]
-            }, // [완성]
-
-            // --- S3 데이터 관리 (S3 전용) ---
-            
-            /**
-             * (Util) S3 데이터 자동 저장 (오늘 날짜)
-             */
-            autoSave: (function() { // [완성]
-                let timer = null; // [완성]
-                return function() { // [완성]
-                    clearTimeout(timer); // [완성]
-                    timer = setTimeout(() => { // [완성]
-                        const dateString = this.state.s3_currentDate.toISOString().slice(0, 10); // [완성]
-                        const formData = new FormData(document.getElementById('maintenanceForm')); // [완성]
-                        let dataToSave = {}; // [완성]
-                        
-                        // S3는 폼 전체를 날짜 키에 저장
-                        formData.forEach((value, key) => { // [완성]
-                            dataToSave[key] = value; // [완성]
-                        }); // [완성]
-                        
-                        DataManager.updateS3Data(s3_data => { // [완성]
-                            s3_data[dateString] = dataToSave; // [완성]
-                        }); // [완성]
-                        console.log(`[S3] 정비일지 자동 저장 완료 (${dateString})`); // [완성]
-                    }, 500); // [완성]
-                }; // [완성]
-            })(), // [완성]
-
-            /**
-             * (Util) S3 데이터 로드 (오늘 날짜)
-             */
-            loadLogData(dateString) { // [완성]
-                const s3_data = DataManager.data.s3; // [완성]
-                const todayLog = s3_data[dateString]; // [완성]
-                
-                if (!todayLog) { // [완성]
-                    console.log(`[S3] ${dateString} 날짜의 정비일지 데이터 없음.`); // [완성]
-                    return; // [완성]
-                } // [완성]
-
-                console.log(`[S3] ${dateString} 날짜의 정비일지 데이터 로드 중...`); // [완성]
-                
-                const form = document.getElementById('maintenanceForm'); // [완성]
-                // 1. 저장된 데이터로 폼 채우기
-                for (const key in todayLog) { // [완성]
-                    const input = form.elements[key]; // [완성]
-                    if (input) { // [완성]
-                        // [수정] 행 추가 로직을 먼저 확인
-                        if (key.startsWith('route_')) {
-                            const parts = key.split('_');
-                            if (parts.length === 3) {
-                                const rowNum = parseInt(parts[1], 10);
-                                if (rowNum > this.state.s3_rowCount) {
-                                    // 기본 10줄(1_1~2_4) 외의 행이 발견되면 추가
-                                    if(rowNum > 2) {
-                                        this.addRow(); 
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // input이 addRow()에 의해 생성된 후일 수 있으므로 다시 찾음
-                        const finalInput = form.elements[key];
-                        if (finalInput) {
-                            finalInput.value = todayLog[key]; // [완성]
-                        }
-                    } // [완성]
-                } // [완성]
-                
-                // 2. UI 갱신 (드롭다운, 텍스트 영역, 가격)
-                form.querySelectorAll('.s3_routeSelect_row').forEach(select => { // [완성]
-                    if (select.value) { // [완성]
-                        this.handleRouteSelectChange(select, true); // [완성]
-                    } // [완성]
-                }); // [완성]
-                form.querySelectorAll('.s3_vehicleSelect_row').forEach(select => { // [완성]
-                    if (select.value) { // [완성]
-                        this.handleVehicleSelectChange(select); // [완성]
-                    } // [완성]
-                }); // [완성]
-                form.querySelectorAll('.auto-resize').forEach(ta => this.autoResizeTextarea(ta)); // [완성]
-                form.querySelectorAll('.price-input').forEach(input => this.formatPrice(input)); // [완성]
-            }, // [완성]
-
-            /**
-             * [수정] S3 일지 데이터 백업 (S3_LOG_KEY)
-             */
-            backupLogData() { // [완성]
-                const backupData = DataManager.data.s3; // S3 전체 데이터
-                if (Object.keys(backupData).length === 0) { // [완성]
-                    alert('백업할 정비일지 데이터가 없습니다.'); // [완성]
-                    return; // [완성]
-                } // [완성]
-                const jsonString = JSON.stringify(backupData); // [완성]
-                const now = new Date(); // [완성]
-                const dateString = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`; // [완성]
-                
-                let companyName = "전체"; // [완성]
-                const { routeData } = DataManager.getCurrentRouteData(); // [완성]
-                if (routeData && routeData.companyName) { // [완성]
-                    companyName = routeData.companyName.replace(/\s/g, ''); // [완성]
-                } // [완성]
-
-                const filename = `${companyName}_정비일지(S3)_${dateString}.json`; // [완성]
-                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' }); // [완성]
-                const a = document.createElement('a'); // [완성]
-                a.href = URL.createObjectURL(blob); // [완성]
-                a.download = filename; // [완성]
-                document.body.appendChild(a); // [완성]
-                a.click(); // [완성]
-                document.body.removeChild(a); // [완성]
-                alert(`정비일지(S3) 전체 데이터 파일 (${filename})이 다운로드 폴더에 JSON 파일로 저장됩니다.`); // [완성]
-            }, // [완성]
-
-            /**
-             * [수정] S3 일지 데이터 복원 (S3_LOG_KEY 덮어쓰기)
-             */
-            restoreLogData(file) { // [완성]
-                if (!file) return; // [완성]
-                
-                // [수정] S1과 동일한 확인(confirm) 창 사용
-                if (!confirm(`[${file.name}] 파일을 업로드하여 *모든* 날짜의 정비일지(S3) 데이터를 덮어쓰시겠습니까?`)) { // [수정됨]
-                    this.ui.restoreFile.value = ''; // [완성]
-                    return; // [완성]
-                } // [완성]
-
-                const reader = new FileReader(); // [완성]
-                reader.onload = (event) => { // [완성]
-                    try { // [완성]
-                        const loadedData = JSON.parse(event.target.result); // [완성]
-                        if (typeof loadedData !== 'object' || loadedData === null) { // [완성]
-                             alert('파일 형식이 올바르지 않습니다. (JSON 객체 필요)'); // [완성]
-                             throw new Error('Invalid S3 file structure'); // [완성]
-                        } // [완성]
-                        
-                        // S3 데이터 전체 덮어쓰기
-                        DataManager.updateS3Data(s3_data => { // [완성]
-                            Object.keys(s3_data).forEach(key => delete s3_data[key]); // [완성]
-                            Object.assign(s3_data, loadedData); // [완성]
-                        }); // [완성]
-                        
-                        // [수정] 버그 수정: this.clearForm() 대신 this._clearFormUI() 호출
-                        this._clearFormUI(); // [수정됨]
-                        this.loadLogData(this.state.s3_currentDate.toISOString().slice(0, 10)); // [완성]
-                        alert(`[${file.name}] 파일로부터 정비일지(S3) 전체 데이터 복원을 완료했습니다.`); // [완성]
-                    } catch (e) { // [완성]
-                        alert('S3 파일 복원 중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.'); // [완성]
-                        console.error('S3 Restore Error:', e); // [완성]
-                    } finally { // [완성]
-                        this.ui.restoreFile.value = ''; // [완성]
-                    } // [완성]
-                }; // [완성]
-                reader.onerror = () => { // [완성]
-                    alert('S3 파일을 읽을 수 없습니다.'); // [완성]
-                    this.ui.restoreFile.value = ''; // [완성]
-                }; // [완성]
-                reader.readAsText(file); // [완성]
-            }, // [완성]
-            
-            // --- S3 부품 가격 계산기 ---
-            showCalculatorModal() { // [완성]
-                this.ui.calculatorModal.style.display = 'block'; // [완성]
-            }, // [완성]
-            hideCalculatorModal() { // [완성]
-                this.ui.calculatorModal.style.display = 'none'; // [완성]
-                this.ui.totalPriceDisplay.textContent = '0원'; // [완성]
-            }, // [완성]
-            calculatePrices() { // [완성]
-                const startDate = this.ui.startDateInput.value; // [완성]
-                const endDate = this.ui.endDateInput.value; // [완성]
-                
-                if (!startDate || !endDate || startDate > endDate) { // [완성]
-                    alert('올바른 시작일과 종료일을 입력하세요.'); // [완성]
-                    return; // [완성]
-                } // [완성]
-                
-                const s3_data = DataManager.data.s3; // [완성]
-                let total = 0; // [완성]
-                
-                // S3 데이터의 모든 날짜 키 순회
-                for (const dateString in s3_data) { // [완성]
-                    if (dateString >= startDate && dateString <= endDate) { // [완성]
-                        const dayData = s3_data[dateString]; // [완성]
-                        // 날짜 데이터의 모든 키 순회
-                        for (const key in dayData) { // [완성]
-                            if (key.startsWith('price_')) { // [완성]
-                                const priceStr = dayData[key] || '0'; // [완성]
-                                const price = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0; // [완성]
-                                total += price; // [완성]
-                            } // [완성]
-                        } // [완성]
-                    } // [완성]
-                } // [완성]
-                
-                this.ui.totalPriceDisplay.textContent = `${total.toLocaleString('ko-KR')}원`; // [완성]
-            } // [완성]
-        }; // [완성] ================================================================= */ // [완성]
-        /* [공통] DOM 로드 시 모듈 초기화 */ // [완성]
-        /* ================================================================= */ // [완성]
+        alert(`[${routeName}] 배차 시간이 적용되었습니다. (S2 일지에 저장됨)`);
+    },
+    
+    /**
+     * '초기화' 버튼 클릭 시 시간 초기화
+     */
+    resetScheduleSettings(routeId) {
+        const section = document.getElementById(`route-${routeId}`);
+        if (!section) return;
         
-        document.addEventListener('DOMContentLoaded', () => { // [완성]
-            // 공통 저장 (S2, S3)
-            // S2, S3는 S1과 달리 데이터가 분리되어 있으므로, 
-            // 페이지가 닫히기 전(beforeunload)에 각 모듈의 폼 데이터를 S2/S3 스토리지에 저장합니다.
-            const saveS2S3Data = () => { // [완성]
-                
-                // --- S2 데이터 (시간, 근무시간) 저장 ---
-                try { // [완성]
-                    const dateString = S2_Module.state.s2_currentDate.toISOString().slice(0, 10); // [완성]
-                    const s2_forms = document.querySelectorAll('#section2 .route-section'); // [완성]
-                    
-                    DataManager.updateS2Data(s2_data => { // [완성]
-                        if (!s2_data[dateString]) s2_data[dateString] = {}; // [완성]
-                        
-                        s2_forms.forEach(routeSection => { // [완성]
-                            const routeName = routeSection.dataset.routeName; // [완성]
-                            if (!routeName) return; // [완성]
-                            
-                            if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {}; // [완성]
-                            
-                            // _settings(순환주기)는 유지
-                            const settings = s2_data[dateString][routeName]._settings; // [완성]
-                            s2_data[dateString][routeName] = {}; // [완성]
-                            if (settings) s2_data[dateString][routeName]._settings = settings; // [완성]
+        if (!confirm('입력된 배차 시간 설정(시작차량, 시간, 간격)을 초기화하시겠습니까? (승무일지에 저장된 시간은 삭제되지 않습니다.)')) {
+            return;
+        }
 
-                            // 모든 S2 입력/선택 필드 순회
-                            routeSection.querySelectorAll('input[type="text"], select.s2-work-hours-select').forEach(input => { // [완성]
-                                const key = input.name; // [완성]
-                                const value = input.value; // [완성]
-                                if (key && value) { // [완성]
-                                    const carNumber = key.split('_').pop(); // [완성]
-                                    if (!s2_data[dateString][routeName][carNumber]) { // [완성]
-                                        s2_data[dateString][routeName][carNumber] = {}; // [완성]
-                                    } // [완성]
-                                    s2_data[dateString][routeName][carNumber][key] = value; // [완성]
-                                } // [완성]
-                            }); // [완성]
-                        }); // [완성]
-                    }); // [완성]
-                    console.log("[S2] 페이지 종료 전 S2 데이터 저장 완료."); // [완성]
-                } catch (e) { // [완성]
-                    console.error("[S2] 페이지 종료 전 S2 데이터 저장 실패:", e); // [완성]
-                } // [완성]
-                
-                // --- S3 데이터 (정비일지) 저장 ---
-                try { // [완성]
-                    S3_Module.autoSave(); // S3는 autoSave 강제 실행
-                    console.log("[S3] 페이지 종료 전 S3 데이터 저장 완료."); // [완성]
-                } catch (e) { // [완성]
-                    console.error("[S3] 페이지 종료 전 S3 데이터 저장 실패:", e); // [완성]
-                } // [완성]
-            }; // [완성]
+        section.querySelector(`select[name="vehicle_select_${routeId}_am"]`).value = "";
+        section.querySelector(`input[name="hour_${routeId}_am"]`).value = "";
+        section.querySelector(`input[name="minute_${routeId}_am"]`).value = "";
+        section.querySelector(`input[name="interval_${routeId}_am"]`).value = "";
+        section.querySelector(`select[name="vehicle_select_${routeId}_pm"]`).value = "";
+        section.querySelector(`input[name="hour_${routeId}_pm"]`).value = "";
+        section.querySelector(`input[name="minute_${routeId}_pm"]`).value = "";
+        section.querySelector(`input[name="interval_${routeId}_pm"]`).value = "";
+    },
+    
+    // --- S2 데이터 저장 (날짜/차량/시간) ---
 
-            // 페이지 닫기 또는 새로고침 시 데이터 저장
-            window.addEventListener('beforeunload', saveS2S3Data); // [완성]
+    /**
+     * (Util) S2 데이터 저장 (시간, 근무시간)
+     */
+    saveS2LogEntry(routeName, carNumber, fieldName, value) {
+        const dateString = this.state.s2_currentDate.toISOString().slice(0, 10);
+        
+        DataManager.updateS2Data(s2_data => {
+            if (!s2_data[dateString]) s2_data[dateString] = {};
+            if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
+            if (!s2_data[dateString][routeName][carNumber]) s2_data[dateString][routeName][carNumber] = {};
             
-            // 모듈 초기화
-            S1_Module.initialize(); // [완성]
-            S2_Module.initialize(); // [완성]
-            S3_Module.initialize(); // [완성]
+            s2_data[dateString][routeName][carNumber][fieldName] = value;
+        });
+    },
+
+    // --- S2 근무자 이름 수정 (S1 데이터 연동) ---
+
+    /**
+     * (UI) 근무자 이름 셀 편집 모드 진입/종료
+     */
+    toggleEditMode(td) {
+        if (td.classList.contains('edit-mode')) {
+            this.saveAndExit(td);
+        } else {
+            // 모든 다른 편집 모드 종료
+            document.querySelectorAll('#section2 td.edit-mode').forEach(cell => this.saveAndExit(cell));
             
-            // 버전 정보 설정
-            S1_Module.setVersion(); // [완성]
+            const currentHTML = td.innerHTML;
+            const originalName = td.dataset.originalName || currentHTML.replace(/<br>/g, '\n');
+            td.classList.add('edit-mode');
+            td.innerHTML = `
+                <textarea class="driver-input">${originalName}</textarea>
+                <div class="edit-controls">
+                    <button type="button" class="btn-driver-delete">삭제</button>
+                    <button type="button" class="btn-driver-save">저장</button>
+                </div>
+            `;
+            const textarea = td.querySelector('.driver-input');
+            textarea.focus();
+            textarea.select();
+        }
+    },
+    
+    /**
+     * (UI) 이름 삭제 (S1 임시 데이터 '휴무'로 저장)
+     */
+    deleteName(td) {
+        const textarea = td.querySelector('.driver-input');
+        if (textarea) {
+            textarea.value = '휴무';
+            this.saveAndExit(td);
+        }
+    },
+
+    /**
+     * [데이터 연동] 이름 저장 (S1 임시 데이터 저장)
+     */
+    saveAndExit(td) {
+        if (!td.classList.contains('edit-mode')) return;
+
+        const textarea = td.querySelector('.driver-input');
+        const newName = textarea.value.trim();
+        const routeName = td.closest('.route-section').dataset.routeName;
+        const carNumber = td.dataset.carNumber;
+        const timeType = td.dataset.timeType; // 'am' or 'pm'
+        
+        // 1. UI 복원
+        td.classList.remove('edit-mode');
+        td.innerHTML = newName.replace(/\n/g, '<br>');
+
+        // 2. DataManager를 통해 S1 데이터 수정 요청
+        const dateString = this.state.s2_currentDate.toISOString().slice(0, 10);
+        
+        DataManager.updateS1Data(s1_data => {
+            const routeData = s1_data.routes[routeName];
+            if (!routeData) return;
+
+            // S2는 S1의 '임시(tempSchedule)' 데이터만 수정
+            if (!routeData.tempSchedule[dateString]) routeData.tempSchedule[dateString] = {};
             
-            // [수정] 캐시 방지 메타 태그가 있으므로 불필요
-            // S1_Module.loadRouteData(S1_Module.state.currentRoute); 
-        }); // [완성]
-    </script>
+            // S1의 원본 데이터(고정/임시)를 먼저 로드
+            const s1TodayData = this.getTodayS1Schedule(routeData, dateString, this.state.s2_currentDate.getDay());
+            let namesToSave = s1TodayData[carNumber] ? JSON.parse(JSON.stringify(s1TodayData[carNumber])) : [{ text: '', bold: false }, { text: '', bold: false }];
+
+            // S1 데이터가 없는 경우(예: 신규), 원본 데이터셋 생성
+            if (!namesToSave[0]) namesToSave[0] = { text: '', bold: false };
+            if (!namesToSave[1]) namesToSave[1] = { text: '', bold: false };
+
+            // 해당 시간대(오전/오후)의 이름만 변경
+            if (timeType === 'am') {
+                namesToSave[0].text = newName;
+            } else {
+                namesToSave[1].text = newName;
+            }
+            
+            // 임시 데이터로 저장
+            routeData.tempSchedule[dateString][carNumber] = namesToSave;
+        });
+        
+        // DataManager가 S1에 알림을 보내고, S1이 S2에 다시 알림을 보내
+        // refreshDispatchLog()를 자동 호출하여 S2 화면을 갱신합니다.
+    },
+
+
+    // --- S2 차량 번호 수정 (S1 데이터 연동) ---
+    
+    /**
+     * (UI) 차량 번호 셀 편집 모드
+     */
+    toggleCarNumberEditMode(td, routeName) {
+        const controls = td.querySelector('.car-controls');
+        if (controls.classList.contains('hidden')) {
+            // 다른 모든 편집 모드 종료
+            document.querySelectorAll('#section2 .car-controls:not(.hidden)').forEach(
+                c => c.classList.add('hidden')
+            );
+            
+            const select = controls.querySelector('select');
+            const currentCar = td.dataset.carNumber;
+            
+            // S1의 원본 차량 목록 로드 (S2_Module.refreshDispatchLog 참조)
+            const routeData = DataManager.getAllRoutes()[routeName];
+            let vehicleColumns = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력');
+            const isStandardVehicle = (num) => /^\d+$/.test(num.trim());
+            vehicleColumns.sort((a, b) => {
+                const aIsStd = isStandardVehicle(a);
+                const bIsStd = isStandardVehicle(b);
+                if (aIsStd && !bIsStd) return -1;
+                else if (!aIsStd && bIsStd) return 1;
+                else if (aIsStd && bIsStd) return parseInt(a, 10) - parseInt(b, 10);
+                else return a.localeCompare(b);
+            });
+
+            // 드롭다운 옵션 채우기 (현재 S2에 없는 차량만)
+            const s2_cars_in_route = new Set(
+                Array.from(document.querySelectorAll(`#route-${this.sanitizeForId(routeName)} .car-number-cell`))
+                    .map(cell => cell.dataset.carNumber)
+                    .filter(Boolean)
+            );
+
+            select.innerHTML = `<option value="">-- 차량 변경 --</option>`;
+            vehicleColumns.forEach(car => {
+                if (!s2_cars_in_route.has(car) || car === currentCar) {
+                    select.innerHTML += `<option value="${car}" ${car === currentCar ? 'selected' : ''}>${car}</option>`;
+                }
+            });
+
+            controls.classList.remove('hidden');
+        } else {
+            this.exitCarNumberEditMode(td);
+        }
+    },
+
+    /**
+     * (UI) 차량 번호 편집 모드 종료
+     */
+    exitCarNumberEditMode(td) {
+        td.querySelector('.car-controls').classList.add('hidden');
+    },
+
+    /**
+     * [데이터 연동] 차량 번호 변경 (S1 데이터 수정)
+     */
+    changeCarNumber(selectElement, routeName) {
+        const newCarNumber = selectElement.value;
+        if (!newCarNumber) return;
+
+        const td = selectElement.closest('.car-number-cell');
+        const oldCarNumber = td.dataset.carNumber;
+
+        if (newCarNumber === oldCarNumber) {
+            this.exitCarNumberEditMode(td);
+            return;
+        }
+
+        // S1 데이터에서 oldCarNumber를 newCarNumber로 변경 (모든 데이터 복사)
+        if (confirm(`[${oldCarNumber}] 차량을 [${newCarNumber}] 차량으로 교체하시겠습니까?\nS1(근무현황표)의 모든 고정/임시/근무형태 데이터가 [${oldCarNumber}]에서 [${newCarNumber}]로 이동(덮어쓰기)됩니다.`)) {
+            
+            DataManager.updateS1Data(s1_data => {
+                const routeData = s1_data.routes[routeName];
+                if (!routeData) return;
+
+                // 1. vehicleColumns (차량 목록) 업데이트
+                const index = routeData.vehicleColumns.indexOf(oldCarNumber);
+                if (index > -1) {
+                    routeData.vehicleColumns[index] = newCarNumber;
+                } else {
+                    // S2에만 있는 차량이었다면 (데이터 불일치) S1에 추가
+                    routeData.vehicleColumns.push(newCarNumber);
+                }
+                // newCarNumber가 S1에 이미 있었다면 (중복 발생) 삭제
+                routeData.vehicleColumns = routeData.vehicleColumns.filter((v, i) => 
+                    v !== oldCarNumber || i === index
+                );
+                
+                // 2. fixedSchedule (고정 근무표) 키 변경
+                for (const key in routeData.fixedSchedule) {
+                    if (key.endsWith(`-${oldCarNumber}`)) {
+                        const newKey = key.replace(`-${oldCarNumber}`, `-${newCarNumber}`);
+                        routeData.fixedSchedule[newKey] = routeData.fixedSchedule[key];
+                        delete routeData.fixedSchedule[key];
+                    }
+                }
+
+                // 3. tempSchedule (임시 근무표) 키 변경
+                for (const date in routeData.tempSchedule) {
+                    if (routeData.tempSchedule[date][oldCarNumber]) {
+                        routeData.tempSchedule[date][newCarNumber] = routeData.tempSchedule[date][oldCarNumber];
+                        delete routeData.tempSchedule[date][oldCarNumber];
+                    }
+                }
+
+                // 4. workTypeConfig (근무 형태) 키 변경
+                if (routeData.workTypeConfig[oldCarNumber]) {
+                    routeData.workTypeConfig[newCarNumber] = routeData.workTypeConfig[oldCarNumber];
+                    delete routeData.workTypeConfig[oldCarNumber];
+                }
+            });
+            
+            // S2 데이터도 변경 (S2는 S1 알림을 받아 자동 갱신되므로 필수는 아님)
+            // ... (S2 데이터 변경 로직은 S1 갱신 알림으로 대체됨)
+        }
+        
+        this.exitCarNumberEditMode(td);
+        // S1이 변경되었으므로 S2는 자동으로 refreshDispatchLog()가 호출됨
+    },
+
+    /**
+     * [데이터 연동] 차량 삭제 (S1 데이터 수정)
+     */
+    deleteCarRow(td) {
+        const carNumber = td.dataset.carNumber;
+        const routeName = td.closest('.route-section').dataset.routeName;
+
+        if (confirm(`[${routeName}] 노선의 [${carNumber}] 차량을 삭제하시겠습니까?\nS1(근무현황표)의 모든 고정/임시/근무형태 데이터가 영구적으로 삭제됩니다.`)) {
+            
+            DataManager.updateS1Data(s1_data => {
+                const routeData = s1_data.routes[routeName];
+                if (!routeData) return;
+
+                // 1. vehicleColumns (차량 목록) 삭제
+                routeData.vehicleColumns = routeData.vehicleColumns.filter(v => v !== carNumber);
+                
+                // 2. fixedSchedule (고정 근무표) 삭제
+                for (const key in routeData.fixedSchedule) {
+                    if (key.endsWith(`-${carNumber}`)) {
+                        delete routeData.fixedSchedule[key];
+                    }
+                }
+
+                // 3. tempSchedule (임시 근무표) 삭제
+                for (const date in routeData.tempSchedule) {
+                    if (routeData.tempSchedule[date][carNumber]) {
+                        delete routeData.tempSchedule[date][carNumber];
+                    }
+                }
+
+                // 4. workTypeConfig (근무 형태) 삭제
+                if (routeData.workTypeConfig[carNumber]) {
+                    delete routeData.workTypeConfig[carNumber];
+                }
+            });
+            
+            // S2 데이터도 삭제 (S2는 S1 알림을 받아 자동 갱신되므로 필수는 아님)
+            // ... (S2 데이터 변경 로직은 S1 갱신 알림으로 대체됨)
+        }
+        
+        this.exitCarNumberEditMode(td);
+        // S1이 변경되었으므로 S2는 자동으로 refreshDispatchLog()가 호출됨
+    },
+
+    // --- S2 드래그 앤 드롭 (차량 순서 변경) ---
+    
+    dragStart(e, routeName) {
+        const target = e.target.closest('td.car-number-cell');
+        if (target) {
+            this.state.s2_draggedCell = target;
+            this.state.s2_draggedRoute = routeName;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', target.dataset.carNumber);
+            setTimeout(() => target.style.opacity = '0.5', 0);
+        }
+    },
+    dragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    },
+    drop(e, routeName) {
+        e.preventDefault();
+        const dropTarget = e.target.closest('td.car-number-cell');
+        
+        if (dropTarget && this.state.s2_draggedCell && this.state.s2_draggedRoute === routeName) {
+            const dragCar = this.state.s2_draggedCell.dataset.carNumber;
+            const dropCar = dropTarget.dataset.carNumber;
+
+            if (dragCar !== dropCar) {
+                this.swapVehicleOrder(routeName, dragCar, dropCar);
+            }
+        }
+        this.dragEnd(e);
+    },
+    dragEnd(e) {
+        if (this.state.s2_draggedCell) {
+            this.state.s2_draggedCell.style.opacity = '1';
+        }
+        this.state.s2_draggedCell = null;
+        this.state.s2_draggedRoute = null;
+    },
+
+    /**
+     * [데이터 연동] 차량 순서 변경 (S1 데이터 수정)
+     */
+    swapVehicleOrder(routeName, carA, carB) {
+        // S1의 vehicleColumns 순서 변경
+        DataManager.updateS1Data(s1_data => {
+            const routeData = s1_data.routes[routeName];
+            if (!routeData || !routeData.vehicleColumns) return;
+
+            const indexA = routeData.vehicleColumns.indexOf(carA);
+            const indexB = routeData.vehicleColumns.indexOf(carB);
+
+            if (indexA > -1 && indexB > -1) {
+                // S1의 차량 목록 순서를 직접 교체
+                [routeData.vehicleColumns[indexA], routeData.vehicleColumns[indexB]] = 
+                [routeData.vehicleColumns[indexB], routeData.vehicleColumns[indexA]];
+            }
+        });
+
+        // S1 데이터가 변경되었으므로, S2는 알림을 받아 자동으로 refreshDispatchLog()를 호출
+    },
+
+    // --- [수정] S2 백업 / 복원 (단순화) ---
+
+    /**
+     * S2 승무일지 데이터 백업 (S2_LOG_KEY 전체)
+     */
+    backupLogData() {
+        const s2_data = DataManager.data.s2;
+        if (Object.keys(s2_data).length === 0) {
+            alert('백업할 승무일지(S2) 데이터가 없습니다.');
+            return;
+        }
+
+        const jsonString = JSON.stringify(s2_data);
+        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+        
+        const now = new Date();
+        const dateString = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+        
+        const { routeName, routeData } = DataManager.getCurrentRouteData();
+        let companyName = "전체";
+        if (routeData && routeData.companyName) {
+            companyName = routeData.companyName.replace(/\s/g, '');
+        }
+
+        const filename = `${companyName}_승무일지(S2)_${dateString}.json`;
+        
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        alert(`승무일지(S2) 전체 데이터 파일 (${filename})이 다운로드 폴더에 JSON 파일로 저장됩니다.`);
+    },
+    
+    showRestoreModal() {
+        this.ui.restoreModal.style.display = 'block';
+    },
+    hideRestoreModal() {
+        this.ui.restoreModal.style.display = 'none';
+        this.ui.restoreFile.value = '';
+    },
+    triggerRestore() {
+        this.ui.restoreFile.click();
+    },
+
+    /**
+     * S2 승무일지 데이터 복원 (S2_LOG_KEY 전체 덮어쓰기)
+     */
+    restoreLogData(file) {
+        if (!file) return;
+
+        if (!confirm(`[${file.name}] 파일을 업로드하여 *모든* 날짜의 승무일지(S2) 데이터를 덮어쓰시겠습니까?`)) {
+            this.ui.restoreFile.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const loadedData = JSON.parse(event.target.result);
+                
+                // S2 데이터는 날짜(YYYY-MM-DD)를 키로 가짐
+                if (typeof loadedData !== 'object' || loadedData === null || Array.isArray(loadedData)) {
+                     alert('파일 형식이 올바르지 않습니다. S2 백업 파일이 아닙니다.');
+                     throw new Error('Invalid S2 saved file structure');
+                }
+                
+                // DataManager에 데이터 수정을 요청 (S2 전체 덮어쓰기)
+                DataManager.updateS2Data(s2_data => {
+                    // 기존 S2 데이터 모두 삭제
+                    Object.keys(s2_data).forEach(key => delete s2_data[key]);
+                    // 새 데이터로 채우기
+                    Object.assign(s2_data, loadedData);
+                });
+
+                alert(`[${file.name}] 파일로부터 S2 승무일지 전체 데이터 복원을 완료했습니다.`);
+                
+                // 현재 날짜 기준으로 화면 새로고침
+                this.refreshDispatchLog();
+
+            } catch (e) {
+                alert('파일을 읽는 도중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.');
+                console.error('S2 Restore Error:', e);
+            } finally {
+                this.ui.restoreFile.value = '';
+            }
+        };
+        reader.onerror = () => {
+            alert('파일을 읽을 수 없습니다.');
+            this.ui.restoreFile.value = '';
+        };
+        reader.readAsText(file);
+    }
+};
+
+/* ================================================================= */
+/* [Section 3] 정비일지 JavaScript */
+/* ================================================================= */
+
+/**
+ * 4. S3(정비일지) 모듈
+ * - S1 데이터 변경 시(onDataChanged) 노선/차량 드롭다운을 갱신합니다.
+ * - S3 일지 데이터를 날짜별로 백업/복원합니다.
+ */
+const S3_Module = {
+    // S3 UI 요소
+    ui: {
+        container: document.getElementById('section3'),
+        maintenanceContainer: document.querySelector('#section3 .maintenance-container'),
+        form: document.getElementById('maintenanceForm'),
+        dateDisplay: document.getElementById('s3_dateDisplay'),
+        title: document.getElementById('s3_title'),
+        tbody: document.querySelector('#section3 .form-table tbody'),
+        // 인쇄
+        marginLeftSelect: document.getElementById('s3_marginLeft'),
+        marginRightSelect: document.getElementById('s3_marginRight'),
+        fontSizeInput: document.getElementById('s3_fontSizeInput'),
+        // 모달
+        restoreModal: document.getElementById('s3_restoreDateModal'), // 이 ID는 파일에 없음 (가정)
+        restoreFile: document.getElementById('s3_restoreFile'),
+        // 계산기 모달
+        calculatorModal: document.getElementById('s3_calculatorModal'),
+        startDateInput: document.getElementById('s3_startDate'),
+        endDateInput: document.getElementById('s3_endDate'),
+        totalPriceDisplay: document.getElementById('s3_totalPrice'),
+    },
+
+    // S3 내부 상태
+    state: {
+        s3_currentDate: new Date(),
+        s3_rowCount: 10,
+    },
+
+    /**
+     * S3 모듈 초기화 (DOM 로드 시 1회 실행)
+     */
+    initialize() {
+        console.log("S3: 초기화 시작");
+        DataManager.subscribe(this); // DataManager에 S3 모듈 등록
+        DataManager.loadS3Data();    // S3 전용 일지 데이터 로드
+
+        // S3는 기본적으로 '오늘' 날짜 기준
+        this.state.s3_currentDate = new Date(); 
+        this.updateDateDisplay(this.state.s3_currentDate);
+
+        this.bindEventListeners();
+        
+        // S1 데이터 기준으로 S3 드롭다운 채우기
+        this.populateAllRouteSelects();
+        // S3 데이터 로드
+        this.loadFormData(this.state.s3_currentDate);
+        
+        console.log("S3: 초기화 완료.");
+    },
+    
+    /**
+     * [핵심] DataManager로부터 알림을 처리하는 함수 (S1에서 데이터 변경 시)
+     */
+    onDataChanged(event, payload) {
+        if (event === 's1_data_changed') {
+            console.log("[S3] S1로부터 데이터 변경 알림 수신. S3 드롭다운 갱신.");
+            // S1 데이터(노선/차량)가 변경되었으므로 S3의 드롭다운을 새로고침
+            this.populateAllRouteSelects();
+            // 현재 S3 화면에 로드된 데이터와 S1 데이터가 일치하지 않을 수 있으므로
+            // 차량 표시(vehicle-display) 영역도 갱신
+            this.reloadVehicleDisplays();
+        }
+    },
+
+    /**
+     * (Util) 날짜 변경 시 S3 화면 갱신 (날짜 표시, 데이터 로드)
+     */
+    changeDate(newDate) {
+        this.saveFormData(this.state.s3_currentDate); // 변경 전 날짜 저장
+        this.state.s3_currentDate = newDate;
+        this.updateDateDisplay(newDate);
+        this.clearForm(false); // UI만 클리어 (저장 X)
+        this.loadFormData(newDate); // 새 날짜 로드
+    },
+
+    /**
+     * (UI) S3 헤더 날짜 업데이트
+     */
+    updateDateDisplay(dateObj) {
+        const dateString = dateObj.toLocaleDateString('ko-KR', { 
+            year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'long' 
+        }).replace(/\. /g, '.').replace(/\.$/, '');
+        
+        this.ui.dateDisplay.textContent = dateString;
+        
+        const { routeData } = DataManager.getCurrentRouteData();
+        const companyName = (routeData && routeData.companyName) || "차량정비";
+        this.ui.title.textContent = `${companyName} 차량정비점검일지 및 작업의뢰서`;
+    },
+
+    /**
+     * S3의 모든 이벤트 리스너 바인딩
+     */
+    bindEventListeners() {
+        // 상단 버튼
+        document.getElementById('s3-showAll').onclick = () => S1_Module.showAllSections();
+        document.getElementById('s3-backupFile').onclick = () => this.backupLogData();
+        document.getElementById('s3-triggerRestore').onclick = () => this.triggerRestore();
+        document.getElementById('s3_restoreFile').onchange = (e) => this.restoreLogData(e.target.files[0]);
+        document.getElementById('s3-clearForm').onclick = () => this.clearForm(true);
+        document.getElementById('s3-printPage').onclick = () => this.printPage();
+        
+        // 인쇄 설정
+        this.ui.marginLeftSelect.onchange = (e) => document.documentElement.style.setProperty('--s3-print-margin-left', `${e.target.value}mm`);
+        this.ui.marginRightSelect.onchange = (e) => document.documentElement.style.setProperty('--s3-print-margin-right', `${e.target.value}mm`);
+        this.ui.fontSizeInput.onchange = (e) => this.applyFontSize(e.target.value);
+        
+        // 테이블 하단
+        document.getElementById('s3-addRow').onclick = (e) => this.addRow(e);
+
+        // 테이블 내부 이벤트 (위임)
+        this.ui.tbody.oninput = (e) => {
+            const target = e.target;
+            // 자동 저장
+            this.saveFormData(this.state.s3_currentDate); 
+            
+            // 텍스트 영역 자동 크기 조절
+            if (target.tagName === 'TEXTAREA' && target.classList.contains('auto-resize')) {
+                this.autoResizeTextarea(target);
+            }
+            // 가격 포맷팅
+            if (target.classList.contains('price-input')) {
+                this.formatPriceInput(target);
+            }
+        };
+        
+        this.ui.tbody.onchange = (e) => {
+            // 노선/차량 드롭다운 변경
+            if (e.target.classList.contains('s3_routeSelect_row')) {
+                this.handleRouteSelectChange(e.target);
+            }
+            if (e.target.classList.contains('s3_vehicleSelect_row')) {
+                this.handleVehicleSelectChange(e.target);
+            }
+        };
+
+        // 계산기 모달
+        document.getElementById('s3-showCalculator').onclick = () => this.showCalculator();
+        document.getElementById('s3-closeCalculator').onclick = () => this.hideCalculator();
+        document.getElementById('s3-calculatePrices').onclick = () => this.calculatePrices();
+    },
+    
+    // --- S3 폼/데이터 관리 ---
+
+    /**
+     * (UI) 폼 전체 초기화 (날짜 변경 없음)
+     */
+    clearForm(confirmClear = false) {
+        if (confirmClear) {
+            if (!confirm(`[${this.ui.dateDisplay.textContent}]의 정비일지 내용을 모두 삭제하시겠습니까? (저장된 데이터도 삭제됩니다.)`)) {
+                return;
+            }
+            // S3 데이터에서도 삭제
+            const dateString = this.state.s3_currentDate.toISOString().slice(0, 10);
+            DataManager.updateS3Data(s3_data => {
+                delete s3_data[dateString];
+            });
+        }
+        
+        this.ui.form.reset();
+        this.ui.tbody.querySelectorAll('.s3_added-row').forEach(row => row.remove());
+        this.state.s3_rowCount = 10;
+        
+        // UI 초기화
+        this.ui.tbody.querySelectorAll('textarea').forEach(ta => {
+            ta.value = '';
+            this.autoResizeTextarea(ta);
+        });
+        this.ui.tbody.querySelectorAll('input.price-input').forEach(inp => inp.value = '');
+        this.ui.tbody.querySelectorAll('.vehicle-display').forEach(div => div.textContent = '');
+        this.ui.tbody.querySelectorAll('.s3_vehicleSelect_row').forEach(sel => sel.style.display = 'none');
+        
+        this.populateAllRouteSelects();
+    },
+
+    /**
+     * [데이터 연동] S3 데이터 저장 (특정 날짜)
+     */
+    saveFormData(dateObj) {
+        const dateString = dateObj.toISOString().slice(0, 10);
+        const formData = new FormData(this.ui.form);
+        const dataToSave = {};
+        let isEmpty = true;
+
+        for (let [key, value] of formData.entries()) {
+            if (value) {
+                dataToSave[key] = value;
+                if (key.startsWith('item_') || key.startsWith('detail_') || key.startsWith('parts_') || key.startsWith('price_') || key.startsWith('worker_')) {
+                    isEmpty = false;
+                }
+            }
+        }
+        
+        DataManager.updateS3Data(s3_data => {
+            if (isEmpty) {
+                delete s3_data[dateString]; // 빈 데이터면 삭제
+            } else {
+                s3_data[dateString] = dataToSave; // 데이터 저장
+            }
+        });
+    },
+
+    /**
+     * [데이터 연동] S3 데이터 로드 (특정 날짜)
+     */
+    loadFormData(dateObj) {
+        const dateString = dateObj.toISOString().slice(0, 10);
+        const s3_data = DataManager.data.s3;
+        const dataToLoad = s3_data[dateString];
+
+        if (!dataToLoad) {
+            console.log(`[S3] ${dateString} 데이터 없음.`);
+            return;
+        }
+
+        console.log(`[S3] ${dateString} 데이터 로드.`);
+        
+        // 1. 저장된 데이터 기준으로 행(row)이 부족하면 동적 생성
+        let maxRowIndex = 10;
+        Object.keys(dataToLoad).forEach(key => {
+            const match = key.match(/_(\d+)_(\d+)$/);
+            if (match) {
+                const rowIndex = parseInt(match[1], 10);
+                if (rowIndex > maxRowIndex) maxRowIndex = rowIndex;
+            }
+        });
+        
+        while (this.state.s3_rowCount < maxRowIndex) {
+            this.addRow(null, false); // 이벤트 없고, 저장 안 함
+        }
+
+        // 2. 폼 요소에 데이터 채우기
+        for (const key in dataToLoad) {
+            const element = this.ui.form.elements[key];
+            if (element) {
+                element.value = dataToLoad[key];
+
+                // 3. 텍스트 영역 높이 조절
+                if (element.tagName === 'TEXTAREA') {
+                    this.autoResizeTextarea(element);
+                }
+                // 4. 가격 포맷팅
+                if (element.classList.contains('price-input')) {
+                    this.formatPriceInput(element);
+                }
+                // 5. 차량 드롭다운 상태 복원
+                if (element.classList.contains('s3_routeSelect_row')) {
+                    this.handleRouteSelectChange(element); // 노선 선택
+                }
+                if (element.classList.contains('s3_vehicleSelect_row')) {
+                    this.handleVehicleSelectChange(element); // 차량 선택
+                }
+            }
+        }
+    },
+
+    // --- S3 행/드롭다운 관리 ---
+
+    /**
+     * (UI) 정비일지 행 추가
+     */
+    addRow(event, shouldSave = true) {
+        if (event) event.preventDefault();
+        this.state.s3_rowCount++;
+        const rowIndex = Math.ceil(this.state.s3_rowCount / 6); // 1, 2, 3...
+        const subIndex = ((this.state.s3_rowCount - 1) % 6) + 1; // 1, 2... 6
+        const baseName = `${rowIndex}_${subIndex}`;
+
+        const newRow = document.createElement('tr');
+        newRow.classList.add('entry-row', 's3_added-row');
+        newRow.innerHTML = `
+            <td class="route-select-cell">
+                <select class="header-select s3_routeSelect_row no-print" name="route_${baseName}"></select>
+                <select class="header-select s3_vehicleSelect_row no-print" name="vehicle_${baseName}" style="display: none;"></select>
+                <div class="vehicle-display"></div>
+            </td>
+            <td><textarea name="item_${baseName}" class="auto-resize"></textarea></td>
+            <td><textarea name="detail_${baseName}" class="auto-resize"></textarea></td>
+            <td><textarea name="parts_${baseName}" class="auto-resize"></textarea></td>
+            <td><div class="price-wrapper"><input type="text" inputmode="numeric" name="price_${baseName}" class="price-input" /></div></td>
+            <td><textarea name="worker_${baseName}" class="auto-resize"></textarea></td>
+        `;
+
+        // 새 행의 노선 드롭다운 채우기
+        this.populateRouteSelect(newRow.querySelector('.s3_routeSelect_row'));
+        this.ui.tbody.appendChild(newRow);
+        
+        if (shouldSave) {
+            this.saveFormData(this.state.s3_currentDate);
+        }
+    },
+
+    /**
+     * (UI) 모든 노선 드롭다운 채우기
+     */
+    populateAllRouteSelects() {
+        this.ui.tbody.querySelectorAll('.s3_routeSelect_row').forEach(select => {
+            this.populateRouteSelect(select);
+        });
+    },
+
+    /**
+     * [데이터 연동] 단일 노선 드롭다운 채우기 (S1 데이터 기준)
+     */
+    populateRouteSelect(selectElement) {
+        const allRoutes = DataManager.getAllRoutes();
+        const routeNames = Object.keys(allRoutes);
+        const currentValue = selectElement.value; // 기존 값 유지
+        
+        selectElement.innerHTML = '<option value="">-- 노선 --</option>';
+        routeNames.forEach(name => {
+            selectElement.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+        
+        if (routeNames.includes(currentValue)) {
+            selectElement.value = currentValue;
+        } else {
+            selectElement.value = "";
+        }
+    },
+    
+    /**
+     * (UI) S1 데이터가 변경되었을 때 S3의 차량 표시 영역 갱신
+     */
+    reloadVehicleDisplays() {
+        this.ui.tbody.querySelectorAll('.s3_vehicleSelect_row').forEach(vehicleSelect => {
+            if (vehicleSelect.value) {
+                this.handleVehicleSelectChange(vehicleSelect);
+            }
+        });
+    },
+
+    /**
+     * [데이터 연동] 노선 선택 시 -> 차량 드롭다운 채우기
+     */
+    handleRouteSelectChange(routeSelect) {
+        const cell = routeSelect.closest('td');
+        const vehicleSelect = cell.querySelector('.s3_vehicleSelect_row');
+        const vehicleDisplay = cell.querySelector('.vehicle-display');
+        const routeName = routeSelect.value;
+        
+        if (!routeName) {
+            vehicleSelect.innerHTML = '';
+            vehicleSelect.style.display = 'none';
+            vehicleDisplay.textContent = '';
+            return;
+        }
+
+        const allRoutes = DataManager.getAllRoutes();
+        const routeData = allRoutes[routeName];
+        
+        if (routeData && routeData.vehicleColumns) {
+            const vehicleList = routeData.vehicleColumns.filter(v => v && v !== '미입력');
+            // S2와 동일하게 정렬
+            const isStandardVehicle = (num) => /^\d+$/.test(num.trim());
+            vehicleList.sort((a, b) => {
+                const aIsStd = isStandardVehicle(a);
+                const bIsStd = isStandardVehicle(b);
+                if (aIsStd && !bIsStd) return -1;
+                else if (!aIsStd && bIsStd) return 1;
+                else if (aIsStd && bIsStd) return parseInt(a, 10) - parseInt(b, 10);
+                else return a.localeCompare(b);
+            });
+
+            const currentValue = vehicleSelect.value; // 기존 값 유지
+            vehicleSelect.innerHTML = '<option value="">-- 차량 --</option>';
+            vehicleList.forEach(car => {
+                vehicleSelect.innerHTML += `<option value="${car}">${car}</option>`;
+            });
+            
+            if (vehicleList.includes(currentValue)) {
+                vehicleSelect.value = currentValue;
+            }
+            
+            vehicleSelect.style.display = 'block';
+            this.handleVehicleSelectChange(vehicleSelect); // 차량 표시 갱신
+        }
+    },
+
+    /**
+     * (UI) 차량 선택 시 -> 하단 텍스트 업데이트
+     */
+    handleVehicleSelectChange(vehicleSelect) {
+        const cell = vehicleSelect.closest('td');
+        const routeSelect = cell.querySelector('.s3_routeSelect_row');
+        const vehicleDisplay = cell.querySelector('.vehicle-display');
+        
+        const routeName = routeSelect.value;
+        const vehicleName = vehicleSelect.value;
+        
+        if (routeName && vehicleName) {
+            vehicleDisplay.textContent = `${routeName} / ${vehicleName}`;
+        } else if (routeName) {
+            vehicleDisplay.textContent = `${routeName} / --`;
+        } else {
+            vehicleDisplay.textContent = '';
+        }
+    },
+
+    // --- S3 유틸리티 ---
+
+    /**
+     * (Util) 텍스트 영역 자동 높이 조절
+     */
+    autoResizeTextarea(textarea) {
+        textarea.style.height = 'auto'; // 높이 초기화
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    },
+
+    /**
+     * (Util) 가격 입력 포맷 (1,000)
+     */
+    formatPriceInput(input) {
+        let value = input.value.replace(/[^0-9]/g, ''); // 숫자만
+        if (value) {
+            value = parseInt(value, 10).toLocaleString('ko-KR');
+        }
+        input.value = value;
+    },
+    
+    /**
+     * (Util) 포맷된 가격을 숫자로 변환
+     */
+    parsePrice(formattedPrice) {
+        return parseInt(formattedPrice.replace(/[^0-9]/g, ''), 10) || 0;
+    },
+
+    // --- S3 인쇄 ---
+
+    /**
+     * (UI) S3 인쇄
+     */
+    printPage() {
+        // 인쇄 설정 적용
+        document.documentElement.style.setProperty('--s3-print-margin-top', '10mm');
+        document.documentElement.style.setProperty('--s3-print-margin-bottom', '10mm');
+        document.documentElement.style.setProperty('--s3-print-margin-left', `${this.ui.marginLeftSelect.value}mm`);
+        document.documentElement.style.setProperty('--s3-print-margin-right', `${this.ui.marginRightSelect.value}mm`);
+        this.applyFontSize(this.ui.fontSizeInput.value); // 인쇄 폰트 크기 적용
+
+        const originalTitle = document.title;
+        const dateText = this.ui.dateDisplay.textContent.split(' (')[0];
+        document.title = `차량정비일지_${dateText}`;
+
+        document.body.classList.remove('printing-section1', 'printing-section2');
+        document.body.classList.add('printing-section3');
+
+        const handleAfterPrint = () => {
+            document.title = originalTitle;
+            document.documentElement.style.removeProperty('--s3-print-margin-left');
+            document.documentElement.style.removeProperty('--s3-print-margin-right');
+            document.body.classList.remove('printing-section3');
+            window.removeEventListener('afterprint', handleAfterPrint);
+        };
+        window.addEventListener('afterprint', handleAfterPrint);
+
+        // [수정됨] 4. 인쇄 딜레이 제거
+        window.print();
+    },
+    
+    /**
+     * (UI) S3 폰트 크기 적용
+     */
+    applyFontSize(size) {
+        document.documentElement.style.setProperty('--s3-font-size-base', `${size}px`);
+        document.documentElement.style.setProperty('--s3-print-font-size', `${size}pt`);
+    },
+    
+    // --- S3 백업 / 복원 ---
+
+    /**
+     * S3 정비일지 데이터 백업 (S3_LOG_KEY 전체)
+     */
+    backupLogData() {
+        this.saveFormData(this.state.s3_currentDate); // 현재 날짜 저장
+        const s3_data = DataManager.data.s3;
+        if (Object.keys(s3_data).length === 0) {
+            alert('백업할 정비일지(S3) 데이터가 없습니다.');
+            return;
+        }
+
+        const jsonString = JSON.stringify(s3_data);
+        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+        
+        const now = new Date();
+        const dateString = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+        
+        const { routeData } = DataManager.getCurrentRouteData();
+        let companyName = "전체";
+        if (routeData && routeData.companyName) {
+            companyName = routeData.companyName.replace(/\s/g, '');
+        }
+
+        const filename = `${companyName}_정비일지(S3)_${dateString}.json`;
+        
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        alert(`정비일지(S3) 전체 데이터 파일 (${filename})이 다운로드 폴더에 JSON 파일로 저장됩니다.`);
+    },
+    
+    triggerRestore() {
+        this.ui.restoreFile.click();
+    },
+
+    /**
+     * S3 정비일지 데이터 복원 (S3_LOG_KEY 전체 덮어쓰기)
+     */
+    restoreLogData(file) {
+        if (!file) return;
+
+        if (!confirm(`[${file.name}] 파일을 업로드하여 *모든* 날짜의 정비일지(S3) 데이터를 덮어쓰시겠습니까?`)) {
+            this.ui.restoreFile.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const loadedData = JSON.parse(event.target.result);
+                
+                if (typeof loadedData !== 'object' || loadedData === null || Array.isArray(loadedData)) {
+                     alert('파일 형식이 올바르지 않습니다. S3 백업 파일이 아닙니다.');
+                     throw new Error('Invalid S3 saved file structure');
+                }
+                
+                // DataManager에 데이터 수정을 요청 (S3 전체 덮어쓰기)
+                DataManager.updateS3Data(s3_data => {
+                    Object.keys(s3_data).forEach(key => delete s3_data[key]);
+                    Object.assign(s3_data, loadedData);
+                });
+
+                alert(`[${file.name}] 파일로부터 S3 정비일지 전체 데이터 복원을 완료했습니다.`);
+                
+                // 현재 날짜 기준으로 화면 새로고침
+                this.clearForm(false);
+                this.loadFormData(this.state.s3_currentDate);
+
+            } catch (e) {
+                alert('파일을 읽는 도중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.');
+                console.error('S3 Restore Error:', e);
+            } finally {
+                this.ui.restoreFile.value = '';
+            }
+        };
+        reader.onerror = () => {
+            alert('파일을 읽을 수 없습니다.');
+            this.ui.restoreFile.value = '';
+        };
+        reader.readAsText(file);
+    },
+    
+    // --- S3 부품 가격 계산기 ---
+    
+    /**
+     * (UI) 계산기 표시
+     */
+    showCalculator() {
+        this.saveFormData(this.state.s3_currentDate); // 현재 작업 저장
+        
+        // 기본 기간: 현재 월의 1일 ~ 말일
+        const today = new Date();
+        const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        
+        this.ui.startDateInput.value = startDate.toISOString().slice(0, 10);
+        this.ui.endDateInput.value = endDate.toISOString().slice(0, 10);
+        this.ui.totalPriceDisplay.textContent = '0원';
+        
+        this.ui.calculatorModal.style.display = 'block';
+    },
+    
+    /**
+     * (UI) 계산기 숨기기
+     */
+    hideCalculator() {
+        this.ui.calculatorModal.style.display = 'none';
+    },
+    
+    /**
+     * (Util) 기간별 부품 가격 합산
+     */
+    calculatePrices() {
+        const startDate = this.ui.startDateInput.value;
+        const endDate = this.ui.endDateInput.value;
+        
+        if (!startDate || !endDate || startDate > endDate) {
+            alert('올바른 기간을 설정하세요.');
+            return;
+        }
+        
+        const s3_data = DataManager.data.s3;
+        let total = 0;
+        
+        for (const dateString in s3_data) {
+            if (dateString >= startDate && dateString <= endDate) {
+                const dayData = s3_data[dateString];
+                for (const key in dayData) {
+                    if (key.startsWith('price_')) {
+                        total += this.parsePrice(dayData[key]);
+                    }
+                }
+            }
+        }
+        
+        this.ui.totalPriceDisplay.textContent = `${total.toLocaleString('ko-KR')}원`;
+    }
+};
+
+/* ================================================================= */
+/* [공통] 초기화 (DOM 로드 완료 시) */
+/* ================================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM 로드 완료. 모듈 초기화 시작.");
+    
+    // 버전 설정
+    S1_Module.setVersion();
+
+    // S1, S2, S3 모듈 초기화
+    S1_Module.initialize();
+    S2_Module.initialize();
+    S3_Module.initialize();
+});
+</script>
 </body>
 </html>
