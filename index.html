@@ -4154,15 +4154,7 @@
                         <button type="button" class="setting-button reset-button" data-route-id="${routeId}">초기화</button>
                     </div>
                     
-                    
-                        (function() {
-                            const amSelect = document.querySelector('select[name="am_startVehicle"][data-route-id="${routeId}"]');
-                            if (amSelect) amSelect.value = "${am_startVehicle || ''}";
-                            const pmSelect = document.querySelector('select[name="pm_startVehicle"][data-route-id="${routeId}"]');
-                            if (pmSelect) pmSelect.value = "${pm_startVehicle || ''}";
-                        })();
-                    
-                `;
+                    `;
             },
 
             /**
