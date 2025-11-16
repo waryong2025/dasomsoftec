@@ -1,4 +1,3 @@
-  
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -544,11 +543,59 @@ font-weight: bold;
             display: inline-block;
         }
         
-        #section2 .date-display {
-            font-size: 1em;
-color: #666;
-            margin-top: 2px;
+        /* === [수정] S2 날짜 네비게이션 === */
+        #section2 .date-navigation-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+            border: 1px solid #ced4da;
+            background-color: #f8f9fa;
+            padding: 5px;
+            border-radius: 5px;
+            margin-top: 5px;
+            width: 100%;
+            justify-content: center;
         }
+        #section2 .date-navigation-area label {
+            font-size: 1em;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        #section2 .date-navigation-area input[type="date"] {
+            font-size: 1em;
+            padding: 3px;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            max-width: 130px;
+        }
+        #section2 .date-nav-btn {
+            padding: 4px 10px;
+            font-size: 0.94em;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #section2 .date-nav-btn:hover {
+            background-color: #0056b3;
+        }
+        #section2 .date-nav-btn.today {
+            background-color: #28a745;
+        }
+        #section2 .date-nav-btn.today:hover {
+            background-color: #1e7e34;
+        }
+        #section2 .date-nav-btn.secondary {
+             background-color: #6c757d;
+        }
+        #section2 .date-nav-btn.secondary:hover {
+             background-color: #5a6268;
+        }
+        /* === [수정 끝] === */
+
         
         #section2 .options-right {
             display: flex;
@@ -678,10 +725,21 @@ box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             background-color: #0056b3;
 }
         
+        /* === [수정] S2 날짜 헤더 (날짜별 구분) === */
         #section2 .date-header {
-            display: none;
-}
-
+            font-size: 1.5em; /* 1.25em -> 1.5em */
+            font-weight: bold;
+            color: #0056b3;
+            text-align: center;
+            padding: 10px 5px;
+            background-color: #eaf4ff;
+            border-top: 2px solid #0056b3;
+            border-bottom: 1px solid #b3d7ff;
+            margin: 15px 0 10px 0;
+            display: block; /* [수정] 항상 보이도록 */
+        }
+        /* === [수정 끝] === */
+        
         #section2 .route-section {
             margin-bottom: 15px;
 border: 1px solid #ced4da;
@@ -898,7 +956,7 @@ justify-content: space-between;
         }
         
         #section2 .journal-table th:nth-child(1),
-        #section2 .journal-table th:nth-child(9) {
+        #section2 .journal-table th:nth-child(10) { /* [수정] 9 -> 10 */
             font-size: 1.136em;
 }
         
@@ -914,16 +972,12 @@ padding: 0;
             -moz-appearance: textfield;
 }
         
-        #section2 .journal-table colgroup col:nth-child(1), #section2 .journal-table colgroup col:nth-child(9) { width: 5.4%;
-} 
-        #section2 .journal-table colgroup col:nth-child(8), #section2 .journal-table colgroup col:nth-child(16) { width: 5.4%;
-} 
-        #section2 .journal-table colgroup col:nth-child(2), #section2 .journal-table colgroup col:nth-child(3), #section2 .journal-table colgroup col:nth-child(4), 
-        #section2 .journal-table colgroup col:nth-child(5), #section2 .journal-table colgroup col:nth-child(6), #section2 .journal-table colgroup col:nth-child(7), 
-        #section2 .journal-table colgroup col:nth-child(10), #section2 .journal-table colgroup col:nth-child(11), #section2 .journal-table colgroup col:nth-child(12),
-        #section2 .journal-table colgroup col:nth-child(13), #section2 .journal-table colgroup col:nth-child(14), #section2 .journal-table colgroup col:nth-child(15) { width: 5.4%;
-}
-        
+        /* === [수정] S2 Colgroup 9열 기준 (18열) === */
+        #section2 .journal-table colgroup col {
+             width: 5.4%; /* 18열 기준, 5.4% * 18 = 97.2% */
+        } 
+        /* === [수정 끝] === */
+
         #section2 .driver-name {
             box-sizing: border-box;
 width: 100%;
@@ -1015,6 +1069,26 @@ padding: 2px 0;
                 height: 16px;
 font-size: 0.95em;
             }
+            
+            /* === [수정] S2 날짜 네비게이션 모바일 === */
+            #section2 .date-navigation-area {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #section2 .date-navigation-area div {
+                display: flex;
+                gap: 5px;
+                width: 100%;
+            }
+            #section2 .date-navigation-area input[type="date"] {
+                flex-grow: 1;
+                max-width: none;
+            }
+            #section2 .date-navigation-area .date-nav-btn {
+                flex-grow: 1;
+            }
+            /* === [수정 끝] === */
+
         }
 
         #section2 .s2-work-hours-select {
@@ -1448,7 +1522,8 @@ border-radius: 0;
                 max-width: 100%;
             }
             
-            /* [수정] 순환주기 컨트롤 인쇄 시 숨김 */
+            /* [수정] 순환주기, 날짜 네비게이션 인쇄 시 숨김 */
+            body.printing-section2 #section2 .date-navigation-area,
             body.printing-section2 #section2 .dispatch-cycle-container,
             body.printing-section2 #section2 .print-button, 
             body.printing-section2 #section2 .font-selector-container, 
@@ -1484,6 +1559,18 @@ padding: 1px 0px;
             body.printing-section2 #section2 .route-header-flex { background-color: #eee !important;
 border-bottom: 1px solid #000 !important; }
             
+            /* [수정] S2 날짜 헤더 인쇄 스타일 */
+            body.printing-section2 #section2 .date-header {
+                font-size: 1.2em;
+                padding: 5px;
+                margin: 10px 0 5px 0;
+                background-color: #f0f0f0 !important;
+                border-top: 1px solid #000 !important;
+                border-bottom: 1px solid #000 !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+            }
+
             body.printing-section2 #section2 input[type="number"], 
             body.printing-section2 #section2 input[type="text"] {
                 border: none;
@@ -1591,10 +1678,9 @@ margin-top: var(--s3-print-margin-top);
     </style>
 </head>
 <body>
-
-    <div id="header-bar">
+<div id="header-bar">
         <img id="header-logo" src="https://raw.githubusercontent.com/waryong2025/dasomsoftec/main/dasom.png" alt="DasomSoftec">
-        <span id="version-display">Ver 5.3.0</span> </div>
+        <span id="version-display">Ver 5.4.2</span> </div>
 
 
     <div id="section1">
@@ -1808,60 +1894,56 @@ align-items: flex-start;">
         <div class="journal-container">
 
             <div class="header-title">승무일지</div>
-
-         
-    <div class="title-area">
-      
-                     <div class="title-left">
-                    <div class="main-title">승 무 일 지 (일일)</div>
-                    <div id="today-date" class="date-display"></div>
+    
+            <div class="title-area">
+                <div class="title-left">
+                    <div class="main-title">승 무 일 지</div>
                 </div>
     
-            
-          
-                 <div class="options-right">
-                    
+                <div class="options-right">
                     <button type="button" id="s2-showAll" class="print-button" style="background-color: #6c757d;">전체보기</button>
                
-     
                     <div class="font-selector-container">
                         <label for="font-size-select">글자크기조정:</label>
                         <select id="font-size-select">
-                        
-    <option value="8">8pt</option>
+                            <option value="8">8pt</option>
                             <option value="9">9pt</option> 
                             <option value="10">10pt</option> 
-                            <option value="11" selected>11pt</option> <option value="12">12pt</option>
-   
-                         <option value="13">13pt</option>
+                            <option value="11" selected>11pt</option> 
+                            <option value="12">12pt</option>
+                            <option value="13">13pt</option>
                         </select>
                     </div>
 
-                    <div style="display: flex;
-gap: 5px;">
+                    <div style="display: flex; gap: 5px;">
                         <button type="button" id="s2-backupLog" class="print-button" style="background-color: #28a745;">일지백업</button>
                         <button type="button" id="s2-showRestoreModal" class="print-button" style="background-color: #fd7e14;">일지복원</button>
                         <input type="file" id="s2_restoreFile" style="display: none;" accept=".json">
-            
-        </div>
+                    </div>
 
-                   <button type="button" id="s2-refreshLog" class="print-button" style="background-color: #17a2b8;">새로고침</button>
-                   
+                   <button type="button" id="s2-refreshLog" class="print-button" style="background-color: #17a2b8;">현재일지새로고침</button>
                    <button id="s2-printPage" class="print-button">인쇄하기</button>
-           
-                 
-</div>
-            </div>
-            
-             <div class="date-header">2025년 10월 16일 목요일</div> 
-
-             <div id="dispatch-log-body">
                 </div>
+            </div>
 
-   
-           </div>
+            <div class="date-navigation-area">
+                <div>
+                    <button id="s2_prevDate" class="date-nav-btn secondary">◀ 이전</button>
+                    <button id="s2_today" class="date-nav-btn today">오늘</button>
+                    <button id="s2_nextDate" class="date-nav-btn secondary">다음 ▶</button>
+                </div>
+                <div>
+                    <label for="s2_startDate">기간조회:</label>
+                    <input type="date" id="s2_startDate">
+                    <span>~</span>
+                    <input type="date" id="s2_endDate">
+                    <button id="s2_loadRange" class="date-nav-btn">조회</button>
+                </div>
+            </div>
+            <div id="dispatch-log-body">
+                </div>
+        </div>
     </div>
-
     <div id="s2_restoreDateModal" style="display: none;
 position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
 background-color: rgba(0,0,0,0.4);">
@@ -1883,6 +1965,7 @@ background-color: #007bff; color: white; border: none; border-radius: 4px; curso
             </div>
         </div>
     </div>
+
     <hr class="divider">
 
     <div id="section3" style="display: none;">
@@ -1899,10 +1982,8 @@ color: white;">전체보기</button>
                 <button id="s3-backupFile" class="primary">일지백업</button> <input type="file" id="s3_restoreFile" style="display: none;" accept=".json">
 
              <button id="s3-triggerRestore" class="warning">일지복구</button> 
-             <!-- === [수정됨] 버튼 이름 변경 === -->
              <button id="s3-showCalculator">모든일지및가격</button>
-             <!-- === [수정 끝] === -->
-                    <button id="s3-clearForm">폼초기화</button>
+             <button id="s3-clearForm">폼초기화</button>
                     <button id="s3-printPage" class="primary">인쇄</button> 
 
               
@@ -1963,18 +2044,15 @@ padding: 4px; border: 1px solid #ccc; border-radius: 4px;">
                     <tr>
                   
       <th class="date-col">년/월/일</th>
-                        <!-- === [수정됨] S3 날짜 네비게이터 === -->
                         <th colspan="5" id="s3_dateDisplay">
                             <div id="s3_date_nav_container">
                                 <span id="s3_prevDate" class="s3_date_nav_btn no-print">◀ 이전</span>
                                 <span id="s3_dateDisplay_text">날짜 로딩 중...</span>
                                 <span id="s3_nextDate" class="s3_date_nav_btn no-print">다음 ▶</span>
-                                <!-- 숨겨진 날짜 선택기 -->
                                 <input type="date" id="s3_datePicker" class="no-print">
                             </div>
                         </th>
-                        <!-- === [수정 끝] === -->
-                    </tr>
+                        </tr>
                     <tr>
                         <th 
 class="route-col">노선/차량</th>
@@ -2107,7 +2185,7 @@ name="detail_1_2" class="auto-resize"></textarea></td>
                             </td>
                             <td><textarea name="item_2_2" class="auto-resize"></textarea></td>
                            
- <td><textarea name="detail_2_2" class="auto-resize"></textarea></td>
+ S <td><textarea name="detail_2_2" class="auto-resize"></textarea></td>
                             <td><textarea name="parts_2_2" class="auto-resize"></textarea></td>
                             <td><div class="price-wrapper"><input type="text" inputmode="numeric" name="price_2_2" class="price-input" /></div></td>
                             <td><textarea name="worker_2_2" class="auto-resize"></textarea></td>
@@ -2166,7 +2244,6 @@ padding: 4px 8px; background-color: #007bff; color: white; border: none;">
         </div>
     </div>
 
-      <!-- === [수정됨] S3 보고서 모달 === -->
       <div id="s3_calculatorModal" style="display: none;
 position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
 background-color: rgba(0,0,0,0.4);">
@@ -2200,9 +2277,8 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             </div>
         </div>
     </div>
-    <!-- === [수정 끝] === -->
-<script>
-        /* ================================================================= */
+    <script>
+    /* ================================================================= */
         /* [공통] 통합 관리자 (DataManager) */
         /* (S1, S2, S3 데이터 동기화 총괄) */
         /* ================================================================= */
@@ -2475,7 +2551,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 this.ui.fontSizeInput.onchange = (e) => this.applyFontSize(e.target.value + 'pt');
                 this.ui.scheduleActionsSelect.onchange = () => this.handleScheduleActions();
                 this.ui.restoreFile.onchange = (e) => this.restoreScheduleData(e.target.files[0]);
-                document.getElementById('s1-calculateWorkdays').onclick = () => this.calculateWorkdays();
+    document.getElementById('s1-calculateWorkdays').onclick = () => this.calculateWorkdays();
                 this.ui.workTypeSelect.onchange = () => this.handleWorkTypeChange();
                 this.ui.vehicleCountInput.onchange = (e) => this.handleVehicleCountChange(e.target.value);
                 document.getElementById('s1-saveRouteConfig').onclick = () => this.saveRouteConfig();
@@ -2827,8 +2903,9 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 
                 return names.map(item => {
                     const text = item.text.trim();
-                    const display = text === '' ? '.' : text;
-                    const hiddenClass = text === '' ? ' hidden-x' : '';
+                    // [★★★ 수정 ★★★] '휴무'도 빈 칸(.)으로 표시
+                    const display = (text === '' || text === '휴무') ? '.' : text;
+                    const hiddenClass = (text === '' || text === '휴무') ? ' hidden-x' : '';
                
                     const boldClass = item.bold ? ' bold-name' : ''; 
                     return `<span class="name-entry${hiddenClass}${boldClass}">${display}</span>`;
@@ -2851,8 +2928,11 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 });
                 
                 const currentNames = (this.state.scheduleData[dateString] && this.state.scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
-                const morningValue = currentNames[0] ? currentNames[0].text : '';
-                const afternoonValue = currentNames[1] ? currentNames[1].text : '';
+                
+                // [★★★ 수정 ★★★] '휴무'는 빈칸으로 표시
+                const morningValue = (currentNames[0] && currentNames[0].text !== '휴무') ? currentNames[0].text : '';
+                const afternoonValue = (currentNames[1] && currentNames[1].text !== '휴무') ? currentNames[1].text : '';
+                
                 const isBiweeklySunday = (this.state.workTypeConfig[colId] === 'biweekly' && dayOfWeek === 0);
 
                 cell.classList.add('edit-mode');
@@ -2861,8 +2941,8 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 cell.dataset.dayOfWeek = dayOfWeek;
                 
                 cell.innerHTML = `
-                    <input type="text" class="morning-input" value="${morningValue}" placeholder="오전" data-bold="${currentNames[0].bold}">
-                    <input type="text" class="afternoon-input" value="${afternoonValue}" placeholder="오후" data-bold="${currentNames[1].bold}">
+                    <input type="text" class="morning-input" value="${morningValue}" placeholder="오전 (비우면 휴무)" data-bold="${currentNames[0].bold}">
+                    <input type="text" class="afternoon-input" value="${afternoonValue}" placeholder="오후 (비우면 휴무)" data-bold="${currentNames[1].bold}">
                     <div class="cell-buttons">
                         <button class="btn-fixed" ${isBiweeklySunday ? 'disabled title="격주 근무 차량은 일요일 고정 저장이 불가능합니다."' : ''}>고정</button>
                         <button class="btn-temp">임시</button>
@@ -2903,14 +2983,19 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             /**
              * (Util) 편집 셀에서 이름/강조 정보 가져오기
+             * [★★★ 수정 ★★★] 비어있으면 "휴무" 대신 빈칸("")으로 저장
              */
-            getNamesAndBoldStateFromCell(cellElement) {
-               
+           
+             getNamesAndBoldStateFromCell(cellElement) {
                 const morningInput = cellElement.querySelector('.morning-input');
                 const afternoonInput = cellElement.querySelector('.afternoon-input');
+                
+                const morningText = morningInput.value.trim();
+                const afternoonText = afternoonInput.value.trim();
+                
                 return [ 
-                    { text: morningInput.value.trim(), bold: morningInput.dataset.bold === 'true' }, 
-                    { text: afternoonInput.value.trim(), bold: afternoonInput.dataset.bold === 'true' } 
+                    { text: morningText === '' ? '' : morningText, bold: morningInput.dataset.bold === 'true' }, 
+                    { text: afternoonText === '' ? '' : afternoonText, bold: afternoonInput.dataset.bold === 'true' } 
                 ];
             },
 
@@ -2931,7 +3016,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
              */
             saveFixedCell(cellElement) {
                 const { colId, dayOfWeek, dateString } = cellElement.dataset;
-                const namesToSave = this.getNamesAndBoldStateFromCell(cellElement);
+                const namesToSave = this.getNamesAndBoldStateFromCell(cellElement); // [수정] 비어있으면 ''로 저장됨
                 const workType = this.state.workTypeConfig[colId] || 'normal';
                 
                 if (workType === 'biweekly' && dayOfWeek === '0') {
@@ -2970,7 +3055,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
              */
             saveTempCell(cellElement) {
                 const { colId, dateString } = cellElement.dataset;
-                const namesToSave = this.getNamesAndBoldStateFromCell(cellElement);
+                const namesToSave = this.getNamesAndBoldStateFromCell(cellElement); // [수정] 비어있으면 ''로 저장됨
 
                 DataManager.updateS1Data(s1_data => {
                     const routeData = s1_data.routes[this.state.currentRoute];
@@ -2987,6 +3072,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             /**
              * [데이터 연동] '삭제'
+             * [★★★ 수정 ★★★] '휴무' 대신 빈칸('')으로 덮어쓰기
              */
             deleteCell(cellElement) {
                 const { colId, dayOfWeek, dateString } = cellElement.dataset;
@@ -2995,6 +3081,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                     const routeData = s1_data.routes[this.state.currentRoute];
                     if (!routeData) return;
 
+                    // 1. 임시 데이터 삭제
                     if (routeData.tempSchedule[dateString]?.[colId]) {
                         delete routeData.tempSchedule[dateString][colId];
       
@@ -3003,14 +3090,15 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                         }
                     }
 
-     
+                    // 2. 고정 데이터 '삭제' (사실상 ''로 덮어쓰기)
                     const recurringKey = `${dayOfWeek}-${colId}`;
                     if (!routeData.fixedSchedule[recurringKey]) {
                         routeData.fixedSchedule[recurringKey] = [];
                     }
               
        
-                    const blankNames = [{ text: '', bold: false }, { text: '', bold: false }];
+                    const blankNames = [{ text: '', bold: false }, { text: '', bold: false }]; // [★★★ 수정 ★★★]
+  
                     routeData.fixedSchedule[recurringKey] = 
                         routeData.fixedSchedule[recurringKey].filter(entry => entry.dateString !== dateString);
                     
@@ -3245,7 +3333,8 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                                 // if (colId === '미입력') { ... return; } <-- 이 부분 삭제됨
 
                  
-                                let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
+                                let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }]; // [★★★ 수정 ★★★] 기본값 ''
+
                                 
                                 if (this.state.tempScheduleData[dateString] && this.state.tempScheduleData[dateString][colId]) {
    
@@ -3342,6 +3431,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             /**
              * (Util) 근무일수 계산기
+             * [★★★ 수정 ★★★] '휴무'가 아닌 ''(빈칸)을 휴무로 간주
              */
             calculateWorkdays() {
                 if (!this.state.currentRoute) {
@@ -3370,7 +3460,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                     VEHICLE_COLS.forEach(colId => {
                         if (colId === '미입력') return; 
 
-                        let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
+                        let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }]; // [★★★ 수정 ★★★] 기본값 ''
                        
                         if (routeData.tempSchedule[dateString] && routeData.tempSchedule[dateString][colId]) {
                            appliedNames = routeData.tempSchedule[dateString][colId];
@@ -3396,7 +3486,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                             dailyNames[colId].forEach((item, index) => {
                          
                                 const name = item.text.trim();
-                                if (name !== '' && name !== '휴무') {
+                                if (name !== '' && name !== '휴무') { // [수정] '휴무'도 여전히 제외
                                     allNames.add(name);
               
                                     if (!shiftCounts[name]) shiftCounts[name] = { 오전: 0, 오후: 0 };
@@ -3622,90 +3712,75 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
              */
             setVersion() {
                 try {
-                    // [수정] 버전 정보를 5.3.0로 고정
-   
-                    document.getElementById('version-display').textContent = 'Ver 5.3.0';
+                    // [수정] 버전 정보
+                    document.getElementById('version-display').textContent = 'Ver 5.4.3';
                 } catch (e) {
                     console.error("버전 정보를 설정하는 데 실패했습니다.", e);
-                    document.getElementById('version-display').textContent = 'Ver 5.3.0';
+                    document.getElementById('version-display').textContent = 'Ver 5.4.3';
                 }
             }
         };
-       /* ================================================================= */
-        /* [Section 2] 승무 일지 JavaScript */
+/* ================================================================= */
+        /* [Section 2] 승무 일지 JavaScript (수정됨) */
         /* ================================================================= */
 
         /**
          * 3. S2(승무일지) 모듈
-         * - S1 데이터 변경 시(onDataChanged) S2 화면을 새로고침합니다.
-         * - S2 근무자 수정 시 DataManager를 통해 S1 데이터를 수정합니다.
-         * - [수정] S2 일지 데이터를 날짜별로 백업/복원하고, 자동 순환 기능을 관리합니다.
+         * - [수정] 날짜 네비게이션, 기간별 조회 기능 추가
+         * - [★★★ 수정 ★★★] 테이블 레이아웃 변경 (8열 -> 9열)
+         * - [수정] '시간 적용' 시 '오전 시작차량'을 1번으로 자동 회전
+         * - [★★★ 수정 ★★★] 근무시간 '휴무' 선택 시 휴무자 칸 자동 입력
+         * - [★★★ 수정 ★★★] S1 '휴무' -> ''(빈칸) 연동
          */
         const S2_Module = {
             // S2 UI 요소
             ui: {
                 headerTitle: document.querySelector('#section2 .header-title'),
-                dateDisplay: document.getElementById('today-date'),
                 fontSizeSelect: document.getElementById('font-size-select'),
-         
                 dispatchLogBody: document.getElementById('dispatch-log-body'),
+                // 날짜 네비게이션
+                prevDateBtn: document.getElementById('s2_prevDate'),
+                todayBtn: document.getElementById('s2_today'),
+                nextDateBtn: document.getElementById('s2_nextDate'),
+                startDateInput: document.getElementById('s2_startDate'),
+                endDateInput: document.getElementById('s2_endDate'),
+                loadRangeBtn: document.getElementById('s2_loadRange'),
                 // 모달
                 restoreModal: document.getElementById('s2_restoreDateModal'),
                 restoreFile: document.getElementById('s2_restoreFile'),
                 cancelRestoreBtn: document.getElementById('s2_cancelRestoreBtn'),
                 confirmRestoreBtn: document.getElementById('s2_confirmRestoreBtn'),
-       
             },
 
             // S2 내부 상태
             state: {
-                // [수정] s2_currentDate는 오늘 날짜로 고정됨
-                s2_currentDate: new Date(),
-                S2_ROUTE_MAP: { // S1 노선명 -> S2 ID 매핑 (확장성)
-   
+                // [수정] s2_currentDates는 현재 조회 중인 날짜 목록
+                s2_currentDates: [], // [ { date: Date, dateString: "YYYY-MM-DD" } ]
+                S2_ROUTE_MAP: { 
                     '종로07번': '07',
                     '종로08번': '08',
                     '성동 3-1번': 'sd31',
                     '성동 3-2번': 'sd32'
                 },
- 
-                S2_USED_VEHICLES: {}, // 현재 S2 화면에 표시된 차량 (차번 변경 시 중복 체크용)
+                S2_USED_VEHICLES: {}, 
                 s2_draggedCell: null,
                 s2_draggedRoute: null
             },
             
             // --- [추가] S2 순환주기 헬퍼 함수 ---
-            /**
-             * 날짜에 일을 더합니다.
-             * @param {Date} date - 기준 날짜
-             * @param {number} days - 더할 일수
-             * @returns {Date} - 계산된 날짜
-             */
             addDays(date, days) {
                 const result = new Date(date);
                 result.setDate(result.getDate() + days);
                 return result;
             },
-            /**
-             * 날짜에 월을 더합니다.
-             * @param {Date} date - 기준 날짜
-             * @param {number} months - 더할 월수
-             * @returns {Date} - 계산된 날짜
-             */
             addMonths(date, months) {
                 const result = new Date(date);
                 result.setMonth(result.getMonth() + months);
                 return result;
             },
-            /**
-             * 배열을 무작위로 섞습니다.
-             * (Fisher-Yates shuffle)
-             * @param {Array} array - 섞을 배열
-             * @returns {Array} - 섞인 새 배열
-             */
             shuffleArray(array) {
                 let currentIndex = array.length, randomIndex;
-                const newArray = [...array]; // 원본 훼손 방지
+                const newArray = [...array]; 
                 while (currentIndex !== 0) {
                     randomIndex = Math.floor(Math.random() * currentIndex);
                     currentIndex--;
@@ -3714,12 +3789,6 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 }
                 return newArray;
             },
-            /**
-             * 배열을 순환시킵니다.
-             * @param {Array} array - 순환할 배열
-             * @param {number} count - 순환 횟수 (양수: 앞으로, 음수: 뒤로)
-             * @returns {Array} - 순환된 새 배열
-             */
             rotateArray(array, count) {
                 const len = array.length;
                 if (len === 0) return [];
@@ -3739,20 +3808,14 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
              * S2 모듈 초기화 (DOM 로드 시 1회 실행)
              */
             initialize() {
-             
                 console.log("S2: 초기화 시작");
                 DataManager.subscribe(this); // DataManager에 S2 모듈 등록
                 DataManager.loadS2Data(); // S2 전용 일지 데이터 로드
                 
-                // [수정] 오늘 날짜로 고정
-                this.state.s2_currentDate = new Date();
-                // [수정] 오늘 날짜의 0시 0분 0초 (비교 기준)
-                this.state.s2_currentDate.setHours(0, 0, 0, 0);
-                
                 this.bindEventListeners();
                 
-                // S2의 오늘 날짜 표시
-                this.ui.dateDisplay.textContent = this.getTodayDateString(this.state.s2_currentDate);
+                // [수정] 오늘 날짜로 초기화 및 화면 로드
+                this.loadToday();
                 
                 // --- [!!! NEW !!!] ---
                 // [핵심] 자동 순환 로직 실행
@@ -3764,16 +3827,28 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 this.refreshDispatchLog();
                 console.log("S2: 초기화 완료.");
             },
+            
+            /**
+             * [수정] 오늘 날짜 로드
+             */
+            loadToday() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayString = DataManager.getTodayDateString(today);
+
+                this.state.s2_currentDates = [{ date: today, dateString: todayString }];
+                this.ui.startDateInput.value = todayString;
+                this.ui.endDateInput.value = todayString;
+
+                this.refreshDispatchLog();
+            },
 
             /**
              * [핵심] DataManager로부터 알림을 처리하는 함수 (S1에서 데이터 변경 시)
              */
             onDataChanged(event, payload) {
                 if (event === 's1_data_changed') {
-                
                     console.log("[S2] S1로부터 데이터 변경 알림 수신. S2 갱신 시작.");
-                    // S1 데이터(근무표)가 변경되었으므로 S2 화면(근무자)을 새로고침
-                    // [수정] 자동 순환 로직은 initialize에서만 실행하므로 여기서는 refresh만 호출
                     this.refreshDispatchLog();
                 }
             },
@@ -3789,14 +3864,19 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 document.getElementById('s2-showRestoreModal').onclick = () => this.showRestoreModal();
                 
                 document.getElementById('s2-refreshLog').onclick = () => {
-                    // [수정] 새로고침 메시지 변경 (설정은 유지됨을 명시)
-                    if (confirm("승무일지를 새로고침 하시겠습니까?\n\n[확인]을 누르면 오늘 날짜의 승무일지(S2)에 입력된 모든 [시간/근무시간] 데이터가 삭제되고 S1 근무표 기준으로 다시 불러옵니다.\n(출차순서 및 시간적용 설정은 변경되지 않습니다.)")) {
-                        this.resetS2LogForToday();
+                    if (confirm("현재 조회된 *모든 날짜*의 승무일지를 새로고침 하시겠습니까?\n\n[확인]을 누르면 현재 선택된 날짜들의 승무일지(S2)에 입력된 [시간/근무시간] 데이터가 삭제되고 S1 근무표 기준으로 다시 불러옵니다.\n(출차순서 및 시간적용 설정은 변경되지 않습니다.)")) {
+                        this.resetS2LogForCurrentDates(); // [수정]
                         this.refreshDispatchLog(); // S1 기준으로 다시 그림
                     }
                 };
                 
                 document.getElementById('s2-printPage').onclick = () => this.printPage();
+
+                // [수정] 날짜 네비게이션
+                this.ui.prevDateBtn.onclick = () => this.navigateDate(-1);
+                this.ui.todayBtn.onclick = () => this.loadToday();
+                this.ui.nextDateBtn.onclick = () => this.navigateDate(1);
+                this.ui.loadRangeBtn.onclick = () => this.loadDateRange();
 
                 // 모달 버튼
                 this.ui.cancelRestoreBtn.onclick = () => this.hideRestoreModal();
@@ -3812,17 +3892,18 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 // (동적 생성 요소 이벤트는 dispatchLogBody에 위임)
                 const logBody = this.ui.dispatchLogBody;
                 
-                // [NEW] input, select 변경 시 즉시 S2 로그 저장
                 logBody.onchange = (e) => {
                     const target = e.target;
                     
                     // 1. 시간 입력 (HH:MM 자동 포맷)
-                    if (target.tagName === 'INPUT' && target.getAttribute('name')?.startsWith('start_time_')) {
+                    if (target.tagName === 'INPUT' && (target.getAttribute('name')?.startsWith('start_time_') || target.getAttribute('name')?.startsWith('pm_start_time_'))) {
                         target.value = this.formatTimeInput(target.value);
                         this.saveS2LogEntryFromElement(target);
                     }
                     // 2. 근무 시간 선택
-                    else if (target.tagName === 'SELECT' && target.getAttribute('name')?.startsWith('work_hours_')) {
+                    else if (target.tagName === 'SELECT' && target.classList.contains('s2-work-hours-select')) {
+                        // [★★★ 수정 ★★★] 휴무자 자동 입력 로직
+                        this.handleWorkHoursChange(target); 
                         this.saveS2LogEntryFromElement(target);
                     }
                     // 3. [수정] 노선별 순환주기 변경
@@ -3875,7 +3956,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 };
                 
                 logBody.onmousedown = (e) => {
-                    const carControlBtn = e.target.closest('.car-controls button');
+const carControlBtn = e.target.closest('.car-controls button');
                     if (carControlBtn) {
                         e.preventDefault();
                         const td = carControlBtn.closest('.car-number-cell');
@@ -3904,9 +3985,12 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                         e.preventDefault();
                         const routeId = settingBtn.dataset.routeId;
                         const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
+                        // [수정] 시간 적용은 현재 표시된 첫 번째 날짜 기준
+                        const dateString = this.state.s2_currentDates[0]?.dateString; 
+                        if (!dateString) return;
+
                         if (settingBtn.classList.contains('apply-button')) {
-                            // [수정] '시간 적용'은 이제 S2 데이터에 저장된 설정값을 읽어와 적용
-                            this.applyScheduleSettings(routeName, routeId, true); // true = 강제 적용 및 저장
+                            this.applyScheduleSettings(routeName, routeId, dateString, true); // true = 강제 적용 및 저장
                         } else if (settingBtn.classList.contains('reset-button')) {
                             this.resetScheduleSettings(routeName, routeId);
                         }
@@ -3934,10 +4018,13 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             // --- S2 UI/상태 관리 ---
             
-            getTodayDateString(dateObj) {
-                return (dateObj || this.state.s2_currentDate).toLocaleDateString('ko-KR', { 
+            /**
+             * [수정] 날짜 포맷 (다국어 지원)
+             */
+            getFormattedDateString(dateObj) {
+                return dateObj.toLocaleDateString('ko-KR', { 
                     year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'long' 
-                }).replace(/\. /g, '.').replace(/\.$/, '').replace(/(\d{4})년 (\d{2})월 (\d{2})일/,'$1년 $2월 $3일');
+                }).replace(/\. /g, '.').replace(/\.$/, '');
             },
             
             changeFontSize(size) {
@@ -4022,6 +4109,68 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 
                 return text.toLowerCase().replace(/[^a-z0-9-]/g, '');
             },
+
+            // --- [수정] S2 날짜 네비게이션 ---
+
+            /**
+             * [NEW] 이전/다음 날짜로 이동 (단일 날짜 조회)
+             */
+            navigateDate(days) {
+                if (this.state.s2_currentDates.length === 0) {
+                    this.loadToday();
+                    return;
+                }
+                // 현재 표시된 첫 번째 날짜 기준
+                const currentDate = this.state.s2_currentDates[0].date;
+                const newDate = this.addDays(currentDate, days);
+                newDate.setHours(0, 0, 0, 0);
+                const newDateString = DataManager.getTodayDateString(newDate);
+
+                this.state.s2_currentDates = [{ date: newDate, dateString: newDateString }];
+                this.ui.startDateInput.value = newDateString;
+                this.ui.endDateInput.value = newDateString;
+
+                this.refreshDispatchLog();
+            },
+            
+            /**
+             * [NEW] 기간별 날짜 조회
+             */
+            loadDateRange() {
+                const startDateStr = this.ui.startDateInput.value;
+                const endDateStr = this.ui.endDateInput.value;
+
+                if (!startDateStr || !endDateStr) {
+                    alert('시작일과 종료일을 모두 선택해주세요.');
+                    return;
+                }
+
+                const startDate = new Date(startDateStr + 'T00:00:00');
+                const endDate = new Date(endDateStr + 'T00:00:00');
+
+                if (startDate > endDate) {
+                    alert('시작일은 종료일보다 이전이거나 같아야 합니다.');
+                    return;
+                }
+
+                const dates = [];
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    d.setHours(0,0,0,0);
+                    dates.push({
+                        date: new Date(d),
+                        dateString: DataManager.getTodayDateString(d)
+                    });
+                }
+                
+                if (dates.length > 31) {
+                    alert('조회 기간은 최대 31일입니다.');
+                    return;
+                }
+
+                this.state.s2_currentDates = dates;
+                this.refreshDispatchLog();
+            },
+
 
             // --- [수정] S2 순환주기 계산 로직 (applyAutoRotation) ---
             
@@ -4135,7 +4284,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             /**
              * [!!! NEW !!!] [★★★ 수정됨 ★★★]
              * 자동 순환된 배차표(S2 로그)를 생성합니다. (applyAutoRotation 내부에서 호출됨)
-             * 요청사항 1: 근무자가 없는 차량은 시간 적용에서 제외합니다.
+             * [★★★ 수정 ★★★] : S1 근무표 기준 '' 또는 '휴무'가 아닐 때만 시간 적용
              */
             generateAutoRotatedLog(s2_data, routeName, routeData, newOrder, today) {
                 const todayString = DataManager.getTodayDateString(today);
@@ -4224,7 +4373,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                             if (hasPmDriver) { // 근무자가 있을 때만 시간 적용
                                 const timeStr = pm_currentTime.toTimeString().slice(0, 5);
                                 if (!s2_log_today_route[carNum]) s2_log_today_route[carNum] = {};
-                                s2_log_today_route[carNum][`start_time_${routeId}_${carNum}_pm`] = timeStr;
+                                s2_log_today_route[carNum][`pm_start_time_${routeId}_${carNum}_pm`] = timeStr; 
                                 pm_currentTime.setMinutes(pm_currentTime.getMinutes() - pm_interval);
                             }
                         }
@@ -4240,7 +4389,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                             if (hasPmDriver) { // 근무자가 있을 때만 시간 적용
                                 const timeStr = pm_currentTime.toTimeString().slice(0, 5);
                                 if (!s2_log_today_route[carNum]) s2_log_today_route[carNum] = {};
-                                s2_log_today_route[carNum][`start_time_${routeId}_${carNum}_pm`] = timeStr;
+                                s2_log_today_route[carNum][`pm_start_time_${routeId}_${carNum}_pm`] = timeStr;
                                 pm_currentTime.setMinutes(pm_currentTime.getMinutes() - pm_interval);
                             }
                         }
@@ -4255,100 +4404,123 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             /**
              * [수정됨] refreshDispatchLog
-             * - S2에 저장된 설정값(_settings)을 기준으로 순서(baseOrder)를 불러옴
+             * - s2_currentDates (배열)을 순회하며 모든 날짜의 일지를 그림
              */
             refreshDispatchLog() {
-        
                 console.log("[S2] 승무일지 새로고침 시작...");
                 
                 const { routeData: currentS1RouteData } = DataManager.getCurrentRouteData();
                 const s1_companyName = currentS1RouteData ? currentS1RouteData.companyName : "승무일지";
                 this.ui.headerTitle.textContent = `${s1_companyName} 승무일지`;
                 
-                // S2는 s2_currentDate (오늘) 기준
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
-                const dayOfWeek = this.state.s2_currentDate.getDay();
-                
                 const allRoutes = DataManager.getAllRoutes();
-                // [수정] 오늘 날짜의 S2 로그 (자동 생성되었거나, 수동 입력된)
-                const s2_logData = DataManager.getS2LogByDate(dateString);
-                
                 const container = this.ui.dispatchLogBody;
                 container.innerHTML = ''; 
-                
-                for (const routeName in allRoutes) {
-                    const routeData = allRoutes[routeName];
-                    if (!routeData) continue;
-                    
-                    const routeId = this.sanitizeForId(routeName);
 
-                    // 1. S2 설정값 불러오기 (순서, 주기, 시간 설정 등)
-                    const s2_settings = DataManager.getS2RouteSettings(routeName);
-                    // 2. S1 근무표 데이터 계산 (S1 데이터는 순서와 무관, 이름만 가져옴)
-                    const todayS1Schedule = this.getTodayS1Schedule(routeData, dateString, dayOfWeek);
-                    // 3. S2 오늘 날짜 로그 (시간, 근무시간)
-                    const todayS2RouteLog = s2_logData[routeName] || {};
+                if (this.state.s2_currentDates.length === 0) {
+                    container.innerHTML = '<div class="date-header">조회할 날짜를 선택해주세요.</div>';
+                    return;
+                }
 
-                    // 4. [수정] S1 차량 목록 (S1 원본)
-                    let s1_base_list = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력');
-                    const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-                    s1_base_list.sort(collator.compare);
+                // [수정] 선택된 모든 날짜를 순회
+                this.state.s2_currentDates.forEach(dateInfo => {
+                    const { date, dateString } = dateInfo;
+                    const dayOfWeek = date.getDay();
                     
-                    // 5. [수정] S2에 저장된 차량 순서 (자동 순환 적용된)
-                    // (S2 설정에 순서가 없으면 S1 원본 목록 사용)
-                    const validVehicles = (s2_settings.baseOrder && s2_settings.baseOrder.length > 0) ?
-                        s2_settings.baseOrder : s1_base_list;
+                    // 1. 날짜 헤더 추가
+                    container.insertAdjacentHTML('beforeend', 
+                        `<div class="date-header">${this.getFormattedDateString(date)}</div>`
+                    );
                     
-                    const tableHeader = this.createTableHeaderHTML(routeId);
-                    let tableBodyHTML = '';
-                    const halfCount = Math.ceil(validVehicles.length / 2);
-                    
-                    for (let i = 0; i < halfCount; i++) {
-                        const leftCar = validVehicles[i] || '미입력';
-                        const rightCar = validVehicles[i + halfCount] || '미입력';
+                    // 2. S2 로그 (해당 날짜)
+                    const s2_logData = DataManager.getS2LogByDate(dateString);
+
+                    // 3. 모든 노선 순회
+                    for (const routeName in allRoutes) {
+                        const routeData = allRoutes[routeName];
+                        if (!routeData) continue;
                         
-                        const leftHTML = this.createRowSideHTML(routeName, leftCar, todayS1Schedule, todayS2RouteLog, s2_settings);
-                        const rightHTML = this.createRowSideHTML(routeName, rightCar, todayS1Schedule, todayS2RouteLog, s2_settings);
+                        const routeId = this.sanitizeForId(routeName);
+
+                        // 3a. S2 설정 (순서, 주기, 시간 설정 등)
+                        const s2_settings = DataManager.getS2RouteSettings(routeName);
+                        // 3b. S1 근무표 (해당 날짜)
+                        const todayS1Schedule = this.getTodayS1Schedule(routeData, dateString, dayOfWeek);
+                        // 3c. S2 로그 (해당 날짜, 해당 노선)
+                        const todayS2RouteLog = s2_logData[routeName] || {};
+
+                        // 3d. S1 차량 목록 (원본)
+                        let s1_base_list = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력');
+                        const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+                        s1_base_list.sort(collator.compare);
                         
-                        tableBodyHTML += `<tr>${leftHTML}${rightHTML}</tr>`;
-                    }
-                    
-                    // 6. [★★★ 여기가 수정된 부분입니다 ★★★]
-                    // [수정] S1 원본 목록(s1_base_list) 대신 순환 적용된 목록(validVehicles)을 전달
-                    const s2_optionsHTML = this.createOptionsHTML(routeId, routeName, validVehicles, s2_settings);
-                    
-                    container.insertAdjacentHTML('beforeend', `
-                        <div class="route-section" id="route-${routeId}" data-route-name="${routeName}">
-                            <div class="route-header-flex">
-                                <div class="route-title-group">
-          
-                                    <div class="route-name-text">${routeName}</div>
+                        // 3e. S2 차량 순서 (자동 순환 적용된)
+                        const validVehicles = (s2_settings.baseOrder && s2_settings.baseOrder.length > 0) ?
+                            s2_settings.baseOrder : s1_base_list;
+                        
+                        // [수정] 헤더와 옵션은 첫 번째 날짜에만 표시 (복잡성 감소)
+                        let s2_optionsHTML = '';
+                        if (dateString === this.state.s2_currentDates[0].dateString) {
+                            s2_optionsHTML = this.createOptionsHTML(routeId, routeName, validVehicles, s2_settings);
+                        }
+
+                        // 3f. 테이블 생성
+                        const tableHeader = this.createTableHeaderHTML(routeId);
+                        let tableBodyHTML = '';
+                        const halfCount = Math.ceil(validVehicles.length / 2);
+                        
+                        for (let i = 0; i < halfCount; i++) {
+                            const leftCar = validVehicles[i] || '미입력';
+                            const rightCar = validVehicles[i + halfCount] || '미입력';
+                            
+                            const leftHTML = this.createRowSideHTML(routeName, leftCar, todayS1Schedule, todayS2RouteLog, s2_settings, dateString);
+                            const rightHTML = this.createRowSideHTML(routeName, rightCar, todayS1Schedule, todayS2RouteLog, s2_settings, dateString);
+                            
+                            tableBodyHTML += `<tr data-date-string="${dateString}">${leftHTML}${rightHTML}</tr>`; // [수정] tr에 날짜 추가
+                        }
+                        
+                        container.insertAdjacentHTML('beforeend', `
+                            <div class="route-section" id="route-${routeId}" data-route-name="${routeName}">
+                                <div class="route-header-flex">
+                                    <div class="route-title-group">
+                                        <div class="route-name-text">${routeName}</div>
+                                    </div>
+                                    ${s2_optionsHTML}
                                 </div>
-                                ${s2_optionsHTML}
-         
+                                <table class="journal-table">
+                                    ${tableHeader}
+                                    <tbody>${tableBodyHTML}</tbody>
+                                </table>
                             </div>
-                            <table class="journal-table">
-                                ${tableHeader}
-                    
-                                <tbody>${tableBodyHTML}</tbody>
-                            </table>
-                        </div>
-                    `);
-                } 
+                        `);
+                    } // 노선 루프 끝
+                }); // 날짜 루프 끝
+                
+                // [수정] 옵션 HTML이 첫 번째 날짜에만 렌더링되므로, 모든 옵션 값을 다시 채워줌
+                this.state.s2_currentDates.forEach(dateInfo => {
+                    if (dateInfo.dateString === this.state.s2_currentDates[0].dateString) {
+                        for (const routeName in allRoutes) {
+                            const routeId = this.sanitizeForId(routeName);
+                            const s2_settings = DataManager.getS2RouteSettings(routeName);
+                            this.fillOptionsValues(routeId, s2_settings);
+                        }
+                    }
+                });
+
                 console.log("[S2] 승무일지 새로고침 완료.");
             },
             
             /**
-             * [수정됨] 새로고침 시 오늘 날짜의 S2 로그(입력 시간, 근무시간)만 삭제합니다.
-* (출차순서 설정, 시간 설정은 `_settings`에 저장되므로 영향을 받지 않습니다.)
+             * [수정] 현재 조회 중인 모든 날짜의 S2 로그만 삭제
              */
-            resetS2LogForToday() {
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
+            resetS2LogForCurrentDates() {
                 DataManager.updateS2Data(s2_data => {
-                    if (s2_data[dateString]) {
-                        delete s2_data[dateString];
-                        console.log(`[S2] ${dateString} 날짜의 승무일지 로그가 초기화되었습니다.`);
-                    }
+                    this.state.s2_currentDates.forEach(dateInfo => {
+                        if (s2_data[dateInfo.dateString]) {
+                            delete s2_data[dateInfo.dateString];
+                            console.log(`[S2] ${dateInfo.dateString} 날짜의 승무일지 로그가 초기화되었습니다.`);
+                        }
+                    });
                 });
             },
 
@@ -4372,15 +4544,16 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             /**
              * [NEW] input/select 변경 시 S2 로그 즉시 저장
+             * [수정] 날짜 데이터셋(data-date-string) 추가
              */
             saveS2LogEntryFromElement(element) {
                 const carNum = element.dataset.carNum;
                 const routeName = element.closest('.route-section').dataset.routeName;
                 const name = element.getAttribute('name');
                 const value = element.value;
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
+                const dateString = element.closest('tr').dataset.dateString; // [수정]
 
-                if (!carNum || !routeName || !name) return;
+                if (!carNum || !routeName || !name || !dateString) return;
 
                 DataManager.updateS2Data(s2_data => {
                     if (!s2_data[dateString]) s2_data[dateString] = {};
@@ -4478,141 +4651,77 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             // --- S2 HTML 생성 헬퍼 ---
 
             /**
-             * 오늘 날짜의 S1 근무표를 차량번호: [오전, 오후] 맵으로 반환
-             */
-            getTodayS1Schedule(routeData, dateString, dayOfWeek) {
-                const s1Schedule = {};
-                const VEHICLE_COLS = routeData.vehicleColumns || [];
-
-                VEHICLE_COLS.forEach(colId => {
-                    if (colId === '미입력') return; 
-
-                    let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
-                    
-                    if (routeData.tempSchedule[dateString] && routeData.tempSchedule[dateString][colId]) {
-                       appliedNames = routeData.tempSchedule[dateString][colId];
-                    } else {
-                        const recurringKey = `${dayOfWeek}-${colId}`;
-                        if (routeData.fixedSchedule[recurringKey]) {
-                            let anchorEntry = null;
-                            for (const entry of routeData.fixedSchedule[recurringKey]) {
-                                if (new Date(dateString) >= new Date(entry.dateString)) {
-                                    anchorEntry = entry;
-                                    break;
-                                }
-                            }
-                            if (anchorEntry) {
-                                const workType = routeData.workTypeConfig[colId] || 'normal';
-                                if (workType === 'biweekly' && dayOfWeek !== 0) {
-                                    const anchorDate = new Date(anchorEntry.dateString);
-                                    const currentDate = new Date(dateString);
-                                    anchorDate.setHours(0, 0, 0, 0);
-                                    currentDate.setHours(0, 0, 0, 0);
-                                    const msInDay = 24 * 60 * 60 * 1000;
-                                    const diffInDays = Math.round((currentDate.getTime() - anchorDate.getTime()) / msInDay);
-                                    const weekDifference = Math.floor(diffInDays / 7);
-                                    
-                                    if (weekDifference % 2 === 1) {
-                                        appliedNames = [anchorEntry.names[1], anchorEntry.names[0]];
-                                    } else {
-                                        appliedNames = anchorEntry.names;
-                                    }
-                                } else {
-                                    appliedNames = anchorEntry.names;
-                                }
-                            }
-                        }
-                    }
-                    s1Schedule[colId] = appliedNames;
-                });
-                return s1Schedule;
-            },
-            
-            createTableHeaderHTML(routeId) {
-                return `<colgroup>
-                    <col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;">
-                    <col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;"><col style="width: 5.4%;">
-                </colgroup>
-                <thead>
-                    <tr>
-                        <th id="header-car-${routeId}-am">차량</th><th>오전</th><th>운행시간</th><th>오전</th><th>차량</th><th>오후</th><th>운행시간</th><th>오후</th>
-                        <th id="header-car-${routeId}-pm">차량</th><th>오전</th><th>운행시간</th><th>오전</th><th>차량</th><th>오후</th><th>운행시간</th><th>오후</th>
-                    </tr>
-                </thead>`;
-            },
-/**
-             * [S2] 테이블 헤더 HTML 생성
-             * @param {string} routeId - 노선 ID (예: '07')
-             * @returns {string} - <table>의 <colgroup>과 <thead> HTML
+             * [★★★ 수정 ★★★] S2 테이블 헤더 HTML 생성 (9열 * 2 = 18열)
              */
             createTableHeaderHTML(routeId) {
                 const colgroup = `
                     <colgroup>
+                        <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;">
                         <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;">
-                        <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;">
-                        <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;">
+                        
+                        <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;">
                         <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;"> <col style="width: 5.4%;">
                     </colgroup>`;
                 
                 const header = `
                     <thead>
                         <tr>
-                            <th id="header_car_${routeId}_1">차<br>량</th>
+                            <th id="header_car_${routeId}_1">차<br>번</th>
                             <th>오전<br>근무</th>
-                            <th>출근<br>시간</th>
+                            <th>출발<br>시간</th>
                             <th>근무<br>시간</th>
+                            <th>휴무자<br>(오전)</th>
                             <th>오후<br>근무</th>
                             <th>출근<br>시간</th>
                             <th>근무<br>시간</th>
-                            <th>비<br>고</th>
-                            <th id="header_car_${routeId}_2">차<br>량</th>
+                            <th>휴무자<br>(오후)</th>
+                            
+                            <th id="header_car_${routeId}_2">차<br>번</th>
                             <th>오전<br>근무</th>
-                            <th>출근<br>시간</th>
+                            <th>출발<br>시간</th>
                             <th>근무<br>시간</th>
+                            <th>휴무자<br>(오전)</th>
                             <th>오후<br>근무</th>
                             <th>출근<br>시간</th>
                             <th>근무<br>시간</th>
-                            <th>비<br>고</th>
+                            <th>휴무자<br>(오후)</th>
                         </tr>
                     </thead>`;
                 return colgroup + header;
             },
 
             /**
-             * [S2] 테이블 행의 절반(좌/우) HTML 생성
-             * @param {string} routeName - 노선 이름 (예: '종로07번')
-             * @param {string} carNum - 차량 번호 (예: '5518' 또는 '미입력')
-             * @param {object} todayS1Schedule - 오늘 날짜의 S1 근무표 데이터
-             * @param {object} todayS2RouteLog - 오늘 날짜의 S2 로그 데이터
-             * @param {object} s2_settings - 이 노선의 S2 설정값
-             * @returns {string} - <tr>의 절반에 해당하는 <td> 8개 HTML
+             * [★★★ 수정 ★★★] S2 테이블 행의 절반(좌/우) HTML 생성 (9열)
              */
-            createRowSideHTML(routeName, carNum, todayS1Schedule, todayS2RouteLog, s2_settings) {
+            createRowSideHTML(routeName, carNum, todayS1Schedule, todayS2RouteLog, s2_settings, dateString) {
                 const routeId = this.sanitizeForId(routeName);
 
                 if (carNum === '미입력' || !carNum) {
                     return `
                         <td class="car-number-cell" data-car-number="미입력"></td>
-                        <td></td> <td></td> <td></td>
+                        <td></td> <td></td> <td></td> <td></td>
                         <td></td> <td></td> <td></td> <td></td>
                     `;
                 }
 
                 // 1. S1 데이터 (근무자)
-                const s1CarData = todayS1Schedule[carNum] || [{ text: '' }, { text: '' }];
+                const s1CarData = todayS1Schedule[carNum] || [{ text: '', bold: false }, { text: '', bold: false }];
                 const amDriver = s1CarData[0];
                 const pmDriver = s1CarData[1];
+                
+                // [★★★ 수정 ★★★] S1 '휴무' 또는 '' 는 빈칸으로 표시
                 const amDriverText = (amDriver.text || '').trim();
                 const pmDriverText = (pmDriver.text || '').trim();
-                const amDriverBold = amDriver.bold ? 'font-weight: bold;' : '';
-                const pmDriverBold = pmDriver.bold ? 'font-weight: bold;' : '';
                 const amDriverDisplay = (amDriverText === '' || amDriverText === '휴무') ? '' : amDriverText;
                 const pmDriverDisplay = (pmDriverText === '' || pmDriverText === '휴무') ? '' : pmDriverText;
 
+                const amDriverBold = amDriver.bold ? 'font-weight: bold;' : '';
+                const pmDriverBold = pmDriver.bold ? 'font-weight: bold;' : '';
+                
                 // 2. S2 데이터 (시간, 근무시간)
                 const s2CarData = todayS2RouteLog[carNum] || {};
-                const amTimeKey = `start_time_${routeId}_${carNum}_am`;
-                const pmTimeKey = `start_time_${routeId}_${carNum}_pm`;
+                const amTimeKey = `start_time_${routeId}_${carNum}_am`; // 출발시간
+                const pmTimeKey = `pm_start_time_${routeId}_${carNum}_pm`; // 오후 출근시간
                 const amHoursKey = `work_hours_${routeId}_${carNum}_am`;
                 const pmHoursKey = `work_hours_${routeId}_${carNum}_pm`;
                 
@@ -4621,9 +4730,13 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 const amHoursValue = s2CarData[amHoursKey] || '';
                 const pmHoursValue = s2CarData[pmHoursKey] || '';
 
-                // 근무시간 선택 옵션 HTML 생성
+                // 3. [★★★ 수정 ★★★] 휴무자 칸 자동 계산
+                const amHolidayDisplay = (amHoursValue === '휴무') ? amDriverDisplay : '';
+                const pmHolidayDisplay = (pmHoursValue === '휴무') ? pmDriverDisplay : '';
+
+                // [수정] 근무시간 선택 옵션 HTML (2~12, 휴무)
                 const createWorkHoursOptions = (selectedValue) => {
-                    const options = ['', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '휴무'];
+                    const options = ['', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '휴무'];
                     return options.map(opt => 
                         `<option value="${opt}" ${opt === selectedValue ? 'selected' : ''}>${opt}</option>`
                     ).join('');
@@ -4632,7 +4745,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 const amHoursOptions = createWorkHoursOptions(amHoursValue);
                 const pmHoursOptions = createWorkHoursOptions(pmHoursValue);
 
-                // 3. HTML 반환
+                // 4. HTML 반환 (data-date-string 추가)
                 return `
                     <td class="car-number-cell" data-car-number="${carNum}" draggable="true">
                         <div class="car-display">${carNum}</div>
@@ -4644,7 +4757,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                             </div>
                         </div>
                     </td>
-                    <td data-edit-type="driver" data-s1-key="${routeName}" data-car-number="${carNum}" data-shift="am">
+                    <td data-edit-type="driver" data-s1-key="${routeName}" data-car-number="${carNum}" data-shift="am" data-date-string="${dateString}">
                         <span class="driver-name" style="${amDriverBold}">${amDriverDisplay}</span>
                         <input type="text" class="driver-input hidden" value="${amDriverText}">
                         <div class="edit-controls hidden">
@@ -4652,10 +4765,11 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                             <button class="btn-driver-save">저장</button>
                         </div>
                     </td>
-                    <td><input type="text" inputmode="numeric" name="${amTimeKey}" value="${amTimeValue}" ${amDriverDisplay ? '' : 'disabled'}></td>
-                    <td><select class="s2-work-hours-select" name="${amHoursKey}" ${amDriverDisplay ? '' : 'disabled'}>${amHoursOptions}</select></td>
+                    <td><input type="text" inputmode="numeric" name="${amTimeKey}" data-car-num="${carNum}" value="${amTimeValue}" ${amDriverDisplay ? '' : 'disabled'}></td>
+                    <td><select class="s2-work-hours-select" name="${amHoursKey}" data-car-num="${carNum}" data-shift="am" ${amDriverDisplay ? '' : 'disabled'}>${amHoursOptions}</select></td>
+                    <td class="s2-holiday-cell" data-shift="am">${amHolidayDisplay}</td>
                     
-                    <td data-edit-type="driver" data-s1-key="${routeName}" data-car-number="${carNum}" data-shift="pm">
+                    <td data-edit-type="driver" data-s1-key="${routeName}" data-car-number="${carNum}" data-shift="pm" data-date-string="${dateString}">
                         <span class="driver-name" style="${pmDriverBold}">${pmDriverDisplay}</span>
                         <input type="text" class="driver-input hidden" value="${pmDriverText}">
                         <div class="edit-controls hidden">
@@ -4663,20 +4777,39 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                             <button class="btn-driver-save">저장</button>
                         </div>
                     </td>
-                    <td><input type="text" inputmode="numeric" name="${pmTimeKey}" value="${pmTimeValue}" ${pmDriverDisplay ? '' : 'disabled'}></td>
-                    <td><select class="s2-work-hours-select" name="${pmHoursKey}" ${pmDriverDisplay ? '' : 'disabled'}>${pmHoursOptions}</select></td>
-                    
-                    <td></td>
+                    <td><input type="text" inputmode="numeric" name="${pmTimeKey}" data-car-num="${carNum}" value="${pmTimeValue}" ${pmDriverDisplay ? '' : 'disabled'}></td>
+                    <td><select class="s2-work-hours-select" name="${pmHoursKey}" data-car-num="${carNum}" data-shift="pm" ${pmDriverDisplay ? '' : 'disabled'}>${pmHoursOptions}</select></td>
+                    <td class="s2-holiday-cell" data-shift="pm">${pmHolidayDisplay}</td>
                 `;
+            },
+            
+            /**
+             * [★★★ 수정 ★★★] 근무시간 변경 시 휴무자 칸 자동 업데이트
+             */
+            handleWorkHoursChange(selectElement) {
+                const selectedValue = selectElement.value;
+                const shift = selectElement.dataset.shift; // 'am' or 'pm'
+                const tr = selectElement.closest('tr');
+                
+                // 1. 해당 줄(am/pm)의 근무자 이름 가져오기
+                const driverNameSpan = tr.querySelector(`td[data-shift="${shift}"] .driver-name`);
+                const driverName = driverNameSpan ? driverNameSpan.textContent : '';
+                
+                // 2. 해당 줄(am/pm)의 휴무자 칸 찾기
+                const holidayCell = tr.querySelector(`td.s2-holiday-cell[data-shift="${shift}"]`);
+                
+                // 3. 값 업데이트
+                if (holidayCell) {
+                    if (selectedValue === '휴무') {
+                        holidayCell.textContent = driverName;
+                    } else {
+                        holidayCell.textContent = '';
+                    }
+                }
             },
 
             /**
              * [S2] 헤더 옵션 영역 HTML 생성
-             * @param {string} routeId - 노선 ID (예: '07')
-             * @param {string} routeName - 노선 이름 (예: '종로07번')
-             * @param {Array<string>} validVehicles - 이 노선의 유효한 차량 목록 (순서 적용됨)
-             * @param {object} s2_settings - 이 노선의 S2 설정값
-             * @returns {string} - 헤더 옵션 HTML
              */
             createOptionsHTML(routeId, routeName, validVehicles, s2_settings) {
                 
@@ -4759,11 +4892,41 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             },
             
             /**
+             * [NEW] 옵션 컨트롤 값 채우기 (refreshDispatchLog에서 호출)
+             */
+            fillOptionsValues(routeId, s2_settings) {
+                const container = document.getElementById(`route-${routeId}`);
+                if (!container) return;
+
+                const amSelect = container.querySelector(`select[name="am_startVehicle_${routeId}"]`);
+                if (amSelect) amSelect.value = s2_settings.am_startVehicle || '';
+                
+                const amHour = container.querySelector(`input[name="am_hour_${routeId}"]`);
+                if (amHour) amHour.value = s2_settings.am_hour || '';
+                
+                const amMinute = container.querySelector(`input[name="am_minute_${routeId}"]`);
+                if (amMinute) amMinute.value = s2_settings.am_minute || '';
+                
+                const amInterval = container.querySelector(`input[name="am_interval_${routeId}"]`);
+                if (amInterval) amInterval.value = s2_settings.am_interval || '';
+
+                const pmSelect = container.querySelector(`select[name="pm_startVehicle_${routeId}"]`);
+                if (pmSelect) pmSelect.value = s2_settings.pm_startVehicle || '';
+                
+                const pmHour = container.querySelector(`input[name="pm_hour_${routeId}"]`);
+                if (pmHour) pmHour.value = s2_settings.pm_hour || '';
+                
+                const pmMinute = container.querySelector(`input[name="pm_minute_${routeId}"]`);
+                if (pmMinute) pmMinute.value = s2_settings.pm_minute || '';
+                
+                const pmInterval = container.querySelector(`input[name="pm_interval_${routeId}"]`);
+                if (pmInterval) pmInterval.value = s2_settings.pm_interval || '';
+            },
+
+
+            /**
              * [S2] S1 데이터로부터 오늘 날짜의 근무표(차량: [오전, 오후])를 계산
-             * @param {object} routeData - S1의 단일 노선 데이터
-             * @param {string} dateString - 'YYYY-MM-DD'
-             * @param {number} dayOfWeek - 0(일) ~ 6(토)
-             * @returns {object} - { "5518": [{text:"A", bold:false}, {text:"B", bold:false}], ... }
+             * [★★★ 수정 ★★★] S1 기본값을 ''(빈칸)으로 수정
              */
             getTodayS1Schedule(routeData, dateString, dayOfWeek) {
                 const s1Schedule = {};
@@ -4772,7 +4935,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 VEHICLE_COLS.forEach(colId => {
                     if (colId === '미입력') return;
 
-                    let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
+                    let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }]; // [★★★ 수정 ★★★]
 
                     // 1. 임시(temp) 데이터 확인 (우선순위 높음)
                     if (routeData.tempSchedule[dateString] && routeData.tempSchedule[dateString][colId]) {
@@ -4820,62 +4983,6 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             },
 
 
-            // --- S2 데이터 저장/로드 ---
-
-            /**
-             * [S2] 입력 요소(시간, 근무시간)로부터 S2 로그를 저장
-             */
-            saveS2LogEntryFromElement(element) {
-                const name = element.getAttribute('name');
-                if (!name) return;
-                
-                // name="start_time_07_5518_am"
-                const parts = name.split('_');
-                if (parts.length < 5) return; 
-                
-                const routeId = parts[2];
-                const carNum = parts[3];
-                const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
-                const value = element.value;
-
-                DataManager.updateS2Data(s2_data => {
-                    if (!s2_data[dateString]) s2_data[dateString] = {};
-                    if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
-                    if (!s2_data[dateString][routeName][carNum]) s2_data[dateString][routeName][carNum] = {};
-                    
-                    s2_data[dateString][routeName][carNum][name] = value;
-                });
-                // console.log(`[S2] 로그 저장: ${dateString} / ${routeName} / ${carNum} / ${name} = ${value}`);
-            },
-
-            /**
-             * [S2] 오늘 날짜의 S2 로그 데이터만 초기화
-             */
-            resetS2LogForToday() {
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
-                DataManager.updateS2Data(s2_data => {
-                    if (s2_data[dateString]) {
-                        delete s2_data[dateString];
-                        console.log(`[S2] ${dateString} 날짜의 승무일지(S2) 로그가 초기화되었습니다.`);
-                    }
-                });
-            },
-
-            /**
-             * [S2] 시간 입력(HHMM) 자동 포맷
-             */
-            formatTimeInput(value) {
-                const v = value.replace(/[^0-9]/g, '');
-                if (v.length === 3) { // 930 -> 09:30
-                    return '0' + v.charAt(0) + ':' + v.substring(1);
-                } else if (v.length === 4) { // 1230 -> 12:30
-                    return v.substring(0, 2) + ':' + v.substring(2);
-                }
-                return value;
-            },
-
-
             // --- S2 인라인 편집 (S1 데이터 연동) ---
 
             /**
@@ -4900,6 +5007,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             /**
              * [S2->S1] 근무자 이름 저장
+             * [★★★ 수정 ★★★] S1 임시 저장 시 ''(빈칸)으로 저장
              */
             saveAndExit(cell) {
                 const routeName = cell.dataset.s1Key;
@@ -4908,10 +5016,15 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 const shiftIndex = (shift === 'am') ? 0 : 1;
                 const input = cell.querySelector('.driver-input');
                 const newName = input.value.trim();
+                const dateString = cell.dataset.dateString; // [수정]
+                
+                if (!dateString) {
+                    console.error("S2: 날짜 정보(dateString)가 없습니다. 저장 실패.");
+                    return;
+                }
 
                 // S1 데이터에 임시(temp) 스케줄로 저장
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
-                const dayOfWeek = this.state.s2_currentDate.getDay();
+                const dayOfWeek = new Date(dateString + 'T00:00:00').getDay();
 
                 DataManager.updateS1Data(s1_data => {
                     const routeData = s1_data.routes[routeName];
@@ -4922,7 +5035,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                     const currentNames = s1ScheduleToday[carNum] || [{ text: '', bold: false }, { text: '', bold: false }];
                     
                     // 2. 새 이름 반영 (강조 플래그는 유지)
-                    currentNames[shiftIndex].text = newName; 
+                    currentNames[shiftIndex].text = (newName === '' || newName === '휴무') ? '' : newName; // [★★★ 수정 ★★★]
 
                     // 3. S1의 임시(temp) 스케줄에 덮어쓰기
                     if (!routeData.tempSchedule[dateString]) routeData.tempSchedule[dateString] = {};
@@ -4936,10 +5049,10 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             },
             
             /**
-             * [S2->S1] 근무자 이름 삭제 (공란으로 저장)
+             * [S2->S1] 근무자 이름 삭제 (공란 ''로 저장)
              */
             deleteName(cell) {
-                cell.querySelector('.driver-input').value = '';
+                cell.querySelector('.driver-input').value = ''; // [★★★ 수정 ★★★]
                 this.saveAndExit(cell);
             },
 
@@ -4957,7 +5070,9 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 if (carControls.classList.contains('hidden')) {
                     // 편집 모드 시작
                     // 1. 모든 차량 목록 (S1 기준)
-                    const { routeData } = DataManager.getCurrentRouteData(); // S1의 현재 노선
+                    const routeData = DataManager.getAllRoutes()[routeName];
+                    if (!routeData) return; // S1에 노선 정보가 없는 경우 방지
+                    
                     const s1_all_vehicles = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력');
                     
                     // 2. 현재 S2에 표시된 차량 목록 (중복 선택 방지용)
@@ -4987,14 +5102,16 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             
             /**
              * [S2] 차량 번호 변경 (S2 로그 수정)
+             * [수정] 날짜(data-date-string) 기준으로 S2 로그 수정
              */
             changeCarNumber(selectElement, routeName) {
-                const oldCarNum = selectElement.closest('.car-number-cell').dataset.carNumber;
+                const cell = selectElement.closest('.car-number-cell');
+                const oldCarNum = cell.dataset.carNumber;
                 const newCarNum = selectElement.value;
-                if (!newCarNum || oldCarNum === newCarNum) return;
-
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
+                const dateString = cell.closest('tr').dataset.dateString; // [수정]
                 
+                if (!newCarNum || oldCarNum === newCarNum || !dateString) return;
+
                 DataManager.updateS2Data(s2_data => {
                     const s2_log_today_route = s2_data[dateString] && s2_data[dateString][routeName];
                     if (s2_log_today_route && s2_log_today_route[oldCarNum]) {
@@ -5027,14 +5144,16 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
             /**
              * [S2] 차량 행 삭제 (S2 로그 수정)
+             * [수정] 날짜(data-date-string) 기준으로 S2 로그 삭제
              */
             deleteCarRow(cell) {
                 const carNum = cell.dataset.carNumber;
                 const routeName = cell.closest('.route-section').dataset.routeName;
-                if (!carNum || carNum === '미입력') return;
+                const dateString = cell.closest('tr').dataset.dateString; // [수정]
+
+                if (!carNum || carNum === '미입력' || !dateString) return;
                 
-                if (confirm(`[${carNum}] 차량을 오늘 승무일지에서 삭제하시겠습니까?\n(S1 근무표는 변경되지 않습니다.)`)) {
-                    const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
+                if (confirm(`[${carNum}] 차량을 [${dateString}] 승무일지에서 삭제하시겠습니까?\n(S1 근무표는 변경되지 않습니다.)`)) {
 
                     DataManager.updateS2Data(s2_data => {
                         // 1. S2 로그에서 해당 차량 데이터 삭제
@@ -5093,7 +5212,8 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
              */
             saveScheduleSettings(routeName, routeId) {
                 const container = document.getElementById(`route-${routeId}`);
-                
+                if (!container) return; // 첫 날짜가 아닐 경우 container가 없음
+
                 const settings = {
                     am_startVehicle: container.querySelector(`select[name="am_startVehicle_${routeId}"]`).value,
                     am_hour: container.querySelector(`input[name="am_hour_${routeId}"]`).value,
@@ -5118,27 +5238,20 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
             /**
              * [S2] 시간 설정 적용
              * [★★★ 수정됨 ★★★]
-             * 요청사항 1: 근무자가 없는 차량은 시간 적용에서 제외합니다.
+             * [★★★ 수정 ★★★] : S1 근무표 기준 '' 또는 '휴무'가 아닐 때만 시간 적용
+             * 요청사항 2: 오전 시작차량을 1번으로 회전시킵니다.
              */
-            applyScheduleSettings(routeName, routeId, forceSave = false) {
+            applyScheduleSettings(routeName, routeId, dateString, forceSave = false) {
                 const s2_settings = DataManager.getS2RouteSettings(routeName);
                 
-                // 1. S2 설정에 저장된 차량 순서 (baseOrder)
-                const validVehicles = s2_settings.baseOrder || [];
-                if (validVehicles.length === 0) {
-                    alert('적용할 차량 목록이 없습니다.');
-                    return;
-                }
-
-                // 2. S1 근무표 (근무자 확인용)
-                const dateString = DataManager.getTodayDateString(this.state.s2_currentDate);
-                const dayOfWeek = this.state.s2_currentDate.getDay();
+                // 0. S1 근무표 (근무자 확인용)
+                const dayOfWeek = new Date(dateString + 'T00:00:00').getDay();
                 const routeData = DataManager.getAllRoutes()[routeName];
                 const todayS1Schedule = this.getTodayS1Schedule(routeData, dateString, dayOfWeek);
-
-                const container = document.getElementById(`route-${routeId}`);
                 
-                // 3. 오전 시간 계산
+                const container = document.getElementById(`route-${routeId}`);
+                if (!container) return;
+
                 const am_startVehicle = container.querySelector(`select[name="am_startVehicle_${routeId}"]`).value;
                 const am_interval = parseInt(container.querySelector(`input[name="am_interval_${routeId}"]`).value, 10);
                 let am_currentTime = new Date();
@@ -5147,42 +5260,54 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                     parseInt(container.querySelector(`input[name="am_minute_${routeId}"]`).value, 10),
                     0, 0
                 );
-
-                if (am_startVehicle && !isNaN(am_interval) && !isNaN(am_currentTime.getTime())) {
+                
+                // 1. [★★★ 수정 ★★★] '오전 시작차량'을 1번으로 회전
+                let validVehicles = s2_settings.baseOrder || [];
+                if (am_startVehicle && validVehicles.length > 0) {
                     const startIndex = validVehicles.indexOf(am_startVehicle);
-                    if (startIndex > -1) {
-                        // 시작 차량부터 끝까지
-                        for (let i = startIndex; i < validVehicles.length; i++) {
-                            const carNum = validVehicles[i];
-                            // [★★★ 수정 ★★★] : 오전 근무자 확인
-                            const s1CarData = todayS1Schedule[carNum] || [{ text: '' }, { text: '' }];
-                            const amDriverText = (s1CarData[0].text || '').trim();
-                            const hasAmDriver = amDriverText !== '' && amDriverText !== '휴무';
+                    if (startIndex > 0) { // 0번이 아니면 회전 필요
+                        validVehicles = this.rotateArray(validVehicles, startIndex);
+                        
+                        // [수정] 회전된 순서를 S2 설정(baseOrder)에 즉시 저장
+                        DataManager.updateS2Data(s2_data => {
+                            if (!s2_data[routeName]) s2_data[routeName] = {};
+                            s2_data[routeName]._settings = { ...s2_settings, baseOrder: validVehicles };
+                        });
+                        
+                        // [수정] 화면 즉시 새로고침 (회전된 순서 반영)
+                        this.refreshDispatchLog();
+                        // [수정] refresh 후 container를 다시 찾아야 함
+                        const newContainer = document.getElementById(`route-${routeId}`);
+                        if (!newContainer) return; // 오류 방지
+                        
+                        console.log(`[S2] ${routeName} 노선의 순서가 ${am_startVehicle} 기준으로 회전되었습니다.`);
+                    }
+                }
 
-                            if (hasAmDriver) { // 근무자가 있을 때만 시간 적용
-                                const timeStr = am_currentTime.toTimeString().slice(0, 5);
-                                container.querySelector(`input[name="start_time_${routeId}_${carNum}_am"]`).value = timeStr;
-                                am_currentTime.setMinutes(am_currentTime.getMinutes() + am_interval);
-                            }
-                        }
-                        // 처음부터 시작 차량 전까지
-                        for (let i = 0; i < startIndex; i++) {
-                            const carNum = validVehicles[i];
-                             // [★★★ 수정 ★★★] : 오전 근무자 확인
-                            const s1CarData = todayS1Schedule[carNum] || [{ text: '' }, { text: '' }];
-                            const amDriverText = (s1CarData[0].text || '').trim();
-                            const hasAmDriver = amDriverText !== '' && amDriverText !== '휴무';
-                            
-                            if (hasAmDriver) {
-                                const timeStr = am_currentTime.toTimeString().slice(0, 5);
-                                container.querySelector(`input[name="start_time_${routeId}_${carNum}_am"]`).value = timeStr;
-                                am_currentTime.setMinutes(am_currentTime.getMinutes() + am_interval);
-                            }
+                if (validVehicles.length === 0) {
+                    alert('적용할 차량 목록이 없습니다.');
+                    return;
+                }
+
+                // 2. 오전 시간 계산 (회전된 순서 기준)
+                if (am_startVehicle && !isNaN(am_interval) && !isNaN(am_currentTime.getTime())) {
+                    for (let i = 0; i < validVehicles.length; i++) {
+                        const carNum = validVehicles[i];
+                        // [★★★ 수정 ★★★] : 오전 근무자 확인
+                        const s1CarData = todayS1Schedule[carNum] || [{ text: '' }, { text: '' }];
+                        const amDriverText = (s1CarData[0].text || '').trim();
+                        const hasAmDriver = amDriverText !== '' && amDriverText !== '휴무';
+
+                        if (hasAmDriver) { // 근무자가 있을 때만 시간 적용
+                            const timeStr = am_currentTime.toTimeString().slice(0, 5);
+                            const input = document.querySelector(`tr[data-date-string="${dateString}"] input[name="start_time_${routeId}_${carNum}_am"]`);
+                            if (input) input.value = timeStr;
+                            am_currentTime.setMinutes(am_currentTime.getMinutes() + am_interval);
                         }
                     }
                 }
                 
-                // 4. 오후 시간 계산
+                // 3. 오후 시간 계산
                 const pm_startVehicle = container.querySelector(`select[name="pm_startVehicle_${routeId}"]`).value;
                 const pm_interval = parseInt(container.querySelector(`input[name="pm_interval_${routeId}"]`).value, 10);
                 let pm_currentTime = new Date();
@@ -5205,7 +5330,8 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
                             if (hasPmDriver) {
                                 const timeStr = pm_currentTime.toTimeString().slice(0, 5);
-                                container.querySelector(`input[name="start_time_${routeId}_${carNum}_pm"]`).value = timeStr;
+                                const input = document.querySelector(`tr[data-date-string="${dateString}"] input[name="pm_start_time_${routeId}_${carNum}_pm"]`);
+                                if (input) input.value = timeStr;
                                 pm_currentTime.setMinutes(pm_currentTime.getMinutes() - pm_interval);
                             }
                         }
@@ -5219,21 +5345,25 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
 
                             if (hasPmDriver) {
                                 const timeStr = pm_currentTime.toTimeString().slice(0, 5);
-                                container.querySelector(`input[name="start_time_${routeId}_${carNum}_pm"]`).value = timeStr;
+                                const input = document.querySelector(`tr[data-date-string="${dateString}"] input[name="pm_start_time_${routeId}_${carNum}_pm"]`);
+                                if (input) input.value = timeStr;
                                 pm_currentTime.setMinutes(pm_currentTime.getMinutes() - pm_interval);
                             }
                         }
                     }
                 }
 
-                // 5. [수정] 강제 저장 (버튼 클릭 시)
+                // 4. [수정] 강제 저장 (버튼 클릭 시)
                 if (forceSave) {
-                    // 5a. UI에 적용된 시간 설정을 S2 설정(_settings)에 저장
+                    // 4a. UI에 적용된 시간 설정을 S2 설정(_settings)에 저장
                     this.saveScheduleSettings(routeName, routeId);
                     
-                    // 5b. UI에 적용된 시간 값들을 S2 로그(s2_data[dateString])에 저장
-                    container.querySelectorAll('input[name^="start_time_"], select[name^="work_hours_"]').forEach(el => {
-                        this.saveS2LogEntryFromElement(el);
+                    // 4b. UI에 적용된 시간 값들을 S2 로그(s2_data[dateString])에 저장
+                    document.querySelectorAll(`input[name^="start_time_"], input[name^="pm_start_time_"], select[name^="work_hours_"]`).forEach(el => {
+                        // [수정] 현재 날짜의 input/select만 저장
+                        if (el.closest('tr').dataset.dateString === dateString) {
+                            this.saveS2LogEntryFromElement(el);
+                        }
                     });
                     
                     alert(`[${routeName}] 노선의 시간이 적용 및 저장되었습니다.`);
@@ -5244,8 +5374,10 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
              * [S2] 시간 설정 초기화
              */
             resetScheduleSettings(routeName, routeId) {
+                const container = document.getElementById(`route-${routeId}`);
+                if (!container) return;
+
                 if (confirm(`[${routeName}] 노선의 '시간 설정'을 초기화하시겠습니까?\n(입력된 출근 시간은 삭제되지 않습니다.)`)) {
-                    const container = document.getElementById(`route-${routeId}`);
                     
                     // 1. UI 초기화
                     container.querySelector(`select[name="am_startVehicle_${routeId}"]`).value = "";
@@ -5321,7 +5453,10 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                         s2_data[routeName]._settings = { ...s2_settings, baseOrder: baseOrder };
                         
                         // '수동'으로 변경
-                        this.changeDispatchOrder(routeName, 'manual', document.querySelector(`#route-${this.sanitizeForId(routeName)} .dispatch-buttons-container`));
+                        const container = document.querySelector(`#route-${this.sanitizeForId(routeName)} .dispatch-buttons-container`);
+                        if (container) {
+                            this.changeDispatchOrder(routeName, 'manual', container);
+                        }
                     }
                 });
                 
@@ -5334,99 +5469,6 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 }
                 this.state.s2_draggedCell = null;
                 this.state.s2_draggedRoute = null;
-            },
-            
-            
-            // --- S2 백업 / 복원 ---
-
-            /**
-             * [S2] 승무일지(S2) 데이터 백업
-             */
-            backupLogData() {
-                const backupData = DataManager.data.s2;
-                const jsonString = JSON.stringify(backupData);
-                const now = new Date();
-                const dateString = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-                
-                let companyName = "전체";
-                const { routeData } = DataManager.getCurrentRouteData();
-                if (routeData && routeData.companyName) {
-                    companyName = routeData.companyName.replace(/\s/g, '');
-                }
-
-                const filename = `${companyName}_승무일지(S2)_${dateString}.json`;
-                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                alert(`승무일지(S2) 데이터 파일 (${filename})이 다운로드 폴더에 JSON 파일로 저장됩니다.`);
-            },
-            
-            /**
-             * [S2] 복원 모달 표시
-             */
-            showRestoreModal() {
-                this.ui.restoreModal.style.display = 'block';
-            },
-            
-            /**
-             * [S2] 복원 모달 숨기기
-             */
-            hideRestoreModal() {
-                this.ui.restoreModal.style.display = 'none';
-                this.ui.restoreFile.value = '';
-            },
-
-            /**
-             * [S2] 파일 선택창 열기
-             */
-            triggerRestore() {
-                this.ui.restoreFile.click();
-            },
-
-            /**
-             * [S2] 승무일지(S2) 데이터 복원
-             */
-            restoreLogData(file) {
-                if (!file) return;
-                
-                if (!confirm(`[${file.name}] 파일을 업로드하여 승무일지(S2) 데이터를 *전체* 복원하시겠습니까?\n\n[경고] 현재 S2의 모든 일지 및 설정(출차순서 등)은 덮어쓰여집니다.`)) {
-                    this.ui.restoreFile.value = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const loadedData = JSON.parse(event.target.result);
-                        
-                        // [수정] S2 데이터는 특별한 구조 검증 없이 덮어쓰기
-                        DataManager.updateS2Data(s2_data => {
-                            // 기존 s2_data를 비우고
-                            Object.keys(s2_data).forEach(key => delete s2_data[key]);
-                            // 새 데이터로 채움
-                            Object.assign(s2_data, loadedData);
-                        });
-
-                        alert(`[${file.name}] 파일로부터 S2 승무일지 전체 데이터 불러오기를 완료했습니다.`);
-                        // 화면 갱신
-                        this.refreshDispatchLog();
-
-                    } catch (e) {
-                        alert('파일을 읽는 도중 오류가 발생했습니다. 파일이 손상되었거나 JSON 형식이 아닙니다.');
-                        console.error('S2 Restore Error:', e);
-                    } finally {
-                        this.hideRestoreModal();
-                    }
-                };
-                reader.onerror = () => {
-                    alert('파일을 읽을 수 없습니다.');
-                    this.hideRestoreModal();
-                };
-                reader.readAsText(file);
             }
         };
 
@@ -5509,7 +5551,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
                 document.getElementById('s3-showAll').onclick = () => S1_Module.showAllSections();
                 document.getElementById('s3-backupFile').onclick = () => this.backupFile();
                 document.getElementById('s3-triggerRestore').onclick = () => this.ui.restoreFile.click();
-                document.getElementById('s3_restoreFile').onchange = (e) => this.restoreFile(e.target.files[0]);
+                this.ui.restoreFile.onchange = (e) => this.restoreFile(e.target.files[0]);
                 document.getElementById('s3-clearForm').onclick = () => this.clearForm();
                 document.getElementById('s3-printPage').onclick = () => this.printPage();
                 
@@ -6093,7 +6135,7 @@ background-color: #6c757d; color: white; border: none; border-radius: 4px; curso
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM 로드 완료. 통합 관리 시스템 초기화 시작.");
             
-            // 0. 버전 정보 설정
+            // 0. 버전 정보 설정 (버전 5.4.3으로 수정)
             S1_Module.setVersion();
             
             // 1. S1(근무 현황표) 모듈 초기화
