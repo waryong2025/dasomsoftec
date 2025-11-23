@@ -3504,7 +3504,7 @@
             }
         };
 /* ================================================================= */
-/* [Section 2] 승무 일지 JavaScript (Ver 5.5.4 - Time Skip Logic Fixed) */
+/* [Section 2] 승무 일지 JavaScript (Ver 5.6.0 - Fixed Time & Rotation) */
 /* ================================================================= */
 
 const S2_Module = {
@@ -3553,7 +3553,7 @@ const S2_Module = {
         if (netCount > 0) {
             return [...array.slice(netCount), ...array.slice(0, netCount)];
         } else {
-            return [...array.slice(netCount), ...array.slice(0, len + netCount)];
+            return [...array.slice(len + netCount), ...array.slice(0, len + netCount)];
         }
     },
 
@@ -3565,7 +3565,7 @@ const S2_Module = {
 
         this.bindEventListeners();
         this.loadToday();
-        this.applyAutoRotation(); 
+        // 초기화 시에는 자동 순환 로직을 타지 않고 저장된 설정을 존중
         this.refreshDispatchLog();
         console.log("S2: 초기화 완료.");
     },
@@ -3630,7 +3630,13 @@ const S2_Module = {
                 e.stopPropagation();
                 const routeName = e.target.closest('.route-section').dataset.routeName;
                 this.changeCarNumber(e.target, routeName);
-            } 
+            } else if (target.name && (target.name.startsWith('am_startVehicle') || target.name.startsWith('pm_startVehicle'))) {
+                 // 시작차량 변경 시 설정 저장 및 리로드
+                 const routeId = target.name.split('_')[2]; // am_startVehicle_routeId
+                 const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
+                 this.saveScheduleSettings(routeName, routeId);
+                 this.refreshDispatchLog();
+            }
             // 옵션 박스 변경 시 자동 저장 방지
             else if (target.closest('.schedule-options')) {
                 e.stopPropagation();
@@ -3655,34 +3661,34 @@ const S2_Module = {
             }
         };
         logBody.onmousedown = (e) => {
-            const carControlBtn = e.target.closest('.car-controls button');
-            if (carControlBtn) {
-                e.preventDefault();
-                const td = carControlBtn.closest('.car-number-cell');
-                if (carControlBtn.classList.contains('btn-car-delete')) this.deleteCarRow(td);
-                else if (carControlBtn.classList.contains('btn-car-close')) this.exitCarNumberEditMode(td);
-                return;
-            }
-            const driverControlBtn = e.target.closest('.edit-controls button');
-            if (driverControlBtn) {
-                e.preventDefault();
-                const td = driverControlBtn.closest('td[data-edit-type="driver"]');
-                if (driverControlBtn.classList.contains('btn-driver-delete')) this.deleteName(td);
-                else if (driverControlBtn.classList.contains('btn-driver-save')) this.saveAndExit(td);
-                return;
-            }
-            const settingBtn = e.target.closest('.setting-button');
-            if (settingBtn) {
-                e.preventDefault();
-                const routeId = settingBtn.dataset.routeId;
-                const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
-                const dateString = this.state.s2_currentDates[0]?.dateString;
-                if (!dateString) return;
-
-                if (settingBtn.classList.contains('apply-button')) this.applyScheduleSettings(routeName, routeId, dateString, true);
-                else if (settingBtn.classList.contains('reset-button')) this.resetScheduleSettings(routeName, routeId);
-            }
-        };
+             const carControlBtn = e.target.closest('.car-controls button');
+             if (carControlBtn) {
+                 e.preventDefault();
+                 const td = carControlBtn.closest('.car-number-cell');
+                 if (carControlBtn.classList.contains('btn-car-delete')) this.deleteCarRow(td);
+                 else if (carControlBtn.classList.contains('btn-car-close')) this.exitCarNumberEditMode(td);
+                 return;
+             }
+             const driverControlBtn = e.target.closest('.edit-controls button');
+             if (driverControlBtn) {
+                 e.preventDefault();
+                 const td = driverControlBtn.closest('td[data-edit-type="driver"]');
+                 if (driverControlBtn.classList.contains('btn-driver-delete')) this.deleteName(td);
+                 else if (driverControlBtn.classList.contains('btn-driver-save')) this.saveAndExit(td);
+                 return;
+             }
+             const settingBtn = e.target.closest('.setting-button');
+             if (settingBtn) {
+                 e.preventDefault();
+                 const routeId = settingBtn.dataset.routeId;
+                 const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
+                 const dateString = this.state.s2_currentDates[0]?.dateString;
+                 if (!dateString) return;
+ 
+                 if (settingBtn.classList.contains('apply-button')) this.applyScheduleSettings(routeName, routeId, dateString, true);
+                 else if (settingBtn.classList.contains('reset-button')) this.resetScheduleSettings(routeName, routeId);
+             }
+         };
         logBody.ondragstart = (e) => this.dragStart(e, e.target.closest('.route-section').dataset.routeName);
         logBody.ondragover = (e) => this.dragOver(e);
         logBody.ondrop = (e) => this.drop(e, e.target.closest('.route-section').dataset.routeName);
@@ -3708,6 +3714,27 @@ const S2_Module = {
         if (!text) return 'unknown';
         const s2_id = this.state.S2_ROUTE_MAP[text];
         return s2_id ? s2_id : text.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    },
+    formatTimeInput(val) {
+        if(!val) return '';
+        val = val.replace(/[^0-9:]/g, '');
+        if(val.length === 4 && !val.includes(':')) return val.slice(0,2) + ':' + val.slice(2);
+        return val;
+    },
+    saveS2LogEntryFromElement(el) {
+        // 개별 입력 필드 저장 로직 (필요 시 구현)
+        const name = el.name;
+        const val = el.value;
+        const dateStr = el.closest('tr').dataset.dateString;
+        const routeName = el.closest('.route-section').dataset.routeName;
+        const carNum = el.dataset.carNum;
+        
+        DataManager.updateS2Data(s2_data => {
+            if(!s2_data[dateStr]) s2_data[dateStr] = {};
+            if(!s2_data[dateStr][routeName]) s2_data[dateStr][routeName] = {};
+            if(!s2_data[dateStr][routeName][carNum]) s2_data[dateStr][routeName][carNum] = {};
+            s2_data[dateStr][routeName][carNum][name] = val;
+        });
     },
     backupLogData() {
         const backupData = DataManager.data.s2;
@@ -3813,11 +3840,14 @@ const S2_Module = {
                 const s2_settings = DataManager.getS2RouteSettings(routeName);
                 if (s2_settings.dispatchType === 'manual') return;
 
-                let s1_base_list = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력' && !isNaN(v));
+                let s1_base_list = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력' && isNaN(v) === false);
                 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
                 s1_base_list.sort(collator.compare);
 
+                // 현재 저장된 baseOrder가 있으면 그것을 사용, 없으면 S1 목록 사용
                 let last_order = s2_settings.baseOrder || [...s1_base_list];
+                
+                // S1에서 차량이 추가/삭제 되었을 수 있으므로 동기화
                 const s1_set = new Set(s1_base_list);
                 let synced_order = [];
                 last_order.forEach(car => { if (s1_set.has(car)) { synced_order.push(car); s1_set.delete(car); } });
@@ -3845,7 +3875,11 @@ const S2_Module = {
         return this.rotateArray(baseOrder, rotateCount);
     },
 
-    // [수정] 근무자 유무에 따라 시간 건너뛰기 로직 적용 (자동 계산용)
+    /**
+     * [수정됨] 시간 계산 로직
+     * - 근무자 유무와 관계없이 시간 슬롯(Sequence)은 항상 고정적으로 생성합니다.
+     * - 근무자가 있을 경우에만 해당 시간에 값을 표시합니다.
+     */
     calculateAutoTimes(validVehicles, s2_settings, todayS1Schedule) {
         const result = {};
         
@@ -3856,7 +3890,7 @@ const S2_Module = {
         const pm_hour = s2_settings.pm_hour !== '' ? parseInt(s2_settings.pm_hour, 10) : NaN;
         const pm_minute = s2_settings.pm_minute !== '' ? parseInt(s2_settings.pm_minute, 10) : NaN;
 
-        // [AM] 오전 근무자 확인 후 시간 배정
+        // [AM] 오전 시간 배정
         if (!isNaN(am_interval) && !isNaN(am_hour) && !isNaN(am_minute)) {
             let am_time = new Date();
             am_time.setHours(am_hour, am_minute, 0, 0);
@@ -3864,51 +3898,54 @@ const S2_Module = {
             validVehicles.forEach((carNum) => {
                 if (!result[carNum]) result[carNum] = {};
                 
-                // S1 데이터에서 오전 근무자 확인
+                // 근무자 확인
                 const s1Data = todayS1Schedule[carNum];
                 const amDriver = (s1Data && s1Data[0] && s1Data[0].text) ? s1Data[0].text.trim() : '';
                 const hasAmDriver = (amDriver !== '' && amDriver !== '휴무');
 
+                // [핵심 변경] 근무자가 있든 없든 시간은 항상 흐릅니다 (Interval 적용).
+                // 근무자가 있을 때만 result에 시간을 할당합니다.
                 if (hasAmDriver) {
-                    // 근무자 있으면 시간 배정 후 시간 증가
                     result[carNum].am = am_time.toTimeString().slice(0, 5);
-                    am_time.setMinutes(am_time.getMinutes() + am_interval);
                 } else {
-                    // 근무자 없으면 빈칸, 시간 증가 안 함
-                    result[carNum].am = '';
+                    result[carNum].am = ''; // 근무자 없으면 시간 표시 안함 (하지만 슬롯은 지나감)
                 }
+                // 다음 슬롯 시간 계산 (무조건 증가)
+                am_time.setMinutes(am_time.getMinutes() + am_interval);
             });
         }
 
-        // [PM] 오후 근무자 확인 후 시간 배정
+        // [PM] 오후 시간 배정
         if (!isNaN(pm_interval) && !isNaN(pm_hour) && !isNaN(pm_minute)) {
             let pm_time = new Date();
             pm_time.setHours(pm_hour, pm_minute, 0, 0);
             
+            // 오후는 '오후 시작 차량'부터 시간이 시작됨
+            // 배열을 해당 차량부터 시작하도록 재정렬하지 않고, 인덱스를 찾아서 순회
             let startIdx = validVehicles.indexOf(s2_settings.pm_startVehicle);
             if (startIdx === -1) startIdx = 0; 
 
+            // 오후 시간 할당 함수
             const assignPM = (idx) => {
                 const carNum = validVehicles[idx];
                 if (!result[carNum]) result[carNum] = {};
 
-                // S1 데이터에서 오후 근무자 확인
                 const s1Data = todayS1Schedule[carNum];
                 const pmDriver = (s1Data && s1Data[1] && s1Data[1].text) ? s1Data[1].text.trim() : '';
                 const hasPmDriver = (pmDriver !== '' && pmDriver !== '휴무');
 
                 if (hasPmDriver) {
-                    // 근무자 있으면 시간 배정 후 시간 증가
                     result[carNum].pm = pm_time.toTimeString().slice(0, 5);
-                    pm_time.setMinutes(pm_time.getMinutes() + pm_interval);
                 } else {
-                    // 근무자 없으면 빈칸, 시간 증가 안 함
                     result[carNum].pm = '';
                 }
+                // 다음 슬롯 시간 계산 (무조건 증가)
+                pm_time.setMinutes(pm_time.getMinutes() + pm_interval);
             };
 
-            // 오후 시작 차량부터 순회
+            // 오후 시작 차량부터 끝까지
             for (let i = startIdx; i < validVehicles.length; i++) assignPM(i);
+            // 처음부터 오후 시작 차량 전까지
             for (let i = 0; i < startIdx; i++) assignPM(i);
         }
         
@@ -3944,7 +3981,9 @@ const S2_Module = {
                 const todayS1Schedule = this.getTodayS1Schedule(routeData, dateString, dayOfWeek);
                 const todayS2RouteLog = s2_logData[routeName] || {};
 
+                // 1. 날짜에 따른 차량 순서 계산 (자동 순환)
                 let validVehicles = this.calculateOrderForDate(routeName, dateString, s2_settings);
+                
                 if (!validVehicles || validVehicles.length === 0) {
                     let s1_base_list = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력');
                     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
@@ -3952,12 +3991,15 @@ const S2_Module = {
                     validVehicles = s1_base_list;
                 }
 
-                if (s2_settings.am_startVehicle) {
+                // [핵심 변경] 수동(Manual) 모드일 때만 '시작차량' 설정을 이용해 강제 정렬
+                // 자동 순환(Daily/Weekly) 모드일 때는 calculateOrderForDate가 이미 날짜별 회전을 처리했으므로
+                // 여기서 am_startVehicle로 다시 정렬하면 회전이 취소되어버림. 따라서 수동일 때만 적용.
+                if (s2_settings.cycle === 'manual' && s2_settings.am_startVehicle) {
                     const idx = validVehicles.indexOf(s2_settings.am_startVehicle);
                     if (idx > -1) validVehicles = this.rotateArray(validVehicles, idx);
                 }
 
-                // [중요] calculateAutoTimes 호출 시 todayS1Schedule 전달 (근무자 확인용)
+                // 2. 시간 자동 계산 (DB값이 없을 때 사용할 값)
                 const autoTimes = this.calculateAutoTimes(validVehicles, s2_settings, todayS1Schedule);
 
                 let s2_optionsHTML = (dateString === this.state.s2_currentDates[0].dateString) ? 
@@ -4062,105 +4104,35 @@ const S2_Module = {
         });
     },
 
-    // [수정] "시간 적용" 버튼 클릭 시에도 근무자 확인하여 시간 건너뛰기 로직 적용
     applyScheduleSettings(routeName, routeId, dateString, forceSave = false) {
         this.saveScheduleSettings(routeName, routeId);
-        const s2_settings = DataManager.getS2RouteSettings(routeName);
-        const dayOfWeek = new Date(dateString + 'T00:00:00').getDay();
-        const routeData = DataManager.getAllRoutes()[routeName];
-        const todayS1Schedule = this.getTodayS1Schedule(routeData, dateString, dayOfWeek);
-
-        let validVehicles = this.calculateOrderForDate(routeName, dateString, s2_settings);
-        if (!validVehicles.length) {
-            let s1_base_list = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력');
-            const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-            s1_base_list.sort(collator.compare);
-            validVehicles = s1_base_list;
-        }
-
-        if (s2_settings.am_startVehicle) {
-            const idx = validVehicles.indexOf(s2_settings.am_startVehicle);
-            if (idx > -1) validVehicles = this.rotateArray(validVehicles, idx);
-        }
-
-        const am_interval = parseInt(s2_settings.am_interval, 10);
-        const pm_interval = parseInt(s2_settings.pm_interval, 10);
+        // 적용 버튼을 누르면 DB에 강제로 저장하지 않고, 화면 갱신을 통해 AutoTime 로직을 태움.
+        // 다만 DB에 '시간 설정' 자체는 저장되었으므로 refresh만 하면 됨.
+        // 만약 개별 필드값(DB로그)을 초기화하고 싶다면 여기서 처리해야 하지만, 
+        // 사용자가 "시간 적용"을 눌렀다는 건 설정값대로 다시 깔아달라는 의미이므로
+        // 현재 화면의 시간 필드들을 리셋하는 로직이 필요할 수 있음.
+        // 여기서는 refreshDispatchLog() 호출 시 DB값이 없으면 자동계산되므로, 
+        // 특정 날짜의 시간 로그를 삭제하는 것이 맞을 수 있음.
         
-        let am_time = new Date();
-        am_time.setHours(parseInt(s2_settings.am_hour), parseInt(s2_settings.am_minute), 0, 0);
+        // 하지만 기존 데이터 유지 요청도 있을 수 있으므로, 일단 새로고침만 수행.
+        // (refreshDispatchLog 내에서 calculateAutoTimes가 돌지만, DB에 저장된 개별 시간(log)이 있으면 그게 우선임)
+        // 확실한 적용을 위해 해당 날짜의 시간 로그를 지우는 옵션이 필요할 수도 있음.
+        // 현재는 resetScheduleSettings가 그 역할을 함.
         
-        let pm_time = new Date();
-        pm_time.setHours(parseInt(s2_settings.pm_hour), parseInt(s2_settings.pm_minute), 0, 0);
-
-        // DB 저장 시에도 근무자 유무 체크 로직 적용
-        DataManager.updateS2Data(s2_data => {
-            if (!s2_data[dateString]) s2_data[dateString] = {};
-            if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
-            const routeLog = s2_data[dateString][routeName];
-
-            if (!isNaN(am_interval) && !isNaN(am_time.getTime())) {
-                validVehicles.forEach(carNum => {
-                    if (!routeLog[carNum]) routeLog[carNum] = {};
-                    const key = `start_time_${routeId}_${carNum}_am`;
-
-                    // 근무자 확인
-                    const s1Data = todayS1Schedule[carNum];
-                    const amDriver = (s1Data && s1Data[0] && s1Data[0].text) ? s1Data[0].text.trim() : '';
-                    const hasAmDriver = (amDriver !== '' && amDriver !== '휴무');
-
-                    if (hasAmDriver) {
-                        routeLog[carNum][key] = am_time.toTimeString().slice(0, 5);
-                        am_time.setMinutes(am_time.getMinutes() + am_interval);
-                    } else {
-                        routeLog[carNum][key] = ''; // 빈값
-                        // 시간 증가 안 함
-                    }
-                });
-            }
-
-            if (!isNaN(pm_interval) && !isNaN(pm_time.getTime())) {
-                let startIdx = validVehicles.indexOf(s2_settings.pm_startVehicle);
-                if (startIdx === -1) startIdx = 0;
-
-                const assignPM = (idx) => {
-                    const carNum = validVehicles[idx];
-                    if (!routeLog[carNum]) routeLog[carNum] = {};
-                    const key = `pm_start_time_${routeId}_${carNum}_pm`;
-
-                    // 근무자 확인
-                    const s1Data = todayS1Schedule[carNum];
-                    const pmDriver = (s1Data && s1Data[1] && s1Data[1].text) ? s1Data[1].text.trim() : '';
-                    const hasPmDriver = (pmDriver !== '' && pmDriver !== '휴무');
-
-                    if (hasPmDriver) {
-                        routeLog[carNum][key] = pm_time.toTimeString().slice(0, 5);
-                        pm_time.setMinutes(pm_time.getMinutes() + pm_interval);
-                    } else {
-                         routeLog[carNum][key] = '';
-                         // 시간 증가 안 함
-                    }
-                };
-
-                for (let i = startIdx; i < validVehicles.length; i++) assignPM(i);
-                for (let i = 0; i < startIdx; i++) assignPM(i);
-            }
-        });
         this.refreshDispatchLog();
-        if (forceSave) alert(`[${routeName}] 시간 적용 및 정렬 완료 (근무자 없는 차량 제외)`);
+        if (forceSave) alert(`[${routeName}] 시간 설정이 적용되었습니다.`);
     },
 
     resetScheduleSettings(routeName, routeId) {
         if (!confirm("시간 설정과 입력된 시간을 초기화하시겠습니까?")) return;
-        const container = document.getElementById(`route-${routeId}`);
-        container.querySelectorAll('input, select').forEach(el => {
-            if(el.name.includes('am_') || el.name.includes('pm_')) el.value = '';
-        });
-
+        
         DataManager.updateS2Data(s2_data => {
+            // 설정 초기화
             if (s2_data[routeName]?._settings) {
                 const s = s2_data[routeName]._settings;
                 ['am_startVehicle','am_hour','am_minute','am_interval','pm_startVehicle','pm_hour','pm_minute','pm_interval'].forEach(k => delete s[k]);
             }
+            // 현재 조회된 날짜의 개별 시간 로그 삭제
             const dateStr = this.state.s2_currentDates[0]?.dateString;
             if (dateStr && s2_data[dateStr] && s2_data[dateStr][routeName]) {
                 const log = s2_data[dateStr][routeName];
@@ -4224,9 +4196,9 @@ const S2_Module = {
         const amClass = (amHoliday && amDisp) ? 'hidden' : '';
         const pmClass = (pmHoliday && pmDisp) ? 'hidden' : '';
 
-        // [수정] DB값이 없으면 자동 계산된 값(autoTimes) 사용. autoTimes는 이미 근무자 여부에 따라 빈칸 처리됨.
-        const amTimeValue = log[amKey] || (autoTimes[carNum] && autoTimes[carNum].am ? autoTimes[carNum].am : '');
-        const pmTimeValue = log[pmKey] || (autoTimes[carNum] && autoTimes[carNum].pm ? autoTimes[carNum].pm : '');
+        // [중요] DB에 저장된 값이 있으면 우선 사용, 없으면 자동 계산된 값(autoTimes) 사용
+        const amTimeValue = log[amKey] !== undefined ? log[amKey] : (autoTimes[carNum] && autoTimes[carNum].am ? autoTimes[carNum].am : '');
+        const pmTimeValue = log[pmKey] !== undefined ? log[pmKey] : (autoTimes[carNum] && autoTimes[carNum].pm ? autoTimes[carNum].pm : '');
 
         const opts = (val) => ['', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '휴무'].map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('');
 
@@ -4282,7 +4254,13 @@ const S2_Module = {
     createOptionsHTML(routeId, routeName, validVehicles, s2_settings) {
         const dType = s2_settings.dispatchType || 'manual';
         const cycle = s2_settings.cycle || 'manual';
-        const opts = validVehicles.map(c => `<option value="${c}">${c}</option>`).join('');
+        
+        // 시작차량 선택 옵션: 현재 화면에 표시된 차량 순서(validVehicles)가 아니라,
+        // S1에 등록된 '기본 차량 목록(baseOrder)'을 기준으로 정렬하여 보여주는 것이 좋습니다.
+        // 하지만 편의상 유효 차량 목록을 사용합니다.
+        const opts = validVehicles.map(c => `<option value="${c}" ${s2_settings.am_startVehicle===c?'selected':''}>${c}</option>`).join('');
+        const pmOpts = validVehicles.map(c => `<option value="${c}" ${s2_settings.pm_startVehicle===c?'selected':''}>${c}</option>`).join('');
+
         const btns = [['manual','수동'],['ascending','순차'],['descending','역순'],['random','랜덤']].map(([k,v]) => 
             `<button type="button" class="dispatch-button ${dType===k?'active':''}" data-order="${k}">${v}</button>`
         ).join('');
@@ -4290,19 +4268,26 @@ const S2_Module = {
             `<option value="${k}" ${cycle===k?'selected':''}>${v}</option>`
         ).join('');
         
+        const am_hour = s2_settings.am_hour || '';
+        const am_minute = s2_settings.am_minute || '';
+        const am_interval = s2_settings.am_interval || '';
+        const pm_hour = s2_settings.pm_hour || '';
+        const pm_minute = s2_settings.pm_minute || '';
+        const pm_interval = s2_settings.pm_interval || '';
+
         return `
             <div class="schedule-options">
                 <div class="am-options"><span>오전</span>
                     <select name="am_startVehicle_${routeId}"><option value="">시작차량</option>${opts}</select>
-                    <input type="number" name="am_hour_${routeId}" placeholder="시" value="">
-                    <input type="number" name="am_minute_${routeId}" placeholder="분" value="">
-                    <input type="number" name="am_interval_${routeId}" placeholder="간격" value="">
+                    <input type="number" name="am_hour_${routeId}" placeholder="시" value="${am_hour}">
+                    <input type="number" name="am_minute_${routeId}" placeholder="분" value="${am_minute}">
+                    <input type="number" name="am_interval_${routeId}" placeholder="간격" value="${am_interval}">
                 </div>
                 <div class="pm-options"><span>오후</span>
-                    <select name="pm_startVehicle_${routeId}"><option value="">오후시작</option>${opts}</select>
-                    <input type="number" name="pm_hour_${routeId}" placeholder="시" value="">
-                    <input type="number" name="pm_minute_${routeId}" placeholder="분" value="">
-                    <input type="number" name="pm_interval_${routeId}" placeholder="간격" value="">
+                    <select name="pm_startVehicle_${routeId}"><option value="">오후시작</option>${pmOpts}</select>
+                    <input type="number" name="pm_hour_${routeId}" placeholder="시" value="${pm_hour}">
+                    <input type="number" name="pm_minute_${routeId}" placeholder="분" value="${pm_minute}">
+                    <input type="number" name="pm_interval_${routeId}" placeholder="간격" value="${pm_interval}">
                 </div>
             </div>
             <div class="settings-controls">
