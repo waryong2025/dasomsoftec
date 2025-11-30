@@ -2594,7 +2594,7 @@ const S1_Module = {
 };
 
 /* ================================================================= */
-/* [Section 2] 승무 일지 JavaScript (Ver 5.6.5 - Refresh Reset Fix) */
+/* [Section 2] 승무 일지 JavaScript (Ver 5.6.5 - Holiday Display Added) */
 /* ================================================================= */
 
 const S2_Module = {
@@ -2709,11 +2709,10 @@ const S2_Module = {
         document.getElementById('s2-backupLog').onclick = () => this.backupLogData();
         document.getElementById('s2-showRestoreModal').onclick = () => this.showRestoreModal();
         
-        // [중요 수정] 현재일지 새로고침 버튼 클릭 시 -> 데이터 초기화 및 수동 모드 설정
         document.getElementById('s2-refreshLog').onclick = () => {
             if (confirm("현재 조회된 날짜의 시간 데이터를 모두 지우고, 출차 순서를 '수동'으로 초기화하시겠습니까?")) {
-                this.resetS2LogForCurrentDates(); // 데이터 초기화 함수 호출
-                this.refreshDispatchLog();        // 화면 갱신
+                this.resetS2LogForCurrentDates();
+                this.refreshDispatchLog();
             }
         };
         
@@ -3057,13 +3056,15 @@ const S2_Module = {
     calculateOrderForDate(routeName, targetDateString, s2_settings) {
         let baseOrder = s2_settings.baseOrder || [];
         
-        if (!baseOrder.length) {
-            const allRoutes = DataManager.getAllRoutes();
-            const routeData = allRoutes[routeName];
-            if (routeData && routeData.vehicleColumns) {
-                let s1_base_list = routeData.vehicleColumns.filter(v => v && v !== '미입력');
-                const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-                s1_base_list.sort(collator.compare);
+        // S1 데이터 강제 확인 및 동기화
+        const allRoutes = DataManager.getAllRoutes();
+        const routeData = allRoutes[routeName];
+        if (routeData && routeData.vehicleColumns) {
+            let s1_base_list = routeData.vehicleColumns.filter(v => v && v !== '미입력');
+            const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+            s1_base_list.sort(collator.compare);
+            
+            if (!baseOrder.length || baseOrder.length !== s1_base_list.length) {
                 baseOrder = s1_base_list;
             }
         }
@@ -3167,7 +3168,20 @@ const S2_Module = {
             const { date, dateString } = dateInfo;
             const dayOfWeek = date.getDay();
             const s2_logData = DataManager.getS2LogByDate(dateString);
-            container.insertAdjacentHTML('beforeend', `<div class="date-header">${this.getFormattedDateString(date)}</div>`);
+
+            // [중요 수정] 법정휴일 표시 로직 추가
+            const holidaySelect = document.getElementById('holidaySelect');
+            const applyHolidays = holidaySelect && holidaySelect.value === 'apply';
+            let holidaySuffix = "";
+
+            if (applyHolidays && S1_Module && S1_Module.isPublicHoliday) {
+                 const hName = S1_Module.isPublicHoliday(date);
+                 if (hName) {
+                     holidaySuffix = ` <span style="color:#cc0000; font-size:0.8em;">(${hName})</span>`;
+                 }
+            }
+
+            container.insertAdjacentHTML('beforeend', `<div class="date-header">${this.getFormattedDateString(date)}${holidaySuffix}</div>`);
 
             const allRoutes = DataManager.getAllRoutes();
             for (const routeName in allRoutes) {
@@ -3271,15 +3285,12 @@ const S2_Module = {
         return s1Schedule;
     },
 
-    // [중요 수정] 초기화 함수: 현재 조회된 날짜의 데이터 삭제 & 설정 수동으로 변경
     resetS2LogForCurrentDates() {
         DataManager.updateS2Data(s2_data => {
-            // 1. 현재 날짜의 로그 데이터 전체 삭제 (시간 등)
             this.state.s2_currentDates.forEach(d => { 
                 if (s2_data[d.dateString]) delete s2_data[d.dateString]; 
             });
             
-            // 2. 모든 노선의 설정을 수동으로 리셋
             const allRoutes = DataManager.getAllRoutes();
             Object.keys(allRoutes).forEach(r => {
                 if (!s2_data[r]) s2_data[r] = {};
@@ -3287,7 +3298,6 @@ const S2_Module = {
                 s2_data[r]._settings.dispatchType = 'manual';
                 s2_data[r]._settings.cycle = 'manual';
                 
-                // 설정값들도 초기화 (선택 사항)
                 ['am_startVehicle', 'am_hour', 'am_minute', 'am_interval', 
                  'pm_startVehicle', 'pm_hour', 'pm_minute', 'pm_interval'].forEach(k => {
                     delete s2_data[r]._settings[k];
@@ -3379,7 +3389,6 @@ const S2_Module = {
         const amHKey = `work_hours_${routeId}_${carNum}_am`;
         const pmHKey = `work_hours_${routeId}_${carNum}_pm`;
         
-        // [중요] 저장된 휴무자가 있으면 우선 표시
         const amHolidayWorkerStored = log[`holiday_worker_${routeId}_${carNum}_am`] || '';
         const pmHolidayWorkerStored = log[`holiday_worker_${routeId}_${carNum}_pm`] || '';
 
