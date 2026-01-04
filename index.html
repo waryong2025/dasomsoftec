@@ -313,13 +313,31 @@
         #section1 .edit-mode .cell-buttons .btn-delete { background-color: #dc3545; }
         #section1 .edit-mode .cell-buttons .btn-delete:hover { background-color: #c82333; }
 
-        #section1 .name-entry { 
-            display: block;
-            margin-top: 2px; 
-            margin-bottom: 2px; 
-            color: inherit; 
-            font-size: var(--worker-font-size); 
-        }
+        /* [수정] S1 셀 내부 레이아웃 개선 */
+/* 1. 셀 내부를 위/아래로 꽉 채우는 컨테이너 */
+.s1-cell-inner {
+    display: flex;
+    flex-direction: column; /* 세로 정렬 */
+    height: 100%;           /* 셀 높이 100% 사용 */
+    width: 100%;
+    min-height: 36px;       /* 최소 높이 보장 */
+}
+
+/* 2. 개별 이름(오전/오후) 영역 스타일 수정 */
+#section1 .name-entry { 
+    display: flex;          /* flex 박스로 변경 */
+    flex: 1;                /* 위/아래 공간을 정확히 1:1로 나눔 (핵심) */
+    align-items: center;    /* 텍스트 세로 중앙 정렬 */
+    justify-content: center;/* 텍스트 가로 중앙 정렬 */
+    width: 100%;
+    margin: 0;              /* 기존 margin 제거 */
+    color: inherit; 
+    font-size: var(--worker-font-size);
+    overflow: hidden;       /* 내용 넘침 방지 */
+}
+
+/* (옵션) 오전/오후 구분을 명확히 하려면 아래 주석을 해제하세요 */
+/* #section1 .name-entry:first-child { border-bottom: 1px dotted #e0e0e0; } */
         
         /* [수정됨] 특수 상태(월차/년차/퇴직자) 숨김 처리 개선 */
         #section1 .hidden-x { 
@@ -375,6 +393,37 @@
             #section1 .day-name-main { font-size: 1.0em; }
             #section1 .name-entry { font-size: 12px !important; }
         }
+/* [추가] S1 수정모드 입력창 지우기 버튼 스타일 */
+.s1-input-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 2px;
+}
+.s1-input-wrapper input {
+    width: 100% !important;
+    padding-right: 20px !important; /* X버튼 공간 확보 */
+}
+.btn-input-clear {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #dc3545; /* 빨간색 */
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 0 4px;
+    line-height: 1;
+    border-radius: 50%;
+    z-index: 5;
+    display: none; /* 평소엔 숨김 */
+}
+/* 입력창에 마우스를 올리거나 포커스될 때만 X 버튼 표시 */
+.s1-input-wrapper:hover .btn-input-clear,
+.s1-input-wrapper input:focus + .btn-input-clear {
+    display: block;
+}
 
         /* ================================================================= */
         /* [Section 2] 승무 일지 Styles */
@@ -2427,48 +2476,109 @@ const S1_Module = {
     getDayName(dayOfWeek) { return ['일', '월', '화', '수', '목', '금', '토'][dayOfWeek]; },
     getHolidayMap(year) { const holidays = {}; const solarHolidays = { '01-01': '신정', '03-01': '삼일절', '05-05': '어린이날', '06-06': '현충일', '08-15': '광복절', '10-03': '개천절', '10-09': '한글날', '12-25': '성탄절' }; for (const [dateStr, name] of Object.entries(solarHolidays)) { holidays[dateStr] = name; } const lunarMap = { 2024: { '02-09':'설날', '02-10':'설날', '02-11':'설날', '05-15':'부처님오신날', '09-16':'추석', '09-17':'추석', '09-18':'추석' }, 2025: { '01-28':'설날', '01-29':'설날', '01-30':'설날', '05-06':'부처님오신날', '10-05':'추석', '10-06':'추석', '10-07':'추석' }, 2026: { '02-16':'설날', '02-17':'설날', '02-18':'설날', '05-24':'부처님오신날', '09-24':'추석', '09-25':'추석', '09-26':'추석' }, 2027: { '02-06':'설날', '02-07':'설날', '02-08':'설날', '05-13':'부처님오신날', '09-14':'추석', '09-15':'추석', '09-16':'추석' }, 2028: { '01-26':'설날', '01-27':'설날', '01-28':'설날', '05-02':'부처님오신날', '10-02':'추석', '10-03':'추석', '10-04':'추석' }, 2029: { '02-12':'설날', '02-13':'설날', '02-14':'설날', '05-20':'부처님오신날', '09-21':'추석', '09-22':'추석', '09-23':'추석' }, 2030: { '02-02':'설날', '02-03':'설날', '02-04':'설날', '05-09':'부처님오신날', '09-11':'추석', '09-12':'추석', '09-13':'추석' } }; if (lunarMap[year]) { Object.assign(holidays, lunarMap[year]); } const sortedDates = Object.keys(holidays).sort(); const formatYMD = (d) => { const m = String(d.getMonth() + 1).padStart(2, '0'); const dd = String(d.getDate()).padStart(2, '0'); return `${m}-${dd}`; }; sortedDates.forEach(dateStr => { const name = holidays[dateStr]; const currentHolidayDate = new Date(year, parseInt(dateStr.split('-')[0]) - 1, parseInt(dateStr.split('-')[1])); const dayOfWeek = currentHolidayDate.getDay(); let needsSubstitute = false; if (['설날', '추석', '어린이날'].includes(name)) { if (dayOfWeek === 0 || dayOfWeek === 6) needsSubstitute = true; } else if (['삼일절', '광복절', '개천절', '한글날', '성탄절', '부처님오신날'].includes(name)) { if (dayOfWeek === 0) needsSubstitute = true; } if (needsSubstitute) { let nextDay = new Date(currentHolidayDate); nextDay.setDate(nextDay.getDate() + 1); while (true) { const nextDateStr = formatYMD(nextDay); if (holidays[nextDateStr]) { nextDay.setDate(nextDay.getDate() + 1); } else { holidays[nextDateStr] = '대체공휴일'; break; } } } }); return holidays; },
     isPublicHoliday(date) { const year = date.getFullYear(); const holidays = this.getHolidayMap(year); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const key = `${month}-${day}`; return holidays[key] || false; },
-    renderCellContent(names) { if (!names || names.length === 0) return ''; const hiddenKeywords = ['휴무', '월차', '년차', '퇴직자', '']; return names.map(item => { const text = item.text.trim(); const isHidden = hiddenKeywords.includes(text); const display = isHidden ? '' : text; const hiddenClass = isHidden ? ' hidden-x' : ''; const boldClass = item.bold ? ' bold-name' : ''; return `<span class="name-entry${hiddenClass}${boldClass}">${display}</span>`; }).join(''); },
+    renderCellContent(names) { 
+    if (!names || names.length === 0) return ''; 
+    const hiddenKeywords = ['휴무', '월차', '년차', '퇴직자', '']; 
+    
+    // [수정됨] map 결과를 변수에 담고, div.s1-cell-inner로 감싸서 리턴
+    const innerHTML = names.map(item => { 
+        const text = item.text.trim(); 
+        const isHidden = hiddenKeywords.includes(text); 
+        const display = isHidden ? '' : text; 
+        const hiddenClass = isHidden ? ' hidden-x' : ''; 
+        const boldClass = item.bold ? ' bold-name' : ''; 
+        
+        // *중요: display가 비어있어도 span 태그 자체는 유지되어야 flex:1 공간을 차지함
+        return `<span class="name-entry${hiddenClass}${boldClass}">${display}</span>`; 
+    }).join('');
 
+    return `<div class="s1-cell-inner">${innerHTML}</div>`;
+},
+
+    // [수정됨] editCell 함수: 입력창 옆에 'X(지우기)' 버튼 추가
     editCell(cell, colId, dateString, dayOfWeek) {
         if (cell.classList.contains('edit-mode')) return;
+
+        // 다른 열려있는 수정창 닫기
         document.querySelectorAll('#section1 td.edit-mode').forEach(editCell => {
-            const prevColId = editCell.dataset.colId; const prevDateString = editCell.dataset.dateString;
+            const prevColId = editCell.dataset.colId; 
+            const prevDateString = editCell.dataset.dateString;
             const originalNames = (this.state.scheduleData[prevDateString] && this.state.scheduleData[prevDateString][prevColId]) || [{ text: '', bold: false }, { text: '', bold: false }];
-            editCell.classList.remove('edit-mode'); editCell.innerHTML = this.renderCellContent(originalNames);
+            editCell.classList.remove('edit-mode'); 
+            editCell.innerHTML = this.renderCellContent(originalNames);
         });
+
         const currentNames = (this.state.scheduleData[dateString] && this.state.scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
         const morningValue = (currentNames[0] && currentNames[0].text !== '휴무') ? currentNames[0].text : '';
         const afternoonValue = (currentNames[1] && currentNames[1].text !== '휴무') ? currentNames[1].text : '';
         
+        // 비어있을 때 보여줄 placeholder 설정
         const amPlaceholder = morningValue ? morningValue : "오전 (비우면 휴무)";
         const pmPlaceholder = afternoonValue ? afternoonValue : "오후 (비우면 휴무)";
 
-        cell.classList.add('edit-mode'); cell.dataset.colId = colId; cell.dataset.dateString = dateString; cell.dataset.dayOfWeek = dayOfWeek;
+        cell.classList.add('edit-mode'); 
+        cell.dataset.colId = colId; 
+        cell.dataset.dateString = dateString; 
+        cell.dataset.dayOfWeek = dayOfWeek;
+        
+        // 포커스 상태 추적
         this.state.lastFocusedInput = (morningValue === afternoonValue && morningValue !== '') ? 'both' : 'am';
 
+        // [변경] HTML 구조: input을 감싸는 wrapper와 지우기(X) 버튼 추가
         cell.innerHTML = `
-            <input type="text" class="morning-input" value="" placeholder="${amPlaceholder}" data-bold="${currentNames[0].bold}">
-            <input type="text" class="afternoon-input" value="" placeholder="${pmPlaceholder}" data-bold="${currentNames[1].bold}">
+            <div class="s1-input-wrapper">
+                <input type="text" class="morning-input" value="" placeholder="${amPlaceholder}" data-bold="${currentNames[0].bold}">
+                <span class="btn-input-clear" title="오전 비우기">&times;</span>
+            </div>
+            <div class="s1-input-wrapper">
+                <input type="text" class="afternoon-input" value="" placeholder="${pmPlaceholder}" data-bold="${currentNames[1].bold}">
+                <span class="btn-input-clear" title="오후 비우기">&times;</span>
+            </div>
             <div class="cell-buttons" style="display: flex; flex-direction: column; gap: 2px; margin-top: 2px;">
                 <div style="display: flex; gap: 1px; width: 100%;">
-                    <button class="btn-fixed" style="flex: 1;">고정</button> <button class="btn-temp" style="flex: 1;">임시</button> <button class="btn-highlight-am" style="flex: 1; font-size: 0.6em;">오전스페어</button> <button class="btn-highlight-pm" style="flex: 1; font-size: 0.6em;">오후스페어</button>
+                    <button class="btn-fixed" style="flex: 1;">고정</button> 
+                    <button class="btn-temp" style="flex: 1;">임시</button> 
+                    <button class="btn-highlight-am" style="flex: 1; font-size: 0.6em;">오전스페어</button> 
+                    <button class="btn-highlight-pm" style="flex: 1; font-size: 0.6em;">오후스페어</button>
                 </div>
                 <div style="display: flex; gap: 1px; width: 100%;">
-                    <button class="btn-monthly" style="flex: 1; background-color: #17a2b8; color: white;">월차</button> <button class="btn-annual" style="flex: 1; background-color: #17a2b8; color: white;">년차</button> <button class="btn-resign" style="flex: 1; background-color: #6c757d; color: white;">퇴직자</button> <button class="btn-delete" style="flex: 1;">삭제</button>
+                    <button class="btn-monthly" style="flex: 1; background-color: #17a2b8; color: white;">월차</button> 
+                    <button class="btn-annual" style="flex: 1; background-color: #17a2b8; color: white;">년차</button> 
+                    <button class="btn-resign" style="flex: 1; background-color: #6c757d; color: white;">퇴직자</button> 
+                    <button class="btn-delete" style="flex: 1;">삭제</button>
                 </div>
             </div>`;
         
-        const amInput = cell.querySelector('.morning-input'); const pmInput = cell.querySelector('.afternoon-input');
+        const amInput = cell.querySelector('.morning-input'); 
+        const pmInput = cell.querySelector('.afternoon-input');
+        
+        // 포커스 설정
         if (this.state.lastFocusedInput === 'pm') pmInput.focus(); else amInput.focus();
-        amInput.onfocus = () => { this.state.lastFocusedInput = 'am'; }; pmInput.onfocus = () => { this.state.lastFocusedInput = 'pm'; };
+        amInput.onfocus = () => { this.state.lastFocusedInput = 'am'; }; 
+        pmInput.onfocus = () => { this.state.lastFocusedInput = 'pm'; };
+
+        // [추가] 지우기 버튼(X) 클릭 이벤트
+        cell.querySelectorAll('.btn-input-clear').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation(); // 버튼 클릭 시 셀 닫힘 방지
+                const wrapper = btn.closest('.s1-input-wrapper');
+                const input = wrapper.querySelector('input');
+                
+                input.value = '';        // 값 비우기
+                input.placeholder = '';  // [핵심] Placeholder도 비워서 저장 시 빈칸으로 인식되게 함
+                input.focus();           // 입력창에 다시 포커스
+            };
+        });
 
         const buttons = cell.querySelector('.cell-buttons');
+        // 기존 버튼 이벤트 연결
         buttons.querySelector('.btn-fixed').onclick = (e) => { e.stopPropagation(); this.saveFixedCell(cell); };
         buttons.querySelector('.btn-temp').onclick = (e) => { e.stopPropagation(); this.saveTempCell(cell); };
         buttons.querySelector('.btn-highlight-am').onclick = (e) => { e.stopPropagation(); this.highlightCell(cell, 'am'); };
         buttons.querySelector('.btn-highlight-pm').onclick = (e) => { e.stopPropagation(); this.highlightCell(cell, 'pm'); };
         buttons.querySelector('.btn-delete').onclick = (e) => { e.stopPropagation(); this.deleteCell(cell); };
 
+        // 특수 상태(월차 등) 처리 함수
         const applySpecialStatus = (status) => {
             if (status === '퇴직자') {
                 const targetInput = (this.state.lastFocusedInput === 'pm') ? pmInput : amInput;
@@ -2476,20 +2586,27 @@ const S1_Module = {
                 if (!currentName && targetInput.placeholder && !targetInput.placeholder.includes('비우면')) {
                     currentName = targetInput.placeholder;
                 }
-                
                 this.openRetireeModal(dateString, colId, (this.state.lastFocusedInput === 'pm' ? 'pm' : 'am'), currentName);
                 return; 
             }
             
             const targets = [];
             let currentAm = amInput.value.trim();
+            // [중요] 비우기 버튼을 눌러서 placeholder가 비었으면 값을 채우지 않음
             if (!currentAm && amInput.placeholder && !amInput.placeholder.includes('비우면')) currentAm = amInput.placeholder;
 
             let currentPm = pmInput.value.trim();
             if (!currentPm && pmInput.placeholder && !pmInput.placeholder.includes('비우면')) currentPm = pmInput.placeholder;
 
-            if (currentAm === currentPm || currentAm === '' || currentPm === '') { targets.push({ inp: amInput, val: currentAm, shift: 'am' }); targets.push({ inp: pmInput, val: currentPm, shift: 'pm' }); }
-            else { if (this.state.lastFocusedInput === 'am') targets.push({ inp: amInput, val: currentAm, shift: 'am' }); else if (this.state.lastFocusedInput === 'pm') targets.push({ inp: pmInput, val: currentPm, shift: 'pm' }); else { targets.push({ inp: amInput, val: currentAm, shift: 'am' }); targets.push({ inp: pmInput, val: currentPm, shift: 'pm' }); } }
+            if (currentAm === currentPm || currentAm === '' || currentPm === '') { 
+                targets.push({ inp: amInput, val: currentAm, shift: 'am' }); 
+                targets.push({ inp: pmInput, val: currentPm, shift: 'pm' }); 
+            } else { 
+                if (this.state.lastFocusedInput === 'am') targets.push({ inp: amInput, val: currentAm, shift: 'am' }); 
+                else if (this.state.lastFocusedInput === 'pm') targets.push({ inp: pmInput, val: currentPm, shift: 'pm' }); 
+                else { targets.push({ inp: amInput, val: currentAm, shift: 'am' }); targets.push({ inp: pmInput, val: currentPm, shift: 'pm' }); } 
+            }
+            
             targets.forEach(t => {
                 const fixedOwner = this.getFixedOwner(dateString, colId);
                 const ownerName = (t.shift === 'am') ? fixedOwner.am : fixedOwner.pm;
@@ -2500,6 +2617,7 @@ const S1_Module = {
             });
             this.saveTempCell(cell);
         };
+
         buttons.querySelector('.btn-monthly').onclick = (e) => { e.stopPropagation(); applySpecialStatus('월차'); };
         buttons.querySelector('.btn-annual').onclick = (e) => { e.stopPropagation(); applySpecialStatus('년차'); };
         buttons.querySelector('.btn-resign').onclick = (e) => { e.stopPropagation(); applySpecialStatus('퇴직자'); };
