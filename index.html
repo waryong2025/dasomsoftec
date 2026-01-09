@@ -3215,7 +3215,7 @@ saveTempCell(cellElement) {
 };
 
 /* ================================================================= */
-/* [Section 2] 승무 일지 모듈 (내림 수정 원칙 적용) */
+/* [Section 2] 승무 일지 모듈 (수정완료: 휴무자 로직 + 시간저장 로직) */
 /* ================================================================= */
 const S2_Module = {
     ui: {
@@ -3296,7 +3296,7 @@ const S2_Module = {
     },
 
     initialize() {
-        console.log("S2: 초기화 (내림 수정 원칙 적용)");
+        console.log("S2: 초기화 (휴무자 표시 수정 버전)");
         DataManager.subscribe(this);
         DataManager.loadS2Data();
 
@@ -3326,7 +3326,6 @@ const S2_Module = {
         this.ui.fontSizeSelect.onchange = (e) => this.changeFontSize(e.target.value);
         document.getElementById('s2-backupLog').onclick = () => this.backupLogData();
         document.getElementById('s2-showRestoreModal').onclick = () => this.showRestoreModal();
-        
         document.getElementById('s2-refreshLog').onclick = () => {
             if (confirm("경고: 현재 조회된 날짜의 [모든 기록]을 초기화하시겠습니까?\n\n(이 작업은 되돌릴 수 없습니다.)")) {
                 this.resetS2LogForCurrentDates();
@@ -3359,7 +3358,7 @@ const S2_Module = {
             // 상단 컨트롤 박스 값 변경 감지 및 저장
             if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
                 if (target.closest('.schedule-options')) {
-                     const routeId = target.name.split('_').pop(); 
+                     const routeId = target.name.split('_').pop();
                      const routeName = document.getElementById(`route-${routeId}`).dataset.routeName;
                      this.saveScheduleSettings(routeName, routeId);
                      return;
@@ -3382,7 +3381,6 @@ const S2_Module = {
                 this.changeCarNumber(e.target, routeName);
             }
         };
-
         logBody.onclick = (e) => {
             const carCell = e.target.closest('.car-number-cell');
             const driverCell = e.target.closest('td[data-edit-type="driver"]');
@@ -3406,7 +3404,6 @@ const S2_Module = {
                 this.changeDispatchOrder(routeName, dispatchBtn.dataset.order, dispatchBtn.closest('.dispatch-buttons-container'));
             }
         };
-
         logBody.onmousedown = (e) => {
              const carControlBtn = e.target.closest('.car-controls button');
              if (carControlBtn) {
@@ -3456,7 +3453,6 @@ const S2_Module = {
         const amHour = document.querySelector(`input[name="am_hour_${routeId}"]`)?.value;
         const amMinute = document.querySelector(`input[name="am_minute_${routeId}"]`)?.value;
         const amInterval = document.querySelector(`input[name="am_interval_${routeId}"]`)?.value;
-
         // PM Inputs
         const pmStart = document.querySelector(`select[name="pm_startVehicle_${routeId}"]`)?.value;
         const pmHour = document.querySelector(`input[name="pm_hour_${routeId}"]`)?.value;
@@ -3486,17 +3482,15 @@ const S2_Module = {
             `select[name="pm_startVehicle_${routeId}"]`, `input[name="pm_hour_${routeId}"]`,
             `input[name="pm_minute_${routeId}"]`, `input[name="pm_interval_${routeId}"]`
         ];
-        
         inputs.forEach(sel => {
             const el = document.querySelector(sel);
             if (el) el.value = '';
         });
-        
         this.saveScheduleSettings(routeName, routeId);
         alert("시간 설정값이 초기화되었습니다. (실제 입력된 시간은 변경되지 않음)");
     },
 
-    // [전체 적용] 상단 컨트롤 박스: 이것은 전체 초기화 개념이므로 기존대로 둠 (원하는 경우 수정 가능)
+    // [전체 적용] 상단 컨트롤 박스
     applyScheduleSettings(routeName, routeId, dateString, showMessage = false) {
         const routeSection = document.getElementById(`route-${routeId}`);
         if (!routeSection) return;
@@ -3505,12 +3499,11 @@ const S2_Module = {
         const amHour = parseInt(document.querySelector(`input[name="am_hour_${routeId}"]`)?.value);
         const amMinute = parseInt(document.querySelector(`input[name="am_minute_${routeId}"]`)?.value);
         const amInterval = parseInt(document.querySelector(`input[name="am_interval_${routeId}"]`)?.value);
-
         const pmStart = document.querySelector(`select[name="pm_startVehicle_${routeId}"]`)?.value;
         const pmHour = parseInt(document.querySelector(`input[name="pm_hour_${routeId}"]`)?.value);
         const pmMinute = parseInt(document.querySelector(`input[name="pm_minute_${routeId}"]`)?.value);
         const pmInterval = parseInt(document.querySelector(`input[name="pm_interval_${routeId}"]`)?.value);
-
+        
         DataManager.updateS2Data(s2_data => {
             if (!s2_data[dateString]) s2_data[dateString] = {};
             if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
@@ -3535,7 +3528,6 @@ const S2_Module = {
                     const hasDriver = (driverName && driverName !== '휴무');
 
                     if (!dailyRouteLog[carNum]) dailyRouteLog[carNum] = {};
-
                     if (hasDriver) {
                         const timeStr = currentTime.toTimeString().slice(0, 5);
                         input.value = timeStr;
@@ -3555,10 +3547,8 @@ const S2_Module = {
 
                 const pmInputs = Array.from(routeSection.querySelectorAll(`input[name^="pm_start_time_"]`))
                     .sort((a, b) => parseInt(a.dataset.seqOrder) - parseInt(b.dataset.seqOrder));
-                
                 let startIdx = pmInputs.findIndex(input => input.dataset.carNum === pmStart);
                 if (startIdx === -1) startIdx = 0;
-
                 const orderedInputs = [...pmInputs.slice(startIdx), ...pmInputs.slice(0, startIdx)];
 
                 orderedInputs.forEach(input => {
@@ -3593,21 +3583,17 @@ const S2_Module = {
         const s2_data = DataManager.loadS2Data();
         const settings = s2_data[routeName]?._settings || {};
         const dailyLog = s2_data[dateString]?.[routeName] || {};
-
         const defaultTitles = ["담당", "계장", "대리", "과장", "부장", "전무", "사장", "사장"];
         const titles = settings.approval_titles || defaultTitles;
-
         const signatures = dailyLog.approval_values || new Array(8).fill("");
 
         let html = '<table class="s2-approval-table"><thead><tr>';
-        
         titles.forEach((title, idx) => {
             html += `<th><input type="text" class="approval-input-title" 
                       value="${title}" 
                       title="클릭하여 직함 수정"
                       onchange="S2_Module.saveApprovalTitle('${routeName}', ${idx}, this.value)"></th>`;
         });
-
         html += '</tr></thead><tbody><tr>';
 
         signatures.forEach((sign, idx) => {
@@ -3689,7 +3675,6 @@ const S2_Module = {
                 const todayS2RouteLog = s2_logData[routeName] || {};
 
                 let validVehicles = this.calculateOrderForDate(routeName, dateString, s2_settings);
-                
                 if (!validVehicles || validVehicles.length === 0) {
                     let s1_base_list = (rData.vehicleColumns || []).filter(v => v && v !== '미입력');
                     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
@@ -3702,8 +3687,7 @@ const S2_Module = {
                     if (idx > -1) validVehicles = this.rotateArray(validVehicles, idx);
                 }
 
-                const autoTimes = {}; 
-
+                const autoTimes = {};
                 let s2_optionsHTML = (dateString === this.state.s2_currentDates[0].dateString) ? 
                     this.createOptionsHTML(routeId, routeName, validVehicles, s2_settings) : '';
 
@@ -3735,19 +3719,17 @@ const S2_Module = {
                         finalRestList.push(workerEntry);
                     }
                 });
-                
                 finalRestList = [...new Set(finalRestList)].sort();
 
                 let restCellsHTML = '';
-                const totalSlots = 18; 
-                
+                const totalSlots = 18;
                 for (let i = 0; i < totalSlots; i++) {
                     const workerName = finalRestList[i] || ''; 
                     restCellsHTML += `
                         <div class="rest-worker-cell" 
                              onclick="S2_Module.toggleRestWorkerEdit(this, '${routeName}', '${dateString}', ${i})"
                              data-idx="${i}">
-                            <span>${workerName}</span>
+                             <span>${workerName}</span>
                             <input type="text" class="rest-worker-input" value="${workerName}" 
                                    onblur="S2_Module.saveRestWorker(this, '${routeName}', '${dateString}', ${i})"
                                    onkeydown="if(event.key==='Enter') this.blur()">
@@ -3758,14 +3740,13 @@ const S2_Module = {
                     <div class="rest-worker-container">
                         <div class="rest-worker-title">휴무자<br>(일일전체)</div>
                         <div class="rest-worker-grid">${restCellsHTML}</div>
-                    </div>
+                     </div>
                 `;
-
                 container.insertAdjacentHTML('beforeend', `
                     <div class="route-section" id="route-${routeId}" data-route-name="${routeName}">
                         <div class="route-header-flex">
                             <div class="route-title-group"><div class="route-name-text">${routeName}</div></div>
-                            ${s2_optionsHTML}
+                             ${s2_optionsHTML}
                         </div>
                         <table class="journal-table">${this.createTableHeaderHTML(routeId)}<tbody>${tableBodyHTML}</tbody></table>
                         ${restBoxHTML}
@@ -3776,12 +3757,11 @@ const S2_Module = {
     },
 
     openTimeModal(inputElement) {
-        this.state.activeTimeTarget = inputElement; 
+        this.state.activeTimeTarget = inputElement;
         const carNum = inputElement.dataset.carNum;
         const shift = inputElement.dataset.shift; 
         const routeSection = inputElement.closest('.route-section');
         const routeName = routeSection.dataset.routeName;
-        
         let currentVal = inputElement.value.replace(/[^0-9:]/g, '');
         let hh = '', mm = '';
         if (currentVal.length === 4 && !currentVal.includes(':')) {
@@ -3799,9 +3779,7 @@ const S2_Module = {
         this.ui.modalHour.focus();
     },
 
-    // [핵심 수정: 내림 적용 원칙]
-    // 모달에서 적용 시 상단 컨트롤값 자동 세팅 및 시간 적용
-    // "올림으로는 수정이 안되고 내림만 되도록" => circular loop 제거
+    // [핵심 수정: 내림 적용 및 설정 저장]
     applyTimeFromModal() {
         const targetInput = this.state.activeTimeTarget;
         if (!targetInput) return;
@@ -3824,7 +3802,7 @@ const S2_Module = {
         const shift = targetInput.dataset.shift; 
         const targetCar = targetInput.dataset.carNum;
 
-        // 1. 모달의 값을 상단 컨트롤 박스에 동기화
+        // 1. 모달 값을 상단 컨트롤 박스에 동기화
         const startVehicleSelect = document.querySelector(`select[name="${shift}_startVehicle_${routeId}"]`);
         const hourInput = document.querySelector(`input[name="${shift}_hour_${routeId}"]`);
         const minuteInput = document.querySelector(`input[name="${shift}_minute_${routeId}"]`);
@@ -3834,30 +3812,40 @@ const S2_Module = {
         if (hourInput) hourInput.value = hour;
         if (minuteInput) minuteInput.value = minute;
         if (intervalInput) intervalInput.value = interval;
-        
-        // 2. 컨트롤 박스 값 저장
-        this.saveScheduleSettings(routeName, routeId);
 
-        // 3. 시간 계산 및 적용 (내림 적용 원칙 - 아래로만 흐르게)
+        // 2. 설정값을 영구 저장
+        DataManager.updateS2Data(s2_data => {
+            if (!s2_data[routeName]) s2_data[routeName] = {};
+            if (!s2_data[routeName]._settings) s2_data[routeName]._settings = {};
+
+            if (shift === 'am') {
+                s2_data[routeName]._settings.am_startVehicle = targetCar;
+                s2_data[routeName]._settings.am_hour = hour;
+                s2_data[routeName]._settings.am_minute = minute;
+                s2_data[routeName]._settings.am_interval = interval;
+            } else {
+                s2_data[routeName]._settings.pm_startVehicle = targetCar;
+                s2_data[routeName]._settings.pm_hour = hour;
+                s2_data[routeName]._settings.pm_minute = minute;
+                s2_data[routeName]._settings.pm_interval = interval;
+            }
+        });
+
+        // 3. 시간 계산 및 적용
         const allInputs = Array.from(routeSection.querySelectorAll(`input[name*="${shift === 'am' ? '_am' : '_pm'}"]`));
         const timeInputs = allInputs.filter(el => el.name.startsWith(shift === 'am' ? 'start_time_' : 'pm_start_time_'));
-        
         timeInputs.sort((a, b) => parseInt(a.dataset.seqOrder || 0) - parseInt(b.dataset.seqOrder || 0));
 
         let startIndex = timeInputs.indexOf(targetInput);
         if (startIndex === -1) return;
 
+        const orderedInputs = timeInputs.slice(startIndex);
+
         DataManager.updateS2Data(s2_data => {
             const dateString = targetInput.closest('tr').dataset.dateString;
             
-            // [중요 수정] 순환 배열(wrap-around) 제거
-            // 기존: const orderedInputs = [...timeInputs.slice(startIndex), ...timeInputs.slice(0, startIndex)];
-            // 수정: 선택된 인덱스부터 끝까지만(slice) 잘라서 적용. 앞부분(올림 방향)은 건드리지 않음.
-            const orderedInputs = timeInputs.slice(startIndex);
-
             orderedInputs.forEach(input => {
                 const carNum = input.dataset.carNum;
-                
                 const timeTd = input.closest('td');
                 const driverTd = timeTd.previousElementSibling; 
                 const driverNameSpan = driverTd.querySelector('.driver-name');
@@ -3866,25 +3854,19 @@ const S2_Module = {
                 if (driverName && driverName !== '휴무') {
                     const timeStr = currentTime.toTimeString().slice(0, 5);
                     input.value = timeStr;
-                    
                     if (!s2_data[dateString]) s2_data[dateString] = {};
                     if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
                     if (!s2_data[dateString][routeName][carNum]) s2_data[dateString][routeName][carNum] = {};
-                    
                     const dbKey = (shift === 'am') 
                         ? `start_time_${this.sanitizeForId(routeName)}_${carNum}_am` 
                         : `pm_start_time_${this.sanitizeForId(routeName)}_${carNum}_pm`;
-                    
                     s2_data[dateString][routeName][carNum][dbKey] = timeStr;
-
-                    // 간격 적용
                     if (interval !== 0) currentTime.setMinutes(currentTime.getMinutes() + interval);
                 } else {
                     input.value = '';
                     if (!s2_data[dateString]) s2_data[dateString] = {};
                     if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
                     if (!s2_data[dateString][routeName][carNum]) s2_data[dateString][routeName][carNum] = {};
-
                     const dbKey = (shift === 'am') 
                         ? `start_time_${this.sanitizeForId(routeName)}_${carNum}_am` 
                         : `pm_start_time_${this.sanitizeForId(routeName)}_${carNum}_pm`;
@@ -3892,7 +3874,6 @@ const S2_Module = {
                 }
             });
         });
-        
         this.ui.timeModal.style.display = 'none';
     },
 
@@ -3927,7 +3908,6 @@ const S2_Module = {
         const dateStr = el.closest('tr').dataset.dateString;
         const routeName = el.closest('.route-section').dataset.routeName;
         const carNum = el.dataset.carNum;
-        
         DataManager.updateS2Data(s2_data => {
             if(!s2_data[dateStr]) s2_data[dateStr] = {};
             if(!s2_data[dateStr][routeName]) s2_data[dateStr][routeName] = {};
@@ -3971,7 +3951,6 @@ const S2_Module = {
 
     changeDispatchOrder(routeName, order, buttonContainer) {
         buttonContainer.querySelectorAll('.dispatch-button').forEach(btn => btn.classList.toggle('active', btn.dataset.order === order));
-        
         const cycleSelect = buttonContainer.nextElementSibling.querySelector('.dispatch-cycle-select');
         if (order === 'manual') {
             cycleSelect.value = 'manual';
@@ -4044,7 +4023,6 @@ const S2_Module = {
             let s1_base_list = routeData.vehicleColumns.filter(v => v && v !== '미입력');
             const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
             s1_base_list.sort(collator.compare);
-            
             if (!baseOrder.length || baseOrder.length !== s1_base_list.length) {
                 baseOrder = s1_base_list;
             }
@@ -4052,7 +4030,6 @@ const S2_Module = {
         
         if (!baseOrder.length) return [];
         if (s2_settings.dispatchType === 'manual' || s2_settings.cycle === 'manual') return baseOrder;
-
         if (s2_settings.dispatchType === 'random') {
              const seed = targetDateString.replace(/-/g, '') + routeName;
              return this.seededShuffle(baseOrder, seed);
@@ -4061,12 +4038,10 @@ const S2_Module = {
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const targetDate = new Date(targetDateString); targetDate.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
-        
         let rotateCount = 0;
         if (s2_settings.cycle === 'daily') rotateCount = diffDays;
         else if (s2_settings.cycle === 'weekly') rotateCount = Math.floor(diffDays / 7);
         else if (s2_settings.cycle === 'monthly') rotateCount = Math.floor(diffDays / 30);
-        
         if (s2_settings.dispatchType === 'descending') {
             rotateCount = -rotateCount;
         }
@@ -4097,6 +4072,7 @@ const S2_Module = {
         return colgroup + header;
     },
 
+    // [핵심 수정: 휴무자 표시 로직 개선]
     createRowSideHTML(routeName, carNum, seqNum, todayS1Schedule, todayS2RouteLog, s2_settings, dateString, autoTimes = {}, routeData = null, dayOfWeek = 0) {
         const routeId = this.sanitizeForId(routeName);
         const seqHTML = `<td style="font-weight:bold; background-color:#f8f9fa; color:#555;">${seqNum}</td>`;
@@ -4128,11 +4104,9 @@ const S2_Module = {
                         if (workType === 'biweekly') {
                             const startObj = new Date(entry.dateString);
                             const currentObj = new Date(dateString);
-                            
                             const diffTime = currentObj - startObj;
                             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                             const weeksPassed = Math.floor(diffDays / 7);
-
                             if (weeksPassed % 2 !== 0) {
                                 names = [entry.names[1], entry.names[0]];
                             }
@@ -4148,16 +4122,16 @@ const S2_Module = {
         let amHolidayWorkerStored = log[`holiday_worker_${routeId}_${carNum}_am`] || '';
         let pmHolidayWorkerStored = log[`holiday_worker_${routeId}_${carNum}_pm`] || '';
 
-        if (!amHolidayWorkerStored && fixedAm && amDriver && fixedAm !== amDriver && amDriver !== '휴무') {
+        // [수정] 근무자가 고정 근무자와 다르면(휴무 포함) 휴무자로 표시
+        if (!amHolidayWorkerStored && fixedAm && fixedAm !== amDriver) {
             amHolidayWorkerStored = fixedAm;
         }
-        if (!pmHolidayWorkerStored && fixedPm && pmDriver && fixedPm !== pmDriver && pmDriver !== '휴무') {
+        if (!pmHolidayWorkerStored && fixedPm && fixedPm !== pmDriver) {
             pmHolidayWorkerStored = fixedPm;
         }
 
         const amHoliday = log[amHKey] === '휴무';
         const pmHoliday = log[pmHKey] === '휴무';
-        
         const amHolidayDisp = amHolidayWorkerStored ? amHolidayWorkerStored : (amHoliday ? amDisp : '');
         const pmHolidayDisp = pmHolidayWorkerStored ? pmHolidayWorkerStored : (pmHoliday ? pmDisp : '');
         
@@ -4166,9 +4140,8 @@ const S2_Module = {
 
         const amTimeValue = log[amKey] !== undefined ? log[amKey] : '';
         const pmTimeValue = log[pmKey] !== undefined ? log[pmKey] : '';
-
         const opts = (val) => ['', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '휴무'].map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('');
-
+        
         return `
             ${seqHTML}
             <td class="car-number-cell" data-car-number="${carNum}" draggable="true">
@@ -4213,7 +4186,6 @@ const S2_Module = {
         const driverCell = td.previousElementSibling.previousElementSibling;
         const timeInput = td.previousElementSibling.querySelector('input');
         const driverName = driverCell.querySelector('.driver-name');
-        
         if (val === '휴무') {
             if(holidayCell) {
                 const name = driverName.textContent;
@@ -4246,14 +4218,12 @@ const S2_Module = {
         const cycles = [['manual','주기 없음'],['daily','하루'],['weekly','1주'],['monthly','1개월']].map(([k,v]) => 
             `<option value="${k}" ${cycle===k?'selected':''}>${v}</option>`
         ).join('');
-        
         const am_hour = s2_settings.am_hour || '';
         const am_minute = s2_settings.am_minute || '';
         const am_interval = s2_settings.am_interval || '';
         const pm_hour = s2_settings.pm_hour || '';
         const pm_minute = s2_settings.pm_minute || '';
         const pm_interval = s2_settings.pm_interval || '';
-
         return `
             <div class="schedule-options">
                 <div class="am-options"><span>오전</span>
@@ -4309,7 +4279,6 @@ const S2_Module = {
             const current = todaySch[carNum] || [{text:''},{text:''}];
             current[shiftIdx].text = (newVal===''||newVal==='휴무') ? '' : newVal;
             
-            // 화면에 보이는 대로 저장 (격주 로테이션 반영된 상태 보존)
             route.tempSchedule[dateStr][carNum] = current;
         });
         this.refreshDispatchLog();
@@ -4331,7 +4300,6 @@ const S2_Module = {
             
             sel.innerHTML = '<option value="">-- 변경 --</option>' + 
                 allCars.map(c => (used[c] && c!==cell.dataset.carNumber) ? '' : `<option value="${c}" ${c===cell.dataset.carNumber?'selected':''}>${c}</option>`).join('');
-            
             display.classList.add('hidden');
             ctrls.classList.remove('hidden');
         } else {
@@ -4344,7 +4312,6 @@ const S2_Module = {
         const oldCar = sel.closest('td').dataset.carNumber;
         const dateStr = sel.closest('tr').dataset.dateString;
         if(!newCar || newCar===oldCar) return;
-        
         DataManager.updateS2Data(s2_data => {
             const log = s2_data[dateStr]?.[routeName];
             if(log && log[oldCar]) {
@@ -4368,7 +4335,6 @@ const S2_Module = {
         const car = cell.dataset.carNumber;
         const route = cell.closest('.route-section').dataset.routeName;
         const date = cell.closest('tr').dataset.dateString;
-        
         DataManager.updateS2Data(s2_data => {
             if(s2_data[date]?.[route]?.[car]) delete s2_data[date][route][car];
             const sett = s2_data[route]?._settings;
@@ -4456,7 +4422,6 @@ const S2_Module = {
             });
             s2_data[dateString][routeName].manual_rest_list = newRestList;
         });
-
         cell.classList.remove('edit-mode');
         cell.querySelector('span').textContent = newVal;
     },
@@ -4476,8 +4441,7 @@ const S2_Module = {
         const routeName = cell.dataset.routeName;
         const carNum = cell.dataset.carNumber;
         const dateString = cell.dataset.dateString;
-        const shift = cell.dataset.shift; 
-        
+        const shift = cell.dataset.shift;
         const routeId = this.sanitizeForId(routeName);
         const dbKey = `holiday_worker_${routeId}_${carNum}_${shift}`;
         
@@ -4488,17 +4452,14 @@ const S2_Module = {
             
             s2_data[dateString][routeName][carNum][dbKey] = newVal;
         });
-        
         cell.classList.remove('edit-mode');
         cell.querySelector('span').textContent = newVal;
     },
     
     getTodayS1Schedule(routeData, dateString, dayOfWeek) {
         if (!routeData) return {};
-        
         const todaySchedule = {};
         const VEHICLE_COLS = routeData.vehicleColumns || [];
-
         VEHICLE_COLS.forEach(colId => {
             if (colId === '미입력') return;
             
@@ -4514,7 +4475,6 @@ const S2_Module = {
                         if (workType === 'biweekly') {
                             const startObj = new Date(entry.dateString);
                             const currentObj = new Date(dateString);
-                            
                             const diffTime = currentObj - startObj;
                             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                             const weeksPassed = Math.floor(diffDays / 7);
@@ -4540,14 +4500,13 @@ const S2_Module = {
         return todaySchedule;
     },
 
+    // [핵심 수정: 휴무자 목록 집계 로직]
     getRestWorkersList(routeData, dateString) {
         if (!routeData) return [];
-        
         const restList = [];
         const targetDate = new Date(dateString);
         const dayOfWeek = targetDate.getDay();
         const VEHICLE_COLS = routeData.vehicleColumns || [];
-
         const workingWorkers = new Set(); 
 
         VEHICLE_COLS.forEach(colId => {
@@ -4564,11 +4523,9 @@ const S2_Module = {
                         if (workType === 'biweekly') {
                             const startObj = new Date(entry.dateString);
                             const currentObj = new Date(dateString);
-                            
                             const diffTime = currentObj - startObj;
                             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                             const weeksPassed = Math.floor(diffDays / 7);
-
                             if (weeksPassed % 2 !== 0) {
                                 names = [entry.names[1], entry.names[0]];
                             }
@@ -4592,12 +4549,14 @@ const S2_Module = {
             if (actualPm && !['휴무', '월차', '년차', '퇴직자', '미입력'].includes(actualPm)) workingWorkers.add(actualPm);
 
             const checkAndAdd = (fixed, actual) => {
-                if (!fixed || fixed === '휴무') return; 
+                if (!fixed || fixed === '휴무') return;
+                
                 if (actual === '월차') restList.push(`${fixed} (월차)`);
                 else if (actual === '년차') restList.push(`${fixed} (년차)`);
                 else if (actual === '퇴직자') restList.push(`${fixed} (퇴직)`);
-                else if (actual && actual !== fixed && actual !== '휴무') {
-                    restList.push(fixed); 
+                // [수정] 실제 근무자가 고정 근무자와 다르면 (휴무 포함) 휴무자로 간주
+                else if (actual !== fixed) {
+                    restList.push(fixed);
                 }
             };
             checkAndAdd(fixedAm, actualAm);
@@ -4610,7 +4569,6 @@ const S2_Module = {
             d.setDate(d.getDate() + i);
             const scanDateStr = DataManager.getTodayDateString(d); 
             const scanDay = d.getDay();
-
             VEHICLE_COLS.forEach(colId => {
                 if (colId === '미입력') return;
                 let scanAm = { text: '', bold: false };
@@ -4628,11 +4586,9 @@ const S2_Module = {
                                 if (workType === 'biweekly') {
                                     const startObj = new Date(entry.dateString);
                                     const currentObj = new Date(scanDateStr);
-                                    
                                     const diffTime = currentObj - startObj;
                                     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                                     const weeksPassed = Math.floor(diffDays / 7);
-
                                     if (weeksPassed % 2 !== 0) {
                                         names = [entry.names[1], entry.names[0]];
                                     }
@@ -4658,10 +4614,10 @@ const S2_Module = {
                 if (!isAlreadyListed) restList.push(`(스페)${name}`);
             }
         });
-
         return [...new Set(restList)].sort();
     }
 };
+
  /* ================================================================= */
 /* [Section 3] 차량 정비 일지 모듈 */
 /* ================================================================= */
