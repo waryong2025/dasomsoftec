@@ -2157,7 +2157,52 @@ const S1_Module = {
         d.setDate(d.getDate() + diff);
         return this.getLocalYMD(d);
     },
-    isValidVehicleNumber(str) { return !(!str || !/^\d+$/.test(str.trim())); },
+
+
+    // [수정됨] 숫자 여부 판별 헬퍼 함수 (차량 번호가 숫자인지 확인)
+    isValidVehicleNumber(str) { 
+        // 공백 제거 후, 오직 '숫자'로만 구성되었는지 확인 (비고, 예비 등 제외됨)
+        return !(!str || !/^\d+$/.test(str.trim())); 
+    },
+
+    // [수정됨] 라인 완성 확인 함수 (숫자 차량번호만 체크)
+    checkLineComplete(dateString, triggeredColId) {
+        if (this.state.autoFillStopFlag) return;
+        
+        // 1. 방금 입력한 칸이 '숫자 차량번호'가 아니면 검사하지 않음 (예: 비고란 수정 시 무시)
+        if (!this.isValidVehicleNumber(triggeredColId)) return; 
+        
+        // 2. 전체 헤더 중에서 '숫자'로 된 차량번호만 골라냄
+        const validVehicleColumns = this.state.currentVehicleColumns.filter(c => this.isValidVehicleNumber(c));
+        
+        if (validVehicleColumns.length === 0) return;
+        
+        const currentData = this.state.scheduleData[dateString]; 
+        if (!currentData) return;
+        
+        let isFull = true;
+        // 3. 골라낸 '숫자 차량번호' 칸들이 모두 채워졌는지 확인
+        for (const col of validVehicleColumns) { 
+            const cellData = currentData[col]; 
+            const am = cellData && cellData[0] ? cellData[0].text.trim() : ''; 
+            const pm = cellData && cellData[1] ? cellData[1].text.trim() : ''; 
+            
+            // 하나라도 비어있으면 중단
+            if (am === '' || pm === '') { isFull = false; break; } 
+        }
+        
+        if (isFull) {
+            const nextDate = new Date(dateString); nextDate.setDate(nextDate.getDate() + 1); const nextDateStr = this.getLocalYMD(nextDate);
+            const hasNextDayData = Object.values(this.state.fixedScheduleData).some(entries => entries.some(entry => entry.dateString === nextDateStr));
+            const hasNextTemp = this.state.tempScheduleData[nextDateStr] && Object.keys(this.state.tempScheduleData[nextDateStr]).length > 0;
+            if (hasNextDayData || hasNextTemp) return;
+            
+            this.state.pendingSourceDate = dateString; this.state.pendingTargetDate = nextDateStr;
+            const msgEl = document.getElementById('s1-autofill-msg');
+            msgEl.innerHTML = ` <strong style="color:#333;">${dateString}</strong> 근무자 입력 완료.<br><br> <span style="color:#0056b3; font-weight:bold; font-size:1.2em;">${nextDateStr} (다음날)</span> 근무자도<br> 동일하게 <span style="color:#28a745; font-weight:bold;">자동 생성</span> 하시겠습니까? `;
+            document.getElementById('s1-autofill-modal').style.display = 'block';
+        }
+    },
 
     updateLocalScheduleData(dateString, colId, names) {
         if (!this.state.scheduleData[dateString]) this.state.scheduleData[dateString] = {};
@@ -2254,6 +2299,7 @@ const S1_Module = {
         DataManager.subscribe(this);
     },
 
+    // [수정됨] 팝업 생성 및 이벤트 핸들러 연결
     injectModals() {
         if (!document.getElementById('s1-guide-modal')) {
             const guideModalHTML = `<div id="s1-guide-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);"><div style="background-color:#fff; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:500px; border-radius:8px; text-align:center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"><h3 style="color:#0056b3; margin-top:0;">📋 근무표 작성 가이드</h3><p style="text-align:left; line-height:1.6; font-size:15px;">차량 번호를 입력하거나 <strong>칸을 드래그해서 위치를 바꿀 수 있습니다.</strong><br>첫 입력시 모든 직원들의 차량번호에 근무자를 채워주세요.</p><button id="s1-close-guide" style="background-color:#007bff; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:10px;">확인</button></div></div>`;
@@ -2271,23 +2317,31 @@ const S1_Module = {
             const retireeModalHTML = `<div id="s1-retiree-modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);"><div style="background-color:#fff; margin:15% auto; padding:20px; border:1px solid #888; width:300px; border-radius:8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"><h3 style="color:#d9534f; margin-top:0; text-align:center;">퇴직자 근무자 교체</h3><p id="s1-retiree-msg" style="text-align:center; font-size:0.95em;">대체할 근무자 이름을 입력하세요.</p><input type="text" id="s1-retiree-input" style="width:100%; padding:8px; margin:10px 0; border:1px solid #ccc; border-radius:4px; text-align:center;" placeholder="대체 근무자 이름"><div style="display:flex; justify-content:center; gap:10px; margin-top:10px;"><button id="s1-confirm-retiree" style="background-color:#d9534f; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">교체 및 적용</button><button id="s1-cancel-retiree" style="background-color:#6c757d; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">취소</button></div></div></div>`;
             document.body.insertAdjacentHTML('beforeend', retireeModalHTML);
         }
+        
+        // 버튼 이벤트 연결
         const guideClose = document.getElementById('s1-close-guide');
         if (guideClose) guideClose.onclick = () => document.getElementById('s1-guide-modal').style.display = 'none';
+        
         const autoFillCancel = document.getElementById('s1-cancel-autofill');
         if (autoFillCancel) {
             autoFillCancel.onclick = () => {
                 document.getElementById('s1-autofill-modal').style.display = 'none';
                 this.state.pendingSourceDate = null;
                 this.state.pendingTargetDate = null;
-                this.state.autoFillStopFlag = true;
+                
+                // [핵심] '아니오' 클릭 시 전역 플래그를 true로 설정하여 이후 팝업 차단
+                this.state.autoFillStopFlag = true; 
             };
         }
+        
         const autoFillConfirm = document.getElementById('s1-confirm-autofill');
         if (autoFillConfirm) { autoFillConfirm.onclick = () => this.executeCopyNextDay(); }
+        
         const swapConfirm = document.getElementById('s1-confirm-swap');
         const swapCancel = document.getElementById('s1-cancel-swap');
         if (swapConfirm) swapConfirm.onclick = () => this.executeFutureSwap(true);
         if (swapCancel) swapCancel.onclick = () => this.executeFutureSwap(false);
+        
         const retireeConfirm = document.getElementById('s1-confirm-retiree');
         const retireeCancel = document.getElementById('s1-cancel-retiree');
         if (retireeConfirm) retireeConfirm.onclick = () => this.confirmRetireeChange();
@@ -2495,7 +2549,7 @@ const S1_Module = {
     return `<div class="s1-cell-inner">${innerHTML}</div>`;
 },
 
-    // [수정됨] editCell 함수: 입력창 옆에 'X(지우기)' 버튼 추가
+    // [수정됨] editCell 함수: '교환' 버튼 추가 및 로직 구현
     editCell(cell, colId, dateString, dayOfWeek) {
         if (cell.classList.contains('edit-mode')) return;
 
@@ -2524,7 +2578,7 @@ const S1_Module = {
         // 포커스 상태 추적
         this.state.lastFocusedInput = (morningValue === afternoonValue && morningValue !== '') ? 'both' : 'am';
 
-        // [변경] HTML 구조: input을 감싸는 wrapper와 지우기(X) 버튼 추가
+        // [변경] HTML 구조: 버튼 그룹 첫 번째 줄에 '교환' 버튼 추가
         cell.innerHTML = `
             <div class="s1-input-wrapper">
                 <input type="text" class="morning-input" value="" placeholder="${amPlaceholder}" data-bold="${currentNames[0].bold}">
@@ -2538,6 +2592,7 @@ const S1_Module = {
                 <div style="display: flex; gap: 1px; width: 100%;">
                     <button class="btn-fixed" style="flex: 1;">고정</button> 
                     <button class="btn-temp" style="flex: 1;">임시</button> 
+                    <button class="btn-swap" style="flex: 1; background-color: #fd7e14; color: white;">교환</button>
                     <button class="btn-highlight-am" style="flex: 1; font-size: 0.6em;">오전스페어</button> 
                     <button class="btn-highlight-pm" style="flex: 1; font-size: 0.6em;">오후스페어</button>
                 </div>
@@ -2552,25 +2607,59 @@ const S1_Module = {
         const amInput = cell.querySelector('.morning-input'); 
         const pmInput = cell.querySelector('.afternoon-input');
         
+        // 초기 스타일 적용 (저장된 bold 상태가 있다면 시각적으로 반영)
+        if (currentNames[0].bold) { amInput.style.fontWeight = 'bold'; amInput.style.color = '#0000FF'; }
+        if (currentNames[1].bold) { pmInput.style.fontWeight = 'bold'; pmInput.style.color = '#0000FF'; }
+        
         // 포커스 설정
         if (this.state.lastFocusedInput === 'pm') pmInput.focus(); else amInput.focus();
         amInput.onfocus = () => { this.state.lastFocusedInput = 'am'; }; 
         pmInput.onfocus = () => { this.state.lastFocusedInput = 'pm'; };
 
-        // [추가] 지우기 버튼(X) 클릭 이벤트
+        // 지우기 버튼(X) 클릭 이벤트
         cell.querySelectorAll('.btn-input-clear').forEach(btn => {
             btn.onclick = (e) => {
-                e.stopPropagation(); // 버튼 클릭 시 셀 닫힘 방지
+                e.stopPropagation(); 
                 const wrapper = btn.closest('.s1-input-wrapper');
                 const input = wrapper.querySelector('input');
-                
-                input.value = '';        // 값 비우기
-                input.placeholder = '';  // [핵심] Placeholder도 비워서 저장 시 빈칸으로 인식되게 함
-                input.focus();           // 입력창에 다시 포커스
+                input.value = '';        
+                input.placeholder = '';  
+                input.focus();           
             };
         });
 
         const buttons = cell.querySelector('.cell-buttons');
+        
+        // [추가] 교환 버튼 로직
+        buttons.querySelector('.btn-swap').onclick = (e) => {
+            e.stopPropagation();
+            
+            // 1. 값 교환
+            const tempVal = amInput.value;
+            amInput.value = pmInput.value;
+            pmInput.value = tempVal;
+
+            // 2. Placeholder(기존 값) 교환
+            const tempPlace = amInput.placeholder;
+            amInput.placeholder = pmInput.placeholder;
+            pmInput.placeholder = tempPlace;
+
+            // 3. 데이터 속성(bold 여부) 교환
+            const tempBoldData = amInput.dataset.bold;
+            amInput.dataset.bold = pmInput.dataset.bold;
+            pmInput.dataset.bold = tempBoldData;
+
+            // 4. 시각적 스타일(폰트 굵기, 색상) 교환
+            const tempWeight = amInput.style.fontWeight;
+            const tempColor = amInput.style.color;
+            
+            amInput.style.fontWeight = pmInput.style.fontWeight;
+            amInput.style.color = pmInput.style.color;
+            
+            pmInput.style.fontWeight = tempWeight;
+            pmInput.style.color = tempColor;
+        };
+
         // 기존 버튼 이벤트 연결
         buttons.querySelector('.btn-fixed').onclick = (e) => { e.stopPropagation(); this.saveFixedCell(cell); };
         buttons.querySelector('.btn-temp').onclick = (e) => { e.stopPropagation(); this.saveTempCell(cell); };
@@ -2592,7 +2681,6 @@ const S1_Module = {
             
             const targets = [];
             let currentAm = amInput.value.trim();
-            // [중요] 비우기 버튼을 눌러서 placeholder가 비었으면 값을 채우지 않음
             if (!currentAm && amInput.placeholder && !amInput.placeholder.includes('비우면')) currentAm = amInput.placeholder;
 
             let currentPm = pmInput.value.trim();
@@ -2625,160 +2713,155 @@ const S1_Module = {
     
     /* [S1_Module 내부 함수 수정] */
 
-// 1. 고정 근무자 저장 함수 (수정됨)
-saveFixedCell(cellElement) {
-    // 스냅샷 저장
-    this.saveSnapshot(); 
-    
-    const { colId, dayOfWeek, dateString } = cellElement.dataset;
-    const amInput = cellElement.querySelector('.morning-input');
-    const pmInput = cellElement.querySelector('.afternoon-input');
-    
-    let amName = amInput.value.trim();
-    if (amName === '' && amInput.placeholder && !amInput.placeholder.includes('비우면')) {
-        amName = amInput.placeholder;
-    }
-
-    let pmName = pmInput.value.trim();
-    if (pmName === '' && pmInput.placeholder && !pmInput.placeholder.includes('비우면')) {
-        pmName = pmInput.placeholder;
-    }
-
-    const oldNames = (this.state.scheduleData[dateString] && this.state.scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
-    const fixedOwner = this.getFixedOwner(dateString, colId);
-
-    // [중요] 화면에 입력된 값 (Visual Names)
-    const visualNewNames = [
-        { text: amName, bold: amInput.dataset.bold === 'true' },
-        { text: pmName, bold: pmInput.dataset.bold === 'true' }
-    ];
-    
-    // 글로벌 스왑 체크는 "화면에 보이는 대로" 판단 (사용자 의도 파악)
-    if (!amInput.dataset.leaveType && !pmInput.dataset.leaveType) {
-        this.checkAndExecuteGlobalSwap(visualNewNames, oldNames, dateString, colId);
-    }
-
-    // S2 데이터 업데이트 (휴무자 등)
-    if (visualNewNames[0].text !== '' && visualNewNames[0].text !== fixedOwner.am && visualNewNames[0].text !== '휴무') { 
-        if (fixedOwner.am) this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'am', fixedOwner.am, ''); 
-    }
-    if (visualNewNames[1].text !== '' && visualNewNames[1].text !== fixedOwner.pm && visualNewNames[1].text !== '휴무') { 
-        if (fixedOwner.pm) this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'pm', fixedOwner.pm, ''); 
-    }
-    
-    DataManager.updateS1Data(s1_data => {
-        const routeData = s1_data.routes[this.state.currentRoute]; if (!routeData) return;
+// 1. 고정 근무자 저장 함수 (수정됨: 교환 시 휴무 처리 방지 로직 적용)
+    saveFixedCell(cellElement) {
+        this.saveSnapshot(); 
         
-        // [버그 수정 핵심] 현재 날짜가 "로테이션(격주 회전)"된 상태인지 확인
-        let isViewRotated = false;
-        const workType = routeData.workTypeConfig[colId] || 'biweekly'; // 기본값 biweekly
+        const { colId, dayOfWeek, dateString } = cellElement.dataset;
+        const amInput = cellElement.querySelector('.morning-input');
+        const pmInput = cellElement.querySelector('.afternoon-input');
         
-        if (workType === 'biweekly') {
-            const recurringKey = `${dayOfWeek}-${colId}`;
-            // 기존 고정 스케줄을 확인하여 로테이션 여부 판단
-            if (routeData.fixedSchedule && routeData.fixedSchedule[recurringKey]) {
-                for (const entry of routeData.fixedSchedule[recurringKey]) {
-                    if (new Date(dateString) >= new Date(entry.dateString)) {
-                        const weekDiff = this.calculateWeekDiff(entry.dateString, dateString);
-                        if (weekDiff % 2 === 1) {
-                            isViewRotated = true; // 홀수 주차라 화면이 뒤집힌 상태임
+        let amName = amInput.value.trim();
+        if (amName === '' && amInput.placeholder && !amInput.placeholder.includes('비우면')) {
+            amName = amInput.placeholder;
+        }
+
+        let pmName = pmInput.value.trim();
+        if (pmName === '' && pmInput.placeholder && !pmInput.placeholder.includes('비우면')) {
+            pmName = pmInput.placeholder;
+        }
+
+        const oldNames = (this.state.scheduleData[dateString] && this.state.scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
+        const fixedOwner = this.getFixedOwner(dateString, colId);
+
+        const visualNewNames = [
+            { text: amName, bold: amInput.dataset.bold === 'true' },
+            { text: pmName, bold: pmInput.dataset.bold === 'true' }
+        ];
+        
+        if (!amInput.dataset.leaveType && !pmInput.dataset.leaveType) {
+            this.checkAndExecuteGlobalSwap(visualNewNames, oldNames, dateString, colId);
+        }
+
+        // [핵심 수정 부분] S2 데이터 업데이트 (교환 시 휴무 방지)
+        // 고정 근무자(AM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
+        if (fixedOwner.am) { 
+            const isAmWorking = (visualNewNames[0].text === fixedOwner.am) || (visualNewNames[1].text === fixedOwner.am);
+            if (!isAmWorking) {
+                this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'am', fixedOwner.am, ''); 
+            }
+        }
+        
+        // 고정 근무자(PM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
+        if (fixedOwner.pm) { 
+            const isPmWorking = (visualNewNames[0].text === fixedOwner.pm) || (visualNewNames[1].text === fixedOwner.pm);
+            if (!isPmWorking) {
+                this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'pm', fixedOwner.pm, ''); 
+            }
+        }
+        
+        DataManager.updateS1Data(s1_data => {
+            const routeData = s1_data.routes[this.state.currentRoute]; if (!routeData) return;
+            
+            let isViewRotated = false;
+            const workType = routeData.workTypeConfig[colId] || 'biweekly'; 
+            
+            if (workType === 'biweekly') {
+                const recurringKey = `${dayOfWeek}-${colId}`;
+                if (routeData.fixedSchedule && routeData.fixedSchedule[recurringKey]) {
+                    for (const entry of routeData.fixedSchedule[recurringKey]) {
+                        if (new Date(dateString) >= new Date(entry.dateString)) {
+                            const weekDiff = this.calculateWeekDiff(entry.dateString, dateString);
+                            if (weekDiff % 2 === 1) {
+                                isViewRotated = true; 
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
+
+            let namesToSave = [...visualNewNames];
+            if (isViewRotated) {
+                namesToSave = [visualNewNames[1], visualNewNames[0]]; 
+            }
+
+            const currentRecurringKey = `${dayOfWeek}-${colId}`;
+            if (!routeData.fixedSchedule[currentRecurringKey]) routeData.fixedSchedule[currentRecurringKey] = [];
+            
+            routeData.fixedSchedule[currentRecurringKey] = routeData.fixedSchedule[currentRecurringKey].filter(entry => entry.dateString !== dateString);
+            routeData.fixedSchedule[currentRecurringKey].push({ dateString: dateString, names: namesToSave });
+            routeData.fixedSchedule[currentRecurringKey].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
+            
+            this.state.fixedScheduleData = routeData.fixedSchedule;
+        });
+
+        this.updateLocalScheduleData(dateString, colId, visualNewNames);
+        this.refreshSingleCell(cellElement, colId, dateString, visualNewNames);
+        
+        this.checkLineComplete(dateString, colId);
+    },
+
+// 2. 임시 근무자 저장 함수 (수정됨: 교환 시 휴무 처리 방지 로직 적용)
+    saveTempCell(cellElement) {
+        this.saveSnapshot(); 
+        const { colId, dateString } = cellElement.dataset;
+        const amInput = cellElement.querySelector('.morning-input');
+        const pmInput = cellElement.querySelector('.afternoon-input');
+        
+        let amName = amInput.value.trim();
+        if (amName === '' && amInput.placeholder && !amInput.placeholder.includes('비우면')) {
+            amName = amInput.placeholder;
         }
 
-        // 화면이 뒤집힌 상태라면, 저장할 때는 다시 뒤집어서(Un-swap) 저장해야 원본 데이터가 꼬이지 않음
-        let namesToSave = [...visualNewNames];
-        if (isViewRotated) {
-            namesToSave = [visualNewNames[1], visualNewNames[0]]; // [PM, AM] 순서로 변경하여 저장
+        let pmName = pmInput.value.trim();
+        if (pmName === '' && pmInput.placeholder && !pmInput.placeholder.includes('비우면')) {
+            pmName = pmInput.placeholder;
         }
 
-        const currentRecurringKey = `${dayOfWeek}-${colId}`;
-        if (!routeData.fixedSchedule[currentRecurringKey]) routeData.fixedSchedule[currentRecurringKey] = [];
+        const oldNames = (this.state.scheduleData[dateString] && this.state.scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
+
+        const visualNewNames = [
+            { text: amName, bold: amInput.dataset.bold === 'true' },
+            { text: pmName, bold: pmInput.dataset.bold === 'true' }
+        ];
         
-        // 해당 날짜의 기존 엔트리 제거 후 새 엔트리 추가
-        routeData.fixedSchedule[currentRecurringKey] = routeData.fixedSchedule[currentRecurringKey].filter(entry => entry.dateString !== dateString);
-        
-        // [주의] 새 엔트리가 추가되면 이 날짜가 새로운 기준(Anchor)이 되므로, 
-        // 이후에는 오늘을 기준으로 다시 로테이션이 계산됩니다.
-        // 데이터 정합성을 위해 'namesToSave'를 저장합니다.
-        routeData.fixedSchedule[currentRecurringKey].push({ dateString: dateString, names: namesToSave });
-        routeData.fixedSchedule[currentRecurringKey].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
-        
-        this.state.fixedScheduleData = routeData.fixedSchedule;
-    });
+        if (!amInput.dataset.leaveType && !pmInput.dataset.leaveType) {
+             this.checkAndExecuteGlobalSwap(visualNewNames, oldNames, dateString, colId);
+        }
 
-    this.updateLocalScheduleData(dateString, colId, visualNewNames);
-    this.refreshSingleCell(cellElement, colId, dateString, visualNewNames);
-    
-    this.checkLineComplete(dateString, colId);
-},
+        const fixedOwner = this.getFixedOwner(dateString, colId);
 
-// 2. 임시 근무자 저장 함수 (수정됨)
-saveTempCell(cellElement) {
-    this.saveSnapshot(); 
-    const { colId, dateString } = cellElement.dataset;
-    const amInput = cellElement.querySelector('.morning-input');
-    const pmInput = cellElement.querySelector('.afternoon-input');
-    
-    let amName = amInput.value.trim();
-    if (amName === '' && amInput.placeholder && !amInput.placeholder.includes('비우면')) {
-        amName = amInput.placeholder;
-    }
-
-    let pmName = pmInput.value.trim();
-    if (pmName === '' && pmInput.placeholder && !pmInput.placeholder.includes('비우면')) {
-        pmName = pmInput.placeholder;
-    }
-
-    const oldNames = (this.state.scheduleData[dateString] && this.state.scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
-
-    const visualNewNames = [
-        { text: amName, bold: amInput.dataset.bold === 'true' },
-        { text: pmName, bold: pmInput.dataset.bold === 'true' }
-    ];
-    
-    if (!amInput.dataset.leaveType && !pmInput.dataset.leaveType) {
-         this.checkAndExecuteGlobalSwap(visualNewNames, oldNames, dateString, colId);
-    }
-
-    const fixedOwner = this.getFixedOwner(dateString, colId);
-
-    if (visualNewNames[0].text !== '' && visualNewNames[0].text !== fixedOwner.am && visualNewNames[0].text !== '휴무') {
+        // [핵심 수정 부분] S2 데이터 업데이트 (교환 시 휴무 방지)
+        // 고정 근무자(AM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
         if (fixedOwner.am) {
-            this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'am', fixedOwner.am, '');
+            const isAmWorking = (visualNewNames[0].text === fixedOwner.am) || (visualNewNames[1].text === fixedOwner.am);
+            if (!isAmWorking) {
+                this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'am', fixedOwner.am, '');
+            }
         }
-    }
 
-    if (visualNewNames[1].text !== '' && visualNewNames[1].text !== fixedOwner.pm && visualNewNames[1].text !== '휴무') {
+        // 고정 근무자(PM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
         if (fixedOwner.pm) {
-            this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'pm', fixedOwner.pm, '');
+            const isPmWorking = (visualNewNames[0].text === fixedOwner.pm) || (visualNewNames[1].text === fixedOwner.pm);
+            if (!isPmWorking) {
+                this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'pm', fixedOwner.pm, '');
+            }
         }
-    }
 
-    DataManager.updateS1Data(s1_data => {
-        const routeData = s1_data.routes[this.state.currentRoute]; if (!routeData) return;
-        if (!routeData.tempSchedule[dateString]) routeData.tempSchedule[dateString] = {};
+        DataManager.updateS1Data(s1_data => {
+            const routeData = s1_data.routes[this.state.currentRoute]; if (!routeData) return;
+            if (!routeData.tempSchedule[dateString]) routeData.tempSchedule[dateString] = {};
+            
+            routeData.tempSchedule[dateString][colId] = visualNewNames;
+            this.state.tempScheduleData = routeData.tempSchedule;
+        });
+
+        this.updateLocalScheduleData(dateString, colId, visualNewNames);
+        this.refreshSingleCell(cellElement, colId, dateString, visualNewNames);
         
-        // [임시 저장 로직 수정]
-        // TempSchedule은 화면에 보이는 그대로를 덮어쓰는(Override) 개념이므로
-        // 별도의 Un-swap 로직 없이 화면 값(visualNewNames)을 그대로 저장해도 되지만,
-        // S2 모듈과의 연동을 위해 로테이션 여부를 체크하는 것이 안전할 수 있습니다.
-        // 하지만 TempSchedule은 '보이는 대로' 렌더링되므로 visualNewNames를 저장합니다.
-        
-        routeData.tempSchedule[dateString][colId] = visualNewNames;
-        this.state.tempScheduleData = routeData.tempSchedule;
-    });
-
-    this.updateLocalScheduleData(dateString, colId, visualNewNames);
-    this.refreshSingleCell(cellElement, colId, dateString, visualNewNames);
-    
-    this.checkLineComplete(dateString, colId);
-},
-
-    deleteCell(cellElement) {
+        this.checkLineComplete(dateString, colId);
+    },    deleteCell(cellElement) {
         this.saveSnapshot(); 
         const { colId, dayOfWeek, dateString } = cellElement.dataset;
         const emptyNames = [{ text: '', bold: false }, { text: '', bold: false }];
@@ -3020,9 +3103,19 @@ saveTempCell(cellElement) {
         });
     },
     
+    // [수정됨] 라인 완성 확인 함수 (숫자 차량번호만 체크 + 팝업 제어 강화)
     checkLineComplete(dateString, triggeredColId) {
+        // [핵심1] 사용자가 이미 '아니오'를 선택했다면 절대 띄우지 않음 (전역 차단)
         if (this.state.autoFillStopFlag) return;
+        
+        // [핵심2] 이미 자동생성 팝업이 떠 있는 상태라면 중복 실행 방지 (깜빡임/사라짐 해결)
+        const modal = document.getElementById('s1-autofill-modal');
+        if (modal && modal.style.display === 'block') return;
+
+        // 방금 입력한 칸이 '숫자 차량번호'가 아니면 무시
         if (!this.isValidVehicleNumber(triggeredColId)) return; 
+
+        // 전체 헤더 중에서 '숫자'로 된 차량번호만 골라냄
         const validVehicleColumns = this.state.currentVehicleColumns.filter(c => this.isValidVehicleNumber(c));
         if (validVehicleColumns.length === 0) return;
         
@@ -3030,23 +3123,32 @@ saveTempCell(cellElement) {
         if (!currentData) return;
         
         let isFull = true;
+        // 모든 유효한 차량 칸이 채워졌는지 확인
         for (const col of validVehicleColumns) { 
             const cellData = currentData[col]; 
             const am = cellData && cellData[0] ? cellData[0].text.trim() : ''; 
             const pm = cellData && cellData[1] ? cellData[1].text.trim() : ''; 
+            
             if (am === '' || pm === '') { isFull = false; break; } 
         }
         
         if (isFull) {
-            const nextDate = new Date(dateString); nextDate.setDate(nextDate.getDate() + 1); const nextDateStr = this.getLocalYMD(nextDate);
+            const nextDate = new Date(dateString); 
+            nextDate.setDate(nextDate.getDate() + 1); 
+            const nextDateStr = this.getLocalYMD(nextDate);
+            
             const hasNextDayData = Object.values(this.state.fixedScheduleData).some(entries => entries.some(entry => entry.dateString === nextDateStr));
             const hasNextTemp = this.state.tempScheduleData[nextDateStr] && Object.keys(this.state.tempScheduleData[nextDateStr]).length > 0;
+            
             if (hasNextDayData || hasNextTemp) return;
             
-            this.state.pendingSourceDate = dateString; this.state.pendingTargetDate = nextDateStr;
+            this.state.pendingSourceDate = dateString; 
+            this.state.pendingTargetDate = nextDateStr;
+            
             const msgEl = document.getElementById('s1-autofill-msg');
             msgEl.innerHTML = ` <strong style="color:#333;">${dateString}</strong> 근무자 입력 완료.<br><br> <span style="color:#0056b3; font-weight:bold; font-size:1.2em;">${nextDateStr} (다음날)</span> 근무자도<br> 동일하게 <span style="color:#28a745; font-weight:bold;">자동 생성</span> 하시겠습니까? `;
-            document.getElementById('s1-autofill-modal').style.display = 'block';
+            
+            modal.style.display = 'block'; // 팝업 띄움
         }
     },
 
@@ -3631,7 +3733,7 @@ const S2_Module = {
         });
     },
 
-    // [중요 수정] 자동 시간 계산 함수 연결
+    // [수정됨] 승무일지 새로고침 함수 (수동 저장 명단이 있어도 자동 계산 명단을 합치도록 개선)
     refreshDispatchLog() {
         const { routeData } = DataManager.getCurrentRouteData();
         const container = this.ui.dispatchLogBody;
@@ -3672,7 +3774,6 @@ const S2_Module = {
                 if (!rData) continue;
 
                 const routeId = this.sanitizeForId(routeName);
-                
                 const s2_settings = (allS2Data[routeName] && allS2Data[routeName]._settings) ? allS2Data[routeName]._settings : {};
                 
                 const todayS1Schedule = this.getTodayS1Schedule(rData, dateString, dayOfWeek);
@@ -3692,7 +3793,6 @@ const S2_Module = {
                     if (idx > -1) validVehicles = this.rotateArray(validVehicles, idx);
                 }
 
-                // [수정] 빈 객체가 아닌 계산 함수 호출
                 const autoTimes = this.calculateAutoTimes(validVehicles, s2_settings, todayS1Schedule);
 
                 let s2_optionsHTML = (dateString === this.state.s2_currentDates[0].dateString) ? 
@@ -3711,15 +3811,24 @@ const S2_Module = {
                     tableBodyHTML += `<tr data-date-string="${dateString}">${leftHTML}${rightHTML}</tr>`;
                 }
 
-                let finalRestList = [];
-                const savedRestList = todayS2RouteLog.manual_rest_list;
-
-                if (savedRestList && Array.isArray(savedRestList)) {
-                    finalRestList = savedRestList;
-                } else {
-                    finalRestList = this.getRestWorkersList(rData, dateString);
-                }
+                // [핵심 수정] 휴무자 명단 계산 로직 개선
+                // 1. S1 근무표 기반으로 자동 계산된 명단을 먼저 가져옵니다.
+                const autoCalculatedList = this.getRestWorkersList(rData, dateString);
+                let finalRestList = [...autoCalculatedList];
                 
+                // 2. 이전에 수동으로 저장된 명단(manual_rest_list)이 있다면, 자동 목록에 없는 사람만 추가합니다.
+                // (기존에는 수동 명단이 있으면 자동 계산을 아예 안 했기 때문에 누락 발생)
+                const savedRestList = todayS2RouteLog.manual_rest_list;
+                if (savedRestList && Array.isArray(savedRestList)) {
+                    savedRestList.forEach(worker => {
+                        // 중복 방지하며 추가
+                        if (!finalRestList.includes(worker)) {
+                            finalRestList.push(worker);
+                        }
+                    });
+                }
+
+                // 3. S1에서 '교환' 버튼 등을 통해 명시적으로 넘어온 데이터(s1_rest_data)도 합칩니다.
                 const s1_rest_data = todayS2RouteLog.s1_rest_data || {};
                 Object.values(s1_rest_data).forEach(workerEntry => {
                     if (workerEntry && !finalRestList.includes(workerEntry)) {
@@ -3727,6 +3836,7 @@ const S2_Module = {
                     }
                 });
                 
+                // 4. 최종 정렬
                 finalRestList = [...new Set(finalRestList)].sort();
 
                 let restCellsHTML = '';
