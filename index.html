@@ -1625,10 +1625,10 @@ bindEventListeners() {
     <div id="section2" style="display: none;">
         <div class="journal-container">
 
-            <div class="header-title">승무일지</div>
+            <div class="header-title" id="s2_header_title">승무일지</div>
             <div class="title-area">
                 <div class="title-left">
-                    <div class="main-title">승 무 일 지</div>
+                    <div class="main-title" id="s2_main_title">승 무 일 지</div>
                 </div>
     
                 <div class="options-right">
@@ -1742,6 +1742,28 @@ bindEventListeners() {
             </header>
 
             <form id="maintenanceForm">
+         <datalist id="s3_maintenance_items">
+                <option value="차량검차">
+                <option value="차량운행 KM">
+                <option value="전 타이어 좌 / 우">
+                <option value="뒤 타이어 좌 / 우">
+                <option value="엔도볼 좌 / 우">
+                <option value="토인조정">
+                <option value="엔진벨트 소 / 대">
+                <option value="DPF 청소 / 교환">
+                <option value="전 라이닝 좌 / 우">
+                <option value="뒤 라이닝 좌 / 우">
+                <option value="엔진오일점검교환/휠타">
+                <option value="부동액 점검 교환">
+                <option value="브레이크액 점검 교환">
+                <option value="스프링 전 좌 / 우">
+                <option value="스프링 뒤 좌 / 우">
+                <option value="자동문(        )">
+                <option value="시트(        )">
+                <option value="및션탈부착">
+                <option value="에어컨 수리">
+                <option value="기타사항">
+            </datalist>
             <table class="form-table">
                 <colgroup>
                     <col class="route-col">  <col class="item-col">   <col class="detail-col"> <col class="parts-col">  <col class="price-col">  <col class="worker-col"> 
@@ -2074,7 +2096,7 @@ const DataManager = {
 };
 
 /* ================================================================= */
-/* [Section 1] 근무 현황표 JavaScript (월요일 자동 변경 제거) */
+/* [Section 1] 근무 현황표 JavaScript (수정됨: 미래 날짜 휴무자 자동 전파 포함) */
 /* ================================================================= */
 
 const S1_Module = {
@@ -2158,21 +2180,17 @@ const S1_Module = {
         return this.getLocalYMD(d);
     },
 
-
-    // [수정됨] 숫자 여부 판별 헬퍼 함수 (차량 번호가 숫자인지 확인)
+    // 숫자 여부 판별 헬퍼 함수
     isValidVehicleNumber(str) { 
-        // 공백 제거 후, 오직 '숫자'로만 구성되었는지 확인 (비고, 예비 등 제외됨)
         return !(!str || !/^\d+$/.test(str.trim())); 
     },
 
-    // [수정됨] 라인 완성 확인 함수 (숫자 차량번호만 체크)
+    // 라인 완성 확인 함수
     checkLineComplete(dateString, triggeredColId) {
         if (this.state.autoFillStopFlag) return;
         
-        // 1. 방금 입력한 칸이 '숫자 차량번호'가 아니면 검사하지 않음 (예: 비고란 수정 시 무시)
         if (!this.isValidVehicleNumber(triggeredColId)) return; 
         
-        // 2. 전체 헤더 중에서 '숫자'로 된 차량번호만 골라냄
         const validVehicleColumns = this.state.currentVehicleColumns.filter(c => this.isValidVehicleNumber(c));
         
         if (validVehicleColumns.length === 0) return;
@@ -2181,13 +2199,11 @@ const S1_Module = {
         if (!currentData) return;
         
         let isFull = true;
-        // 3. 골라낸 '숫자 차량번호' 칸들이 모두 채워졌는지 확인
         for (const col of validVehicleColumns) { 
             const cellData = currentData[col]; 
             const am = cellData && cellData[0] ? cellData[0].text.trim() : ''; 
             const pm = cellData && cellData[1] ? cellData[1].text.trim() : ''; 
             
-            // 하나라도 비어있으면 중단
             if (am === '' || pm === '') { isFull = false; break; } 
         }
         
@@ -2213,6 +2229,7 @@ const S1_Module = {
         cell.innerHTML = this.renderCellContent(names);
     },
 
+    // 고정 근무자(원래 주인) 판별 로직
     getFixedOwner(dateString, colId) {
         const routeData = DataManager.data.s1.routes[this.state.currentRoute];
         if (!routeData) return { am: '', pm: '' };
@@ -2235,12 +2252,12 @@ const S1_Module = {
 
             if (anchorEntry) {
                 let names = anchorEntry.names;
-                // [수정] 기본값 'normal' -> 'biweekly'로 변경
                 const workType = routeData.workTypeConfig[colId] || 'biweekly';
-                if (workType === 'biweekly' && dayOfWeek !== 0) { 
+                
+                if (workType === 'biweekly') { 
                     const weekDiff = this.calculateWeekDiff(anchorEntry.dateString, dateString);
                     if (weekDiff % 2 === 1) {
-                        names = [anchorEntry.names[1], anchorEntry.names[0]];
+                        names = [anchorEntry.names[1], anchorEntry.names[0]]; 
                     }
                 }
                 fixedAm = (names[0].text || '').trim();
@@ -2279,7 +2296,6 @@ const S1_Module = {
         if (currentDay <= 15) document.getElementById('option1').checked = true;
         else document.getElementById('option2').checked = true;
         
-        // [수정] 근무 형태 선택 기본값을 'biweekly'로 설정
         if (this.ui.workTypeSelect) {
             this.ui.workTypeSelect.value = 'biweekly';
         }
@@ -2299,7 +2315,6 @@ const S1_Module = {
         DataManager.subscribe(this);
     },
 
-    // [수정됨] 팝업 생성 및 이벤트 핸들러 연결
     injectModals() {
         if (!document.getElementById('s1-guide-modal')) {
             const guideModalHTML = `<div id="s1-guide-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);"><div style="background-color:#fff; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:500px; border-radius:8px; text-align:center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"><h3 style="color:#0056b3; margin-top:0;">📋 근무표 작성 가이드</h3><p style="text-align:left; line-height:1.6; font-size:15px;">차량 번호를 입력하거나 <strong>칸을 드래그해서 위치를 바꿀 수 있습니다.</strong><br>첫 입력시 모든 직원들의 차량번호에 근무자를 채워주세요.</p><button id="s1-close-guide" style="background-color:#007bff; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:10px;">확인</button></div></div>`;
@@ -2318,7 +2333,6 @@ const S1_Module = {
             document.body.insertAdjacentHTML('beforeend', retireeModalHTML);
         }
         
-        // 버튼 이벤트 연결
         const guideClose = document.getElementById('s1-close-guide');
         if (guideClose) guideClose.onclick = () => document.getElementById('s1-guide-modal').style.display = 'none';
         
@@ -2328,8 +2342,6 @@ const S1_Module = {
                 document.getElementById('s1-autofill-modal').style.display = 'none';
                 this.state.pendingSourceDate = null;
                 this.state.pendingTargetDate = null;
-                
-                // [핵심] '아니오' 클릭 시 전역 플래그를 true로 설정하여 이후 팝업 차단
                 this.state.autoFillStopFlag = true; 
             };
         }
@@ -2534,7 +2546,6 @@ const S1_Module = {
     if (!names || names.length === 0) return ''; 
     const hiddenKeywords = ['휴무', '월차', '년차', '퇴직자', '']; 
     
-    // [수정됨] map 결과를 변수에 담고, div.s1-cell-inner로 감싸서 리턴
     const innerHTML = names.map(item => { 
         const text = item.text.trim(); 
         const isHidden = hiddenKeywords.includes(text); 
@@ -2542,18 +2553,15 @@ const S1_Module = {
         const hiddenClass = isHidden ? ' hidden-x' : ''; 
         const boldClass = item.bold ? ' bold-name' : ''; 
         
-        // *중요: display가 비어있어도 span 태그 자체는 유지되어야 flex:1 공간을 차지함
         return `<span class="name-entry${hiddenClass}${boldClass}">${display}</span>`; 
     }).join('');
 
     return `<div class="s1-cell-inner">${innerHTML}</div>`;
 },
 
-    // [수정됨] editCell 함수: '교환' 버튼 추가 및 로직 구현
     editCell(cell, colId, dateString, dayOfWeek) {
         if (cell.classList.contains('edit-mode')) return;
 
-        // 다른 열려있는 수정창 닫기
         document.querySelectorAll('#section1 td.edit-mode').forEach(editCell => {
             const prevColId = editCell.dataset.colId; 
             const prevDateString = editCell.dataset.dateString;
@@ -2566,7 +2574,6 @@ const S1_Module = {
         const morningValue = (currentNames[0] && currentNames[0].text !== '휴무') ? currentNames[0].text : '';
         const afternoonValue = (currentNames[1] && currentNames[1].text !== '휴무') ? currentNames[1].text : '';
         
-        // 비어있을 때 보여줄 placeholder 설정
         const amPlaceholder = morningValue ? morningValue : "오전 (비우면 휴무)";
         const pmPlaceholder = afternoonValue ? afternoonValue : "오후 (비우면 휴무)";
 
@@ -2575,10 +2582,8 @@ const S1_Module = {
         cell.dataset.dateString = dateString; 
         cell.dataset.dayOfWeek = dayOfWeek;
         
-        // 포커스 상태 추적
         this.state.lastFocusedInput = (morningValue === afternoonValue && morningValue !== '') ? 'both' : 'am';
 
-        // [변경] HTML 구조: 버튼 그룹 첫 번째 줄에 '교환' 버튼 추가
         cell.innerHTML = `
             <div class="s1-input-wrapper">
                 <input type="text" class="morning-input" value="" placeholder="${amPlaceholder}" data-bold="${currentNames[0].bold}">
@@ -2607,16 +2612,13 @@ const S1_Module = {
         const amInput = cell.querySelector('.morning-input'); 
         const pmInput = cell.querySelector('.afternoon-input');
         
-        // 초기 스타일 적용 (저장된 bold 상태가 있다면 시각적으로 반영)
         if (currentNames[0].bold) { amInput.style.fontWeight = 'bold'; amInput.style.color = '#0000FF'; }
         if (currentNames[1].bold) { pmInput.style.fontWeight = 'bold'; pmInput.style.color = '#0000FF'; }
         
-        // 포커스 설정
         if (this.state.lastFocusedInput === 'pm') pmInput.focus(); else amInput.focus();
         amInput.onfocus = () => { this.state.lastFocusedInput = 'am'; }; 
         pmInput.onfocus = () => { this.state.lastFocusedInput = 'pm'; };
 
-        // 지우기 버튼(X) 클릭 이벤트
         cell.querySelectorAll('.btn-input-clear').forEach(btn => {
             btn.onclick = (e) => {
                 e.stopPropagation(); 
@@ -2630,26 +2632,21 @@ const S1_Module = {
 
         const buttons = cell.querySelector('.cell-buttons');
         
-        // [추가] 교환 버튼 로직
         buttons.querySelector('.btn-swap').onclick = (e) => {
             e.stopPropagation();
             
-            // 1. 값 교환
             const tempVal = amInput.value;
             amInput.value = pmInput.value;
             pmInput.value = tempVal;
 
-            // 2. Placeholder(기존 값) 교환
             const tempPlace = amInput.placeholder;
             amInput.placeholder = pmInput.placeholder;
             pmInput.placeholder = tempPlace;
 
-            // 3. 데이터 속성(bold 여부) 교환
             const tempBoldData = amInput.dataset.bold;
             amInput.dataset.bold = pmInput.dataset.bold;
             pmInput.dataset.bold = tempBoldData;
 
-            // 4. 시각적 스타일(폰트 굵기, 색상) 교환
             const tempWeight = amInput.style.fontWeight;
             const tempColor = amInput.style.color;
             
@@ -2660,14 +2657,12 @@ const S1_Module = {
             pmInput.style.color = tempColor;
         };
 
-        // 기존 버튼 이벤트 연결
         buttons.querySelector('.btn-fixed').onclick = (e) => { e.stopPropagation(); this.saveFixedCell(cell); };
         buttons.querySelector('.btn-temp').onclick = (e) => { e.stopPropagation(); this.saveTempCell(cell); };
         buttons.querySelector('.btn-highlight-am').onclick = (e) => { e.stopPropagation(); this.highlightCell(cell, 'am'); };
         buttons.querySelector('.btn-highlight-pm').onclick = (e) => { e.stopPropagation(); this.highlightCell(cell, 'pm'); };
         buttons.querySelector('.btn-delete').onclick = (e) => { e.stopPropagation(); this.deleteCell(cell); };
 
-        // 특수 상태(월차 등) 처리 함수
         const applySpecialStatus = (status) => {
             if (status === '퇴직자') {
                 const targetInput = (this.state.lastFocusedInput === 'pm') ? pmInput : amInput;
@@ -2711,9 +2706,7 @@ const S1_Module = {
         buttons.querySelector('.btn-resign').onclick = (e) => { e.stopPropagation(); applySpecialStatus('퇴직자'); };
     },
     
-    /* [S1_Module 내부 함수 수정] */
-
-// 1. 고정 근무자 저장 함수 (수정됨: 교환 시 휴무 처리 방지 로직 적용)
+    // [수정 Part 3-2] 고정 근무자 저장 함수 (미래 날짜 휴무자 자동 전파 기능 추가)
     saveFixedCell(cellElement) {
         this.saveSnapshot(); 
         
@@ -2732,6 +2725,8 @@ const S1_Module = {
         }
 
         const oldNames = (this.state.scheduleData[dateString] && this.state.scheduleData[dateString][colId]) || [{ text: '', bold: false }, { text: '', bold: false }];
+        
+        // "오늘 원래 근무해야 할 사람" 가져오기
         const fixedOwner = this.getFixedOwner(dateString, colId);
 
         const visualNewNames = [
@@ -2743,20 +2738,27 @@ const S1_Module = {
             this.checkAndExecuteGlobalSwap(visualNewNames, oldNames, dateString, colId);
         }
 
-        // [핵심 수정 부분] S2 데이터 업데이트 (교환 시 휴무 방지)
-        // 고정 근무자(AM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
+        // [핵심 추가 기능] 휴무자 정보를 S2(승무일지)에 저장 + 미래 날짜에도 전파
+        
+        // (1) 오전 근무자 처리
         if (fixedOwner.am) { 
             const isAmWorking = (visualNewNames[0].text === fixedOwner.am) || (visualNewNames[1].text === fixedOwner.am);
             if (!isAmWorking) {
+                // 오늘 날짜 저장
                 this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'am', fixedOwner.am, ''); 
+                // [NEW] 미래 날짜(향후 20주)에도 동일하게 휴무자 저장
+                this.propagateHolidayWorkerToFuture(dateString, this.state.currentRoute, colId, 'am', fixedOwner.am);
             }
         }
         
-        // 고정 근무자(PM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
+        // (2) 오후 근무자 처리
         if (fixedOwner.pm) { 
             const isPmWorking = (visualNewNames[0].text === fixedOwner.pm) || (visualNewNames[1].text === fixedOwner.pm);
             if (!isPmWorking) {
+                // 오늘 날짜 저장
                 this.updateS2HolidayWorker(dateString, this.state.currentRoute, colId, 'pm', fixedOwner.pm, ''); 
+                // [NEW] 미래 날짜(향후 20주)에도 동일하게 휴무자 저장
+                this.propagateHolidayWorkerToFuture(dateString, this.state.currentRoute, colId, 'pm', fixedOwner.pm);
             }
         }
         
@@ -2802,7 +2804,18 @@ const S1_Module = {
         this.checkLineComplete(dateString, colId);
     },
 
-// 2. 임시 근무자 저장 함수 (수정됨: 교환 시 휴무 처리 방지 로직 적용)
+    // [NEW] 미래 날짜로 휴무자 정보를 전파하는 헬퍼 함수 (S1_Module 안에 추가)
+    propagateHolidayWorkerToFuture(startDateStr, routeName, colId, shift, workerName) {
+        let currDate = new Date(startDateStr);
+        // 향후 20주(약 5개월)치 날짜에 대해 미리 휴무자를 입력해둠
+        for(let i=1; i<=20; i++) {
+            currDate.setDate(currDate.getDate() + 7); // 7일씩 더함 (같은 요일)
+            const nextDateStr = this.getLocalYMD(currDate);
+            // 해당 날짜의 S2 데이터에 휴무자 등록
+            this.updateS2HolidayWorker(nextDateStr, routeName, colId, shift, workerName, '');
+        }
+    },
+
     saveTempCell(cellElement) {
         this.saveSnapshot(); 
         const { colId, dateString } = cellElement.dataset;
@@ -2832,8 +2845,6 @@ const S1_Module = {
 
         const fixedOwner = this.getFixedOwner(dateString, colId);
 
-        // [핵심 수정 부분] S2 데이터 업데이트 (교환 시 휴무 방지)
-        // 고정 근무자(AM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
         if (fixedOwner.am) {
             const isAmWorking = (visualNewNames[0].text === fixedOwner.am) || (visualNewNames[1].text === fixedOwner.am);
             if (!isAmWorking) {
@@ -2841,7 +2852,6 @@ const S1_Module = {
             }
         }
 
-        // 고정 근무자(PM)가 입력된 오전/오후 명단 어디에도 없으면 -> 그때만 휴무 처리
         if (fixedOwner.pm) {
             const isPmWorking = (visualNewNames[0].text === fixedOwner.pm) || (visualNewNames[1].text === fixedOwner.pm);
             if (!isPmWorking) {
@@ -2861,7 +2871,9 @@ const S1_Module = {
         this.refreshSingleCell(cellElement, colId, dateString, visualNewNames);
         
         this.checkLineComplete(dateString, colId);
-    },    deleteCell(cellElement) {
+    }, 
+ 
+    deleteCell(cellElement) {
         this.saveSnapshot(); 
         const { colId, dayOfWeek, dateString } = cellElement.dataset;
         const emptyNames = [{ text: '', bold: false }, { text: '', bold: false }];
@@ -3103,76 +3115,58 @@ const S1_Module = {
         });
     },
     
-    // [수정됨] 라인 완성 확인 함수 (숫자 차량번호만 체크 + 팝업 제어 강화)
-    checkLineComplete(dateString, triggeredColId) {
-        // [핵심1] 사용자가 이미 '아니오'를 선택했다면 절대 띄우지 않음 (전역 차단)
-        if (this.state.autoFillStopFlag) return;
-        
-        // [핵심2] 이미 자동생성 팝업이 떠 있는 상태라면 중복 실행 방지 (깜빡임/사라짐 해결)
-        const modal = document.getElementById('s1-autofill-modal');
-        if (modal && modal.style.display === 'block') return;
-
-        // 방금 입력한 칸이 '숫자 차량번호'가 아니면 무시
-        if (!this.isValidVehicleNumber(triggeredColId)) return; 
-
-        // 전체 헤더 중에서 '숫자'로 된 차량번호만 골라냄
-        const validVehicleColumns = this.state.currentVehicleColumns.filter(c => this.isValidVehicleNumber(c));
-        if (validVehicleColumns.length === 0) return;
-        
-        const currentData = this.state.scheduleData[dateString]; 
-        if (!currentData) return;
-        
-        let isFull = true;
-        // 모든 유효한 차량 칸이 채워졌는지 확인
-        for (const col of validVehicleColumns) { 
-            const cellData = currentData[col]; 
-            const am = cellData && cellData[0] ? cellData[0].text.trim() : ''; 
-            const pm = cellData && cellData[1] ? cellData[1].text.trim() : ''; 
-            
-            if (am === '' || pm === '') { isFull = false; break; } 
-        }
-        
-        if (isFull) {
-            const nextDate = new Date(dateString); 
-            nextDate.setDate(nextDate.getDate() + 1); 
-            const nextDateStr = this.getLocalYMD(nextDate);
-            
-            const hasNextDayData = Object.values(this.state.fixedScheduleData).some(entries => entries.some(entry => entry.dateString === nextDateStr));
-            const hasNextTemp = this.state.tempScheduleData[nextDateStr] && Object.keys(this.state.tempScheduleData[nextDateStr]).length > 0;
-            
-            if (hasNextDayData || hasNextTemp) return;
-            
-            this.state.pendingSourceDate = dateString; 
-            this.state.pendingTargetDate = nextDateStr;
-            
-            const msgEl = document.getElementById('s1-autofill-msg');
-            msgEl.innerHTML = ` <strong style="color:#333;">${dateString}</strong> 근무자 입력 완료.<br><br> <span style="color:#0056b3; font-weight:bold; font-size:1.2em;">${nextDateStr} (다음날)</span> 근무자도<br> 동일하게 <span style="color:#28a745; font-weight:bold;">자동 생성</span> 하시겠습니까? `;
-            
-            modal.style.display = 'block'; // 팝업 띄움
-        }
-    },
-
     executeCopyNextDay() {
         this.saveSnapshot(); 
-        const sourceDateStr = this.state.pendingSourceDate; const targetDateStr = this.state.pendingTargetDate; if (!sourceDateStr || !targetDateStr) return; document.getElementById('s1-autofill-modal').style.display = 'none';
-        const sourceData = this.state.scheduleData[sourceDateStr]; if (!sourceData) return; const targetDate = new Date(targetDateStr); const targetDayOfWeek = targetDate.getDay(); const allColumns = this.state.currentVehicleColumns.filter(c => c !== '미입력'); const lastColId = allColumns.length > 0 ? allColumns[allColumns.length - 1] : null;
+        const sourceDateStr = this.state.pendingSourceDate; 
+        const targetDateStr = this.state.pendingTargetDate; 
+        if (!sourceDateStr || !targetDateStr) return; 
+        document.getElementById('s1-autofill-modal').style.display = 'none';
+        
+        const sourceData = this.state.scheduleData[sourceDateStr]; 
+        if (!sourceData) return; 
+        
+        const targetDate = new Date(targetDateStr); 
+        const targetDayOfWeek = targetDate.getDay(); 
+        const allColumns = this.state.currentVehicleColumns.filter(c => c !== '미입력'); 
+        const lastColId = allColumns.length > 0 ? allColumns[allColumns.length - 1] : null;
+        
         DataManager.updateS1Data(s1_data => {
-            const routeData = s1_data.routes[this.state.currentRoute]; if (!routeData) return;
+            const routeData = s1_data.routes[this.state.currentRoute]; 
+            if (!routeData) return;
+            
             Object.keys(sourceData).forEach(colId => {
-                const names = sourceData[colId]; let nextNames = JSON.parse(JSON.stringify(names)); 
+                const names = sourceData[colId]; 
+                let nextNames = JSON.parse(JSON.stringify(names)); 
                 
-                // [삭제됨] 격주 + 월요일 자동 스왑 로직 제거 (사용자 요청)
-                // if (workType === 'biweekly' && targetDayOfWeek === 1) { ... } 
+                const fixedOwner = this.getFixedOwner(targetDateStr, colId);
 
-                const recurringKey = `${targetDayOfWeek}-${colId}`; if (!routeData.fixedSchedule[recurringKey]) routeData.fixedSchedule[recurringKey] = [];
+                const recurringKey = `${targetDayOfWeek}-${colId}`; 
+                if (!routeData.fixedSchedule[recurringKey]) routeData.fixedSchedule[recurringKey] = [];
+                
                 routeData.fixedSchedule[recurringKey] = routeData.fixedSchedule[recurringKey].filter(entry => entry.dateString !== targetDateStr);
                 routeData.fixedSchedule[recurringKey].push({ dateString: targetDateStr, names: nextNames });
                 routeData.fixedSchedule[recurringKey].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
+                
+                if (fixedOwner.am) {
+                    const isAmWorking = (nextNames[0].text === fixedOwner.am) || (nextNames[1].text === fixedOwner.am);
+                    if (!isAmWorking) {
+                        this.updateS2HolidayWorker(targetDateStr, this.state.currentRoute, colId, 'am', fixedOwner.am, '');
+                    }
+                }
+                if (fixedOwner.pm) {
+                    const isPmWorking = (nextNames[0].text === fixedOwner.pm) || (nextNames[1].text === fixedOwner.pm);
+                    if (!isPmWorking) {
+                        this.updateS2HolidayWorker(targetDateStr, this.state.currentRoute, colId, 'pm', fixedOwner.pm, '');
+                    }
+                }
             });
             this.state.fixedScheduleData = routeData.fixedSchedule;
         });
+        
         this.generateSchedule();
-        setTimeout(() => { if (lastColId) this.checkLineComplete(targetDateStr, lastColId); }, 100);
+        setTimeout(() => { 
+            if (lastColId) this.checkLineComplete(targetDateStr, lastColId); 
+        }, 100);
     },
 
     resetAllFixedSchedules() {
@@ -3247,7 +3241,6 @@ const S1_Module = {
                             if (this.state.fixedScheduleData[recurringKey]) {
                                 let anchorEntry = null; for (const entry of this.state.fixedScheduleData[recurringKey]) { if (new Date(dateString) >= new Date(entry.dateString)) { anchorEntry = entry; break; } }
                                 if (anchorEntry) { 
-                                    // [수정] 기본값 'normal' -> 'biweekly'
                                     const workType = this.state.workTypeConfig[colId] || 'biweekly'; 
                                     if (workType === 'biweekly') { const weekDifference = this.calculateWeekDiff(anchorEntry.dateString, dateString); if (weekDifference % 2 === 1) appliedNames = [anchorEntry.names[1], anchorEntry.names[0]]; else appliedNames = anchorEntry.names; } else { appliedNames = anchorEntry.names; } 
                                 }
@@ -3267,21 +3260,29 @@ const S1_Module = {
             table.appendChild(tbody); this.ui.scheduleContainer.appendChild(table);
         });
     },
+
     calculateWorkdays() {
         if (!this.state.currentRoute) { alert('근무일수를 계산할 노선이 없습니다.'); return; }
         const { routeData } = DataManager.getCurrentRouteData(); if (!routeData) return;
         const year = parseInt(this.ui.yearInput.value); const month = parseInt(this.ui.monthInput.value);
         const VEHICLE_COLS = routeData.vehicleColumns || []; const workdayCounts = {}; const shiftCounts = {}; const allNames = new Set();
         const startDate = new Date(year, month - 1, 1); const endDate = new Date(year, month, 0);
+        
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
             const dateString = this.getLocalYMD(d); const dayOfWeek = d.getDay(); let dailyNames = {};
             VEHICLE_COLS.forEach(colId => {
-                if (colId === '미입력') return; let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
+                if (colId === '미입력' || !this.isValidVehicleNumber(colId)) return;
+                
+                let appliedNames = [{ text: '', bold: false }, { text: '', bold: false }];
                 if (routeData.tempSchedule[dateString] && routeData.tempSchedule[dateString][colId]) { appliedNames = routeData.tempSchedule[dateString][colId]; } else { const recurringKey = `${dayOfWeek}-${colId}`; if (routeData.fixedSchedule[recurringKey]) { for (const entry of routeData.fixedSchedule[recurringKey]) { if (new Date(dateString) >= new Date(entry.dateString)) { appliedNames = entry.names; break; } } } }
                 dailyNames[colId] = appliedNames;
             });
             const dayWorkdays = new Set();
-            for (const colId in dailyNames) { if (colId !== '비고' && colId !== '미입력') { dailyNames[colId].forEach((item, index) => { const name = item.text.trim(); if (name !== '' && name !== '휴무') { allNames.add(name); if (!shiftCounts[name]) shiftCounts[name] = { 오전: 0, 오후: 0 }; if (index === 0) shiftCounts[name].오전++; else shiftCounts[name].오후++; dayWorkdays.add(name); } }); } }
+            for (const colId in dailyNames) { 
+                if (colId !== '비고' && colId !== '미입력') { 
+                    dailyNames[colId].forEach((item, index) => { const name = item.text.trim(); if (name !== '' && name !== '휴무') { allNames.add(name); if (!shiftCounts[name]) shiftCounts[name] = { 오전: 0, 오후: 0 }; if (index === 0) shiftCounts[name].오전++; else shiftCounts[name].오후++; dayWorkdays.add(name); } }); 
+                } 
+            }
             dayWorkdays.forEach(name => { if (!workdayCounts[name]) workdayCounts[name] = 0; workdayCounts[name]++; });
         }
         const combinedData = Array.from(allNames).map(name => ({ name: name, workdays: workdayCounts[name] || 0, morningShifts: (shiftCounts[name] && shiftCounts[name].오전) || 0, afternoonShifts: (shiftCounts[name] && shiftCounts[name].오후) || 0 })).sort((a, b) => b.workdays - a.workdays);
@@ -3291,6 +3292,7 @@ const S1_Module = {
         newWindow.document.write(`<html><head><title>${title}</title><style> body { font-family: Arial, sans-serif; margin: 20px; } h3 { text-align: center; } table { width: 100%; border-collapse: collapse; margin-top: 20px; } th, td { border: 1px solid #ddd; padding: 10px; text-align: center; } th { background-color: #f2f2f2; } .print-button { display: block; margin: 20px auto; padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; } @media print { .print-button { display: none; } html, body { height: 100%; width: 100%; margin: 0; } } </style></head><body><h3>${title}</h3>${tableHTML}<button class="print-button" onclick="window.print()">인쇄</button></body></html>`);
         newWindow.document.close();
     },
+
     printPage() {
         const editCell = document.querySelector('#section1 td.edit-mode'); if (editCell) { const { colId, dateString } = editCell.dataset; const originalNames = this.state.scheduleData[dateString]?.[colId] || [{ text: '', bold: false }, { text: '', bold: false }]; editCell.classList.remove('edit-mode'); editCell.innerHTML = this.renderCellContent(originalNames); }
         document.documentElement.style.setProperty('--print-margin-left', `${this.ui.marginLeftSelect.value}mm`); document.documentElement.style.setProperty('--print-margin-right', `${this.ui.marginRightSelect.value}mm`);
@@ -3317,7 +3319,7 @@ const S1_Module = {
 };
 
 /* ================================================================= */
-/* [Section 2] 승무 일지 모듈 (수정됨: 시간설정 저장 및 자동계산 복구) */
+/* [Section 2] 승무 일지 모듈 (수정됨: 근무 중인 사람은 휴무자 명단에서 자동 제외) */
 /* ================================================================= */
 const S2_Module = {
     ui: {
@@ -3397,7 +3399,7 @@ const S2_Module = {
     },
 
     initialize() {
-        console.log("S2: 초기화 (시간 설정 저장 및 자동 계산 로직 적용됨)");
+        console.log("S2: 초기화 (문법 오류 수정됨)");
         DataManager.subscribe(this);
         DataManager.loadS2Data();
 
@@ -3429,7 +3431,7 @@ const S2_Module = {
         document.getElementById('s2-showRestoreModal').onclick = () => this.showRestoreModal();
         
         document.getElementById('s2-refreshLog').onclick = () => {
-            if (confirm("경고: 현재 조회된 날짜의 [모든 기록]을 초기화하시겠습니까?\n\n(이 작업은 되돌릴 수 없습니다.)")) {
+            if (confirm("경고: 현재 조회된 날짜의 [모든 기록]을 초기화하시겠습니까?\n\n(휴무자 포함 모든 데이터가 삭제됩니다)")) {
                 this.resetS2LogForCurrentDates();
                 this.refreshDispatchLog();
             }
@@ -3733,9 +3735,76 @@ const S2_Module = {
         });
     },
 
-    // [수정됨] 승무일지 새로고침 함수 (수동 저장 명단이 있어도 자동 계산 명단을 합치도록 개선)
+    // [수정 1] 일지 초기화: 휴무자 및 모든 데이터 삭제
+    resetS2LogForCurrentDates() {
+        const { routes } = DataManager.data.s1; 
+        
+        DataManager.updateS2Data(s2_data => {
+            this.state.s2_currentDates.forEach(dateInfo => {
+                const dateString = dateInfo.dateString;
+                if (!s2_data[dateString]) s2_data[dateString] = {};
+
+                // 모든 노선에 대해 루프
+                Object.keys(routes).forEach(routeName => {
+                    const routeData = routes[routeName];
+                    if (!s2_data[dateString][routeName]) s2_data[dateString][routeName] = {};
+                    
+                    // 1. 수동 입력된 휴무자 명단 초기화
+                    s2_data[dateString][routeName].manual_rest_list = [];
+                    // 2. S1 근무표에서 연동된 휴무자 데이터 초기화
+                    s2_data[dateString][routeName].s1_rest_data = {};
+                    // 3. 결재란 초기화
+                    s2_data[dateString][routeName].approval_values = new Array(8).fill("");
+
+                    // 4. 각 차량별 시간/상태 데이터 및 휴무자 셀 초기화
+                    const vehicles = routeData.vehicleColumns || [];
+                    vehicles.forEach(carNum => {
+                        if (carNum && carNum !== '미입력') {
+                            if (!s2_data[dateString][routeName][carNum]) s2_data[dateString][routeName][carNum] = {};
+                            const carLog = s2_data[dateString][routeName][carNum];
+                            
+                            // 노선 ID 변환
+                            const routeId = this.sanitizeForId(routeName);
+
+                            // 시간 및 근무시간 초기화
+                            carLog[`start_time_${routeId}_${carNum}_am`] = "";     
+                            carLog[`pm_start_time_${routeId}_${carNum}_pm`] = "";  
+                            carLog[`work_hours_${routeId}_${carNum}_am`] = "";     
+                            carLog[`work_hours_${routeId}_${carNum}_pm`] = "";     
+                            
+                            // [핵심] 차량별 오전/오후 휴무자 칸도 빈 값으로 초기화
+                            carLog[`holiday_worker_${routeId}_${carNum}_am`] = ""; 
+                            carLog[`holiday_worker_${routeId}_${carNum}_pm`] = ""; 
+                        }
+                    });
+                });
+            });
+        });
+        
+        // 데이터 즉시 저장
+        DataManager.saveS2Data(); 
+        alert("현재 조회된 날짜의 모든 기록(휴무자 포함)을 초기화했습니다.");
+    },
+
+    // [수정] 새로고침 함수
     refreshDispatchLog() {
         const { routeData } = DataManager.getCurrentRouteData();
+        
+        // [추가됨] 회사명 타이틀 업데이트 로직 ---------------------------
+        const companyName = routeData ? (routeData.companyName || '') : '';
+        const headerTitleEl = document.getElementById('s2_header_title');
+        const mainTitleEl = document.getElementById('s2_main_title');
+
+        if (headerTitleEl) {
+            // 맨 위 파란색 바 타이틀
+            headerTitleEl.textContent = companyName ? `${companyName} 승무일지` : '승무일지';
+        }
+        if (mainTitleEl) {
+            // 흰색 종이 안쪽 메인 타이틀
+            mainTitleEl.textContent = companyName ? `${companyName} 승 무 일 지` : '승 무 일 지';
+        }
+        // -------------------------------------------------------------
+
         const container = this.ui.dispatchLogBody;
         container.innerHTML = '';
 
@@ -3781,12 +3850,15 @@ const S2_Module = {
 
                 let validVehicles = this.calculateOrderForDate(routeName, dateString, s2_settings);
                 
-                if (!validVehicles || validVehicles.length === 0) {
+               if (!validVehicles || validVehicles.length === 0) {
                     let s1_base_list = (rData.vehicleColumns || []).filter(v => v && v !== '미입력');
                     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
                     s1_base_list.sort(collator.compare);
                     validVehicles = s1_base_list;
                 }
+
+                // [수정 Part 2] 승무일지에 숫자 차량번호만 표시 (문자/기호 열 제외)
+                validVehicles = validVehicles.filter(v => S1_Module.isValidVehicleNumber(v));
 
                 if (s2_settings.dispatchType === 'manual' && s2_settings.cycle === 'manual' && s2_settings.am_startVehicle) {
                     const idx = validVehicles.indexOf(s2_settings.am_startVehicle);
@@ -3811,32 +3883,43 @@ const S2_Module = {
                     tableBodyHTML += `<tr data-date-string="${dateString}">${leftHTML}${rightHTML}</tr>`;
                 }
 
-                // [핵심 수정] 휴무자 명단 계산 로직 개선
-                // 1. S1 근무표 기반으로 자동 계산된 명단을 먼저 가져옵니다.
+                // 휴무자 명단 계산
                 const autoCalculatedList = this.getRestWorkersList(rData, dateString);
                 let finalRestList = [...autoCalculatedList];
                 
-                // 2. 이전에 수동으로 저장된 명단(manual_rest_list)이 있다면, 자동 목록에 없는 사람만 추가합니다.
-                // (기존에는 수동 명단이 있으면 자동 계산을 아예 안 했기 때문에 누락 발생)
                 const savedRestList = todayS2RouteLog.manual_rest_list;
                 if (savedRestList && Array.isArray(savedRestList)) {
                     savedRestList.forEach(worker => {
-                        // 중복 방지하며 추가
                         if (!finalRestList.includes(worker)) {
                             finalRestList.push(worker);
                         }
                     });
                 }
 
-                // 3. S1에서 '교환' 버튼 등을 통해 명시적으로 넘어온 데이터(s1_rest_data)도 합칩니다.
+                // [핵심 수정] 현재 근무 중인 사람 명단 확보 (휴무자 리스트에 잘못 포함되는 것 방지)
+                const currentWorkers = new Set();
+                Object.values(todayS1Schedule).forEach(pair => {
+                    [pair[0], pair[1]].forEach(p => {
+                        const txt = (p.text || '').trim();
+                        if (txt && !['휴무', '월차', '년차', '퇴직자', '미입력'].includes(txt)) {
+                            currentWorkers.add(txt);
+                        }
+                    });
+                });
+
                 const s1_rest_data = todayS2RouteLog.s1_rest_data || {};
                 Object.values(s1_rest_data).forEach(workerEntry => {
+                    // workerEntry가 "홍길동 (월차)" 형식일 수 있으므로 이름만 추출
+                    const pureName = workerEntry.split('(')[0].trim();
+                    
+                    // [Fix] 현재 근무자에 포함되어 있다면 휴무자 명단에서 제외
                     if (workerEntry && !finalRestList.includes(workerEntry)) {
-                        finalRestList.push(workerEntry);
+                        if (!currentWorkers.has(pureName)) {
+                            finalRestList.push(workerEntry);
+                        }
                     }
                 });
                 
-                // 4. 최종 정렬
                 finalRestList = [...new Set(finalRestList)].sort();
 
                 let restCellsHTML = '';
@@ -4169,7 +4252,6 @@ const S2_Module = {
         return this.rotateArray(baseOrder, rotateCount);
     },
 
-    // [중요 수정] 새로 추가된 자동 계산 함수
     calculateAutoTimes(validVehicles, s2_settings, todayS1Schedule) {
         const result = {};
         const am_interval = parseInt(s2_settings.am_interval, 10);
@@ -4252,6 +4334,7 @@ const S2_Module = {
         return colgroup + header;
     },
 
+    // [수정 Part 2-2] 승무일지 행 생성 (고정 근무자 판단 로직 통일)
     createRowSideHTML(routeName, carNum, seqNum, todayS1Schedule, todayS2RouteLog, s2_settings, dateString, autoTimes = {}, routeData = null, dayOfWeek = 0) {
         const routeId = this.sanitizeForId(routeName);
         const seqHTML = `<td style="font-weight:bold; background-color:#f8f9fa; color:#555;">${seqNum}</td>`;
@@ -4279,13 +4362,11 @@ const S2_Module = {
                 for (const entry of routeData.fixedSchedule[recurringKey]) {
                     if (new Date(dateString) >= new Date(entry.dateString)) {
                         let names = entry.names;
-                        const workType = routeData.workTypeConfig[carNum] || 'normal';
+                        const workType = routeData.workTypeConfig[carNum] || 'biweekly'; // 기본값 biweekly
+                        
+                        // [수정] S1_Module.calculateWeekDiff 사용 (안전한 계산)
                         if (workType === 'biweekly') {
-                            const startObj = new Date(entry.dateString);
-                            const currentObj = new Date(dateString);
-                            const diffTime = currentObj - startObj;
-                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                            const weeksPassed = Math.floor(diffDays / 7);
+                            const weeksPassed = S1_Module.calculateWeekDiff(entry.dateString, dateString);
                             if (weeksPassed % 2 !== 0) {
                                 names = [entry.names[1], entry.names[0]];
                             }
@@ -4301,6 +4382,7 @@ const S2_Module = {
         let amHolidayWorkerStored = log[`holiday_worker_${routeId}_${carNum}_am`] || '';
         let pmHolidayWorkerStored = log[`holiday_worker_${routeId}_${carNum}_pm`] || '';
 
+        // 고정 근무자(fixedAm/Pm)와 현재 근무자(amDriver/pmDriver)가 다르면 휴무자로 자동 기입
         if (!amHolidayWorkerStored && fixedAm && fixedAm !== amDriver) {
             amHolidayWorkerStored = fixedAm;
         }
@@ -4316,7 +4398,6 @@ const S2_Module = {
         const amClass = (amHoliday && amDisp) ? 'hidden' : '';
         const pmClass = (pmHoliday && pmDisp) ? 'hidden' : '';
 
-        // [중요] 자동 계산된 값이 있으면 우선 사용, 이미 저장된 값이 있으면 그것 사용
         const amTimeValue = log[amKey] !== undefined ? log[amKey] : (autoTimes[carNum] && autoTimes[carNum].am ? autoTimes[carNum].am : '');
         const pmTimeValue = log[pmKey] !== undefined ? log[pmKey] : (autoTimes[carNum] && autoTimes[carNum].pm ? autoTimes[carNum].pm : '');
         
@@ -4641,12 +4722,14 @@ const S2_Module = {
         cell.querySelector('span').textContent = newVal;
     },
     
+    // [수정 Part 3] 승무일지용 스케줄 데이터 가져오기 (숫자 차량만 허용)
     getTodayS1Schedule(routeData, dateString, dayOfWeek) {
         if (!routeData) return {};
         const todaySchedule = {};
         const VEHICLE_COLS = routeData.vehicleColumns || [];
         VEHICLE_COLS.forEach(colId => {
-            if (colId === '미입력') return;
+            // [수정] 숫자 차량번호가 아니면 데이터 가져오기 스킵
+            if (colId === '미입력' || !S1_Module.isValidVehicleNumber(colId)) return;
             
             let resultAm = { text: '', bold: false };
             let resultPm = { text: '', bold: false };
@@ -4656,14 +4739,10 @@ const S2_Module = {
                 for (const entry of routeData.fixedSchedule[recurringKey]) {
                     if (new Date(dateString) >= new Date(entry.dateString)) {
                         let names = entry.names;
-                        const workType = routeData.workTypeConfig[colId] || 'normal';
+                        const workType = routeData.workTypeConfig[colId] || 'biweekly'; 
+                        
                         if (workType === 'biweekly') {
-                            const startObj = new Date(entry.dateString);
-                            const currentObj = new Date(dateString);
-                            const diffTime = currentObj - startObj;
-                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                            const weeksPassed = Math.floor(diffDays / 7);
-
+                            const weeksPassed = S1_Module.calculateWeekDiff(entry.dateString, dateString);
                             if (weeksPassed % 2 !== 0) {
                                 names = [entry.names[1], entry.names[0]];
                             }
@@ -4685,610 +4764,649 @@ const S2_Module = {
         return todaySchedule;
     },
 
+    // [수정 Part 1] 휴무자 자동 계산 로직 (전/현직 담당자 통합 검색으로 누락 방지)
     getRestWorkersList(routeData, dateString) {
         if (!routeData) return [];
         const restList = [];
         const targetDate = new Date(dateString);
+        targetDate.setHours(0,0,0,0);
         const dayOfWeek = targetDate.getDay();
         const VEHICLE_COLS = routeData.vehicleColumns || [];
+        
+        // 1. [실제 근무자]
         const workingWorkers = new Set(); 
-
         VEHICLE_COLS.forEach(colId => {
-            if (colId === '미입력') return;
+            // [수정] 숫자 차량 제외
+            if (colId === '미입력' || !S1_Module.isValidVehicleNumber(colId)) return;
 
-            let fixedAm = '', fixedPm = '';
-            const recurringKey = `${dayOfWeek}-${colId}`;
-            
-            if (routeData.fixedSchedule && routeData.fixedSchedule[recurringKey]) {
-                for (const entry of routeData.fixedSchedule[recurringKey]) {
-                    if (new Date(dateString) >= new Date(entry.dateString)) {
-                        let names = entry.names;
-                        const workType = routeData.workTypeConfig[colId] || 'normal';
-                        if (workType === 'biweekly') {
-                            const startObj = new Date(entry.dateString);
-                            const currentObj = new Date(dateString);
-                            const diffTime = currentObj - startObj;
-                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                            const weeksPassed = Math.floor(diffDays / 7);
-                            if (weeksPassed % 2 !== 0) {
-                                names = [entry.names[1], entry.names[0]];
-                            }
-                        }
-                        fixedAm = (names[0].text || '').trim();
-                        fixedPm = (names[1].text || '').trim();
-                        break;
-                    }
-                }
-            }
-
-            let actualAm = fixedAm;
-            let actualPm = fixedPm;
+            let actualAm = '', actualPm = '';
             
             if (routeData.tempSchedule && routeData.tempSchedule[dateString] && routeData.tempSchedule[dateString][colId]) {
                 actualAm = (routeData.tempSchedule[dateString][colId][0].text || '').trim();
                 actualPm = (routeData.tempSchedule[dateString][colId][1].text || '').trim();
-            }
-
-            if (actualAm && !['휴무', '월차', '년차', '퇴직자', '미입력'].includes(actualAm)) workingWorkers.add(actualAm);
-            if (actualPm && !['휴무', '월차', '년차', '퇴직자', '미입력'].includes(actualPm)) workingWorkers.add(actualPm);
-
-            const checkAndAdd = (fixed, actual) => {
-                if (!fixed || fixed === '휴무') return;
-                
-                if (actual === '월차') restList.push(`${fixed} (월차)`);
-                else if (actual === '년차') restList.push(`${fixed} (년차)`);
-                else if (actual === '퇴직자') restList.push(`${fixed} (퇴직)`);
-                else if (actual !== fixed) {
-                    restList.push(fixed);
+            } else {
+                const recurringKey = `${dayOfWeek}-${colId}`;
+                if (routeData.fixedSchedule && routeData.fixedSchedule[recurringKey]) {
+                    const sortedEntries = routeData.fixedSchedule[recurringKey].slice().sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
+                    for (const entry of sortedEntries) {
+                        const entryDate = new Date(entry.dateString); entryDate.setHours(0,0,0,0);
+                        if (targetDate >= entryDate) {
+                            let names = entry.names;
+                            const workType = routeData.workTypeConfig[colId] || 'biweekly';
+                            if (workType === 'biweekly' && typeof S1_Module !== 'undefined') {
+                                const weeksPassed = S1_Module.calculateWeekDiff(entry.dateString, dateString);
+                                if (weeksPassed % 2 !== 0) names = [entry.names[1], entry.names[0]];
+                            }
+                            actualAm = (names[0].text || '').trim();
+                            actualPm = (names[1].text || '').trim();
+                            break;
+                        }
+                    }
                 }
-            };
-            checkAndAdd(fixedAm, actualAm);
-            checkAndAdd(fixedPm, actualPm);
+            }
+            if (actualAm && !['휴무', '월차', '년차', '퇴직자', '미입력', ''].includes(actualAm)) workingWorkers.add(actualAm);
+            if (actualPm && !['휴무', '월차', '년차', '퇴직자', '미입력', ''].includes(actualPm)) workingWorkers.add(actualPm);
         });
 
-        const detectedSpares = new Set();
+        // 2. [후보군 조회]
+        VEHICLE_COLS.forEach(colId => {
+            // [수정] 숫자 차량 제외
+            if (colId === '미입력' || !S1_Module.isValidVehicleNumber(colId)) return;
+
+            const recurringKey = `${dayOfWeek}-${colId}`;
+            const allEntries = (routeData.fixedSchedule && routeData.fixedSchedule[recurringKey]) 
+                            ? routeData.fixedSchedule[recurringKey].slice().sort((a, b) => new Date(b.dateString) - new Date(a.dateString)) 
+                            : [];
+
+            let validEntries = [];
+            for (let i = 0; i < allEntries.length; i++) {
+                const entryDate = new Date(allEntries[i].dateString); entryDate.setHours(0,0,0,0);
+                if (targetDate >= entryDate) {
+                    validEntries.push(allEntries[i]);
+                    if (i + 1 < allEntries.length) {
+                        validEntries.push(allEntries[i+1]);
+                    }
+                    break;
+                }
+            }
+
+            validEntries.forEach(entry => {
+                let names = entry.names;
+                [names[0].text, names[1].text].forEach(name => {
+                    const cleanName = (name || '').trim();
+                    if (cleanName && !['휴무', '월차', '년차', '퇴직자', '미입력', ''].includes(cleanName)) {
+                        if (!workingWorkers.has(cleanName)) {
+                            restList.push(cleanName);
+                        }
+                    }
+                });
+            });
+        });
+
+        // 3. [스페어 조회]
         for (let i = -3; i <= 3; i++) {
             const d = new Date(targetDate);
             d.setDate(d.getDate() + i);
             const scanDateStr = DataManager.getTodayDateString(d); 
             const scanDay = d.getDay();
             VEHICLE_COLS.forEach(colId => {
-                if (colId === '미입력') return;
+                // [수정] 숫자 차량 제외
+                if (colId === '미입력' || !S1_Module.isValidVehicleNumber(colId)) return;
+
                 let scanAm = { text: '', bold: false };
                 let scanPm = { text: '', bold: false };
+                
                 if (routeData.tempSchedule && routeData.tempSchedule[scanDateStr] && routeData.tempSchedule[scanDateStr][colId]) {
                     scanAm = routeData.tempSchedule[scanDateStr][colId][0];
                     scanPm = routeData.tempSchedule[scanDateStr][colId][1];
                 } else {
                     const rKey = `${scanDay}-${colId}`;
                     if (routeData.fixedSchedule && routeData.fixedSchedule[rKey]) {
-                        for (const entry of routeData.fixedSchedule[rKey]) {
+                         const sortedScan = routeData.fixedSchedule[rKey].slice().sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
+                         for (const entry of sortedScan) {
                             if (new Date(scanDateStr) >= new Date(entry.dateString)) {
-                                let names = entry.names;
-                                const workType = routeData.workTypeConfig[colId] || 'normal';
-                                if (workType === 'biweekly') {
-                                    const startObj = new Date(entry.dateString);
-                                    const currentObj = new Date(scanDateStr);
-                                    const diffTime = currentObj - startObj;
-                                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                                    const weeksPassed = Math.floor(diffDays / 7);
-                                    if (weeksPassed % 2 !== 0) {
-                                        names = [entry.names[1], entry.names[0]];
-                                    }
-                                }
-                                scanAm = names[0];
-                                scanPm = names[1];
-                                break;
+                                scanAm = entry.names[0]; scanPm = entry.names[1]; break;
                             }
-                        }
+                         }
                     }
                 }
                 [scanAm, scanPm].forEach(worker => {
-                    if (worker && worker.text && worker.bold === true && !['휴무', '미입력', '월차', '년차', '퇴직자'].includes(worker.text.trim())) {
-                        detectedSpares.add(worker.text.trim());
-                    }
-                });
-            });
-        }
-
-        detectedSpares.forEach(name => {
-            if (!workingWorkers.has(name)) {
-                const isAlreadyListed = restList.some(entry => entry.includes(name));
-                if (!isAlreadyListed) restList.push(`(스페)${name}`);
-            }
-        });
-        return [...new Set(restList)].sort();
-    }
-};
-
-
- /* ================================================================= */
-/* [Section 3] 차량 정비 일지 모듈 */
-/* ================================================================= */
-
-const S3_Module = {
-    ui: {
-        title: document.getElementById('s3_title'),
-        dateInput: document.getElementById('s3_datePicker'),
-        dateDisplay: document.getElementById('s3_dateDisplay_text'),
-        prevDayBtn: document.getElementById('s3_prevDate'),
-        nextDayBtn: document.getElementById('s3_nextDate'),
-        
-        tbody: document.querySelector('#maintenanceForm tbody'),
-        addRowBtn: document.getElementById('s3-addRow'),
-        
-        showAllBtn: document.getElementById('s3-showAll'),
-        backupBtn: document.getElementById('s3-backupFile'),
-        restoreBtn: document.getElementById('s3-triggerRestore'),
-        restoreFile: document.getElementById('s3_restoreFile'),
-        clearFormBtn: document.getElementById('s3-clearForm'),
-        printBtn: document.getElementById('s3-printPage'),
-        
-        calcBtn: document.getElementById('s3-showCalculator'),
-        calcModal: document.getElementById('s3_calculatorModal'),
-        calcStart: document.getElementById('s3_startDate'),
-        calcEnd: document.getElementById('s3_endDate'),
-        calcActionBtn: document.getElementById('s3-calculatePrices'),
-        calcTotal: document.getElementById('s3_totalPrice'),
-        calcCloseBtn: document.getElementById('s3-closeCalculator'),
-
-        marginLeftSelect: document.getElementById('s3_marginLeft'),
-        marginRightSelect: document.getElementById('s3_marginRight'),
-        fontSizeSelect: document.getElementById('s3_fontSizeInput')
-    },
-
-    state: {
-        currentDate: null
-    },
-
-    initialize() {
-        console.log("S3: 초기화 시작");
-        this.bindEventListeners();
-        
-        // 오늘 날짜 설정
-        const today = new Date();
-        this.state.currentDate = DataManager.getTodayDateString(today);
-        this.updateDateDisplay();
-        
-        DataManager.subscribe(this);
-        DataManager.loadS3Data();
-        this.loadDataForDate(this.state.currentDate);
-    },
-
-    bindEventListeners() {
-        // 날짜 네비게이션
-        this.ui.prevDayBtn.onclick = () => this.changeDate(-1);
-        this.ui.nextDayBtn.onclick = () => this.changeDate(1);
-        
-        // 날짜 직접 선택 (텍스트 클릭 시 데이트피커 동작)
-        this.ui.dateDisplay.onclick = () => {
-            this.ui.dateInput.showPicker ? this.ui.dateInput.showPicker() : this.ui.dateInput.click();
-        };
-        this.ui.dateInput.onchange = (e) => {
-            if (e.target.value) {
-                this.state.currentDate = e.target.value;
-                this.updateDateDisplay();
-                this.loadDataForDate(this.state.currentDate);
-            }
-        };
-
-        // 기능 버튼
-        this.ui.showAllBtn.onclick = () => S1_Module.showAllSections();
-        this.ui.addRowBtn.onclick = () => this.addNewRow();
-        this.ui.printBtn.onclick = () => this.printPage();
-        this.ui.clearFormBtn.onclick = () => {
-            if(confirm("현재 보고 있는 날짜의 내용을 모두 지우시겠습니까?")) {
-                this.clearCurrentForm();
-                this.saveData();
-            }
-        };
-
-        // 백업 및 복구
-        this.ui.backupBtn.onclick = () => this.backupData();
-        this.ui.restoreBtn.onclick = () => this.ui.restoreFile.click();
-        this.ui.restoreFile.onchange = (e) => {
-            if (e.target.files.length > 0) this.restoreData(e.target.files[0]);
-        };
-
-        // 스타일 조정
-        this.ui.marginLeftSelect.onchange = (e) => {
-            document.documentElement.style.setProperty('--s3-print-margin-left', e.target.value + 'mm');
-        };
-        this.ui.marginRightSelect.onchange = (e) => {
-            document.documentElement.style.setProperty('--s3-print-margin-right', e.target.value + 'mm');
-        };
-        this.ui.fontSizeSelect.onchange = (e) => {
-            document.documentElement.style.setProperty('--s3-font-size-base', e.target.value + 'pt');
-            document.documentElement.style.setProperty('--s3-print-font-size', e.target.value + 'pt');
-        };
-
-        // 가격 계산기 모달
-        this.ui.calcBtn.onclick = () => {
-            this.ui.calcStart.value = this.state.currentDate;
-            this.ui.calcEnd.value = this.state.currentDate;
-            this.ui.calcTotal.textContent = "0원";
-            this.ui.calcModal.style.display = 'block';
-        };
-        this.ui.calcCloseBtn.onclick = () => this.ui.calcModal.style.display = 'none';
-        this.ui.calcActionBtn.onclick = () => this.calculateTotalPrice();
-
-        // 폼 내부 입력 감지 (자동 저장)
-        this.ui.tbody.addEventListener('change', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                if (e.target.name && e.target.name.startsWith('price_')) {
-                    this.formatPriceInput(e.target);
-                }
-                this.saveData();
-            }
-        });
-
-        // 텍스트박스 자동 높이 조절
-        this.ui.tbody.addEventListener('input', (e) => {
-            if (e.target.tagName === 'TEXTAREA' && e.target.classList.contains('auto-resize')) {
-                this.autoResize(e.target);
-            }
-        });
-    },
-
-    onDataChanged(event, payload) {
-        // S1 데이터 변경 시 차량 목록 업데이트 필요할 수 있음
-        if (event === 's1_data_changed') {
-            const dateStr = this.state.currentDate;
-            if (dateStr) this.loadDataForDate(dateStr);
-        }
-    },
-
-    changeDate(offset) {
-        const curr = new Date(this.state.currentDate);
-        curr.setDate(curr.getDate() + offset);
-        this.state.currentDate = DataManager.getTodayDateString(curr);
-        this.updateDateDisplay();
-        this.loadDataForDate(this.state.currentDate);
-    },
-
-    updateDateDisplay() {
-        const d = new Date(this.state.currentDate);
-        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-        this.ui.dateDisplay.textContent = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${dayNames[d.getDay()]})`;
-        this.ui.dateInput.value = this.state.currentDate;
-    },
-
-    clearCurrentForm() {
-        // 기본 10줄은 유지하고 내용만 비움, 추가된 줄은 삭제
-        const rows = Array.from(this.ui.tbody.querySelectorAll('tr'));
-        rows.forEach(tr => {
-            if (tr.classList.contains('s3_added-row')) {
-                tr.remove();
-            } else {
-                tr.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                tr.querySelectorAll('select').forEach(el => el.value = '');
-                tr.querySelectorAll('.vehicle-display').forEach(el => el.textContent = '');
-                tr.querySelectorAll('textarea').forEach(el => this.autoResize(el));
-            }
-        });
-    },
-
-    loadDataForDate(dateString) {
-        this.clearCurrentForm();
-        const s3_data = DataManager.loadS3Data();
-        const dailyData = s3_data[dateString] || {};
-        const { routes } = DataManager.data.s1;
-
-        // 노선 선택 옵션 채우기 (모든 select 박스)
-        const routeOptions = Object.keys(routes);
-        const routeSelects = this.ui.tbody.querySelectorAll('.s3_routeSelect_row');
-        
-        routeSelects.forEach(select => {
-            const currentVal = select.value;
-            select.innerHTML = '<option value="">선택</option>';
-            routeOptions.forEach(r => {
-                const opt = document.createElement('option');
-                opt.value = r;
-                opt.textContent = r;
-                select.appendChild(opt);
-            });
-            select.value = currentVal; // 값 복원 시도 (빈 값이면 선택 안됨)
-            
-            // 이벤트 리스너: 노선 변경 시 차량 목록 갱신
-            select.onchange = (e) => this.updateVehicleSelect(e.target);
-        });
-
-        // 저장된 데이터 불러오기
-        Object.keys(dailyData).forEach(key => {
-            // key 예: item_1_1, price_1_2, route_1_3 ...
-            // 동적 행(added row) 처리
-            const parts = key.split('_');
-            if (parts.length >= 3) {
-                const rowIdx = parseInt(parts[1]); // 1 (1st group), 2 (2nd group), or index for added rows
-                const colIdx = parseInt(parts[2]); // 1~6
-                
-                // form-table 구조상 name 속성으로 매핑
-                let input = this.ui.tbody.querySelector(`[name="${key}"]`);
-                
-                // 만약 input이 없으면 동적 행일 수 있음 (추가 구현 필요하거나, 기본 로직상 10줄 이내)
-                // *Ver 6.0.11에서는 기본 10줄(1_1 ~ 2_4) + 추가 행 방식
-                // 추가 행 데이터 로딩 로직
-                if (!input && key.startsWith('added_')) {
-                    // 추가된 행 데이터 로딩 (구조가 복잡해지므로 단순화: 여기서는 기본 10줄 위주로 처리하고, 추가 행은 별도 저장소 로직 필요)
-                    // 현재 구조에서는 name 기반 매핑이므로, 
-                    // 만약 저장된 키가 기본 폼에 없다면 행을 생성해야 함.
-                    // (이 예제에서는 기본 10줄 외 데이터는 'added_rows' 배열로 관리하는 것이 일반적이나, 
-                    //  기존 코드가 name 기반 개별 저장이라면 아래 로직 사용)
-                } 
-
-                if (input) {
-                    input.value = dailyData[key];
-                    if (input.tagName === 'TEXTAREA') this.autoResize(input);
-                    if (input.name.startsWith('route_')) {
-                        this.updateVehicleSelect(input, dailyData[`vehicle_${parts[1]}_${parts[2]}`]);
-                    }
-                    if (input.name.startsWith('price_')) {
-                         this.formatPriceInput(input);
-                    }
-                }
-            }
-        });
-        
-        // 추가된 행 데이터 로드 (별도 키 'extra_rows' 사용 권장)
-        if (dailyData.extra_rows && Array.isArray(dailyData.extra_rows)) {
-            dailyData.extra_rows.forEach(rowData => {
-                this.addNewRow(rowData);
-            });
-        }
-    },
-
-    updateVehicleSelect(routeSelect, savedVehicleVal = null) {
-        const cell = routeSelect.parentElement;
-        const vehicleSelect = cell.querySelector('.s3_vehicleSelect_row');
-        const displayDiv = cell.querySelector('.vehicle-display');
-        const routeName = routeSelect.value;
-        
-        vehicleSelect.innerHTML = '';
-        vehicleSelect.style.display = 'none';
-        displayDiv.textContent = '';
-        
-        if (!routeName) return;
-        
-        const { routes } = DataManager.data.s1;
-        const routeData = routes[routeName];
-        if (!routeData) return;
-
-        const vehicles = (routeData.vehicleColumns || []).filter(v => v && v !== '미입력');
-        // 정렬
-        const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-        vehicles.sort(collator.compare);
-
-        if (vehicles.length === 0) return;
-
-        vehicleSelect.style.display = 'block';
-        vehicleSelect.innerHTML = '<option value="">차량선택</option>';
-        vehicles.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v;
-            opt.textContent = v;
-            vehicleSelect.appendChild(opt);
-        });
-
-        if (savedVehicleVal) vehicleSelect.value = savedVehicleVal;
-
-        // 차량 선택 시 디스플레이 업데이트 및 저장
-        vehicleSelect.onchange = () => {
-             displayDiv.textContent = vehicleSelect.value;
-             this.saveData();
-        };
-        
-        // 초기 로딩 시 디스플레이 설정
-        if (vehicleSelect.value) displayDiv.textContent = vehicleSelect.value;
-    },
-
-    saveData() {
-        const data = {};
-        const inputs = this.ui.tbody.querySelectorAll('input, textarea, select');
-        inputs.forEach(el => {
-            if (el.name && !el.closest('.s3_added-row')) {
-                data[el.name] = el.value;
-            }
-        });
-
-        // 추가된 행 별도 저장
-        const extraRows = [];
-        this.ui.tbody.querySelectorAll('tr.s3_added-row').forEach(tr => {
-            const rowData = {};
-            tr.querySelectorAll('input, textarea, select').forEach(el => {
-                const className = el.className; // route, vehicle, item 등 클래스 활용
-                if (className.includes('s3_routeSelect_row')) rowData.route = el.value;
-                else if (className.includes('s3_vehicleSelect_row')) rowData.vehicle = el.value;
-                else if (el.name.startsWith('item')) rowData.item = el.value;
-                else if (el.name.startsWith('detail')) rowData.detail = el.value;
-                else if (el.name.startsWith('parts')) rowData.parts = el.value;
-                else if (el.name.startsWith('price')) rowData.price = el.value;
-                else if (el.name.startsWith('worker')) rowData.worker = el.value;
-            });
-            extraRows.push(rowData);
-        });
-        data.extra_rows = extraRows;
-
-        DataManager.updateS3Data(s3_data => {
-            s3_data[this.state.currentDate] = data;
-        });
-    },
-
-    addNewRow(rowData = null) {
-        const tr = document.createElement('tr');
-        tr.className = 'entry-row s3_added-row';
-        
-        // 랜덤 ID 생성하여 name 충돌 방지 (혹은 단순 인덱스)
-        const uid = Date.now() + Math.floor(Math.random() * 1000);
-        
-        tr.innerHTML = `
-            <td class="route-select-cell">
-                <select class="header-select s3_routeSelect_row no-print"></select>
-                <select class="header-select s3_vehicleSelect_row no-print" style="display: none;"></select>
-                <div class="vehicle-display"></div>
-            </td>
-            <td><textarea name="item_add_${uid}" class="auto-resize"></textarea></td>
-            <td><textarea name="detail_add_${uid}" class="auto-resize"></textarea></td>
-            <td><textarea name="parts_add_${uid}" class="auto-resize"></textarea></td>
-            <td><div class="price-wrapper"><input type="text" inputmode="numeric" name="price_add_${uid}" class="price-input" /></div></td>
-            <td>
-                <textarea name="worker_add_${uid}" class="auto-resize" style="width:80%; display:inline-block;"></textarea>
-                <button type="button" class="no-print" onclick="this.closest('tr').remove(); S3_Module.saveData();" style="color:red; border:none; background:none; font-weight:bold; cursor:pointer;">X</button>
-            </td>
-        `;
-        
-        this.ui.tbody.insertBefore(tr, this.ui.tbody.lastElementChild); // tfoot 이전에 추가 (tfoot이 있다면)
-        // 만약 tfoot이 tbody 안에 없다면 appendChild
-        if (this.ui.tbody.querySelector('tfoot')) {
-             // tfoot은 보통 tbody 밖에 있지만, 여기 구조상 tbody 안에 있다면
-        } else {
-             this.ui.tbody.appendChild(tr);
-        }
-
-        // 노선 select 초기화
-        const routeSelect = tr.querySelector('.s3_routeSelect_row');
-        const { routes } = DataManager.data.s1;
-        routeSelect.innerHTML = '<option value="">선택</option>';
-        Object.keys(routes).forEach(r => {
-            const opt = document.createElement('option');
-            opt.value = r; opt.textContent = r;
-            routeSelect.appendChild(opt);
-        });
-        
-        routeSelect.onchange = (e) => this.updateVehicleSelect(e.target);
-
-        // 데이터 채우기 (복구 시)
-        if (rowData) {
-            routeSelect.value = rowData.route || '';
-            this.updateVehicleSelect(routeSelect, rowData.vehicle);
-            tr.querySelector(`[name^="item"]`).value = rowData.item || '';
-            tr.querySelector(`[name^="detail"]`).value = rowData.detail || '';
-            tr.querySelector(`[name^="parts"]`).value = rowData.parts || '';
-            tr.querySelector(`[name^="price"]`).value = rowData.price || '';
-            tr.querySelector(`[name^="worker"]`).value = rowData.worker || '';
-            
-            // 높이 조절
-            tr.querySelectorAll('textarea').forEach(t => this.autoResize(t));
-        }
-    },
-
-    autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    },
-
-    formatPriceInput(input) {
-        let val = input.value.replace(/[^0-9]/g, '');
-        if (val) {
-            val = parseInt(val).toLocaleString('ko-KR');
-            input.value = val;
-        }
-    },
-
-    calculateTotalPrice() {
-        const start = new Date(this.ui.calcStart.value);
-        const end = new Date(this.ui.calcEnd.value);
-        if (start > end) { alert("시작일이 종료일보다 큽니다."); return; }
-
-        const s3_data = DataManager.loadS3Data();
-        let total = 0;
-        let reportHTML = `<html><head><title>정비 내역서</title>
-        <style>table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:5px;font-size:12px;}th{background:#eee;}</style>
-        </head><body><h2 style="text-align:center;">차량 정비 및 부품 내역서</h2>
-        <p style="text-align:center;">기간: ${this.ui.calcStart.value} ~ ${this.ui.calcEnd.value}</p>
-        <table><thead><tr><th>날짜</th><th>노선/차량</th><th>항목</th><th>부품내역</th><th>금액</th></tr></thead><tbody>`;
-
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const dateStr = DataManager.getTodayDateString(d);
-            const data = s3_data[dateStr];
-            if (data) {
-                // 기본 행 처리
-                Object.keys(data).forEach(key => {
-                    if (key.startsWith('price_')) {
-                        const priceStr = data[key];
-                        if (priceStr) {
-                            const price = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
-                            if (price > 0) {
-                                total += price;
-                                // 관련 정보 찾기 (같은 접미사)
-                                const suffix = key.replace('price_', '');
-                                const route = data[`route_${suffix}`] || '';
-                                const vehicle = data[`vehicle_${suffix}`] || '';
-                                const item = data[`item_${suffix}`] || '';
-                                const parts = data[`parts_${suffix}`] || '';
-                                
-                                reportHTML += `<tr><td>${dateStr}</td><td>${route} ${vehicle}</td><td>${item}</td><td>${parts}</td><td style="text-align:right;">${price.toLocaleString()}원</td></tr>`;
-                            }
+                    if (worker && worker.text && worker.bold === true && !['휴무', '미입력', '월차', '년차', '퇴직자', ''].includes(worker.text.trim())) {
+                        if (!workingWorkers.has(worker.text.trim())) {
+                            const isAlreadyListed = restList.some(entry => entry.includes(worker.text.trim()));
+                            if (!isAlreadyListed) restList.push(`(스페)${worker.text.trim()}`);
                         }
                     }
                 });
-                
-                // 추가 행 처리
-                if (data.extra_rows) {
-                    data.extra_rows.forEach(row => {
-                         const price = parseInt((row.price||'').replace(/[^0-9]/g, '')) || 0;
-                         if (price > 0) {
-                             total += price;
-                             reportHTML += `<tr><td>${dateStr}</td><td>${row.route||''} ${row.vehicle||''}</td><td>${row.item||''}</td><td>${row.parts||''}</td><td style="text-align:right;">${price.toLocaleString()}원</td></tr>`;
-                         }
-                    });
+            });
+        }
+
+        return [...new Set(restList)].sort();
+    },
+
+};
+
+/* ================================================================= */
+/* [Section 3] 정비 일지 모듈 (최종: 노선/차량 표시 스타일 수정) */
+/* ================================================================= */
+const S3_Module = {
+    state: {
+        currentDate: new Date(),
+        dateString: '',
+        rowCount: 2 
+    },
+    ui: {
+        dateDisplay: document.getElementById('s3_dateDisplay_text'),
+        datePicker: document.getElementById('s3_datePicker'),
+        form: document.getElementById('maintenanceForm'),
+        tbody: document.querySelector('#maintenanceForm tbody')
+    },
+
+    initialize() {
+        console.log("S3: 초기화 (Route/Vehicle Style Updated)");
+        this.injectCustomStyles(); 
+        this.updateDate(new Date());
+        this.bindEventListeners();
+        this.loadDataForDate();
+        this.populateRouteSelects(); 
+    },
+
+    // [스타일 정의]
+    injectCustomStyles() {
+        if (document.getElementById('s3-dynamic-styles')) return;
+        const style = document.createElement('style');
+        style.id = 's3-dynamic-styles';
+        style.innerHTML = `
+            /* 가격 칸 스타일 */
+            .price-wrapper {
+                display: flex; align-items: center; justify-content: flex-end; 
+                padding-right: 5px; height: 100%;
+            }
+            .price-input {
+                text-align: right; width: 80% !important; border: none; background: transparent; font-size: inherit;
+            }
+            .price-unit {
+                font-size: 13px; margin-left: 2px; color: #333; white-space: nowrap; display: none;
+            }
+            .price-unit.show { display: inline !important; }
+
+            /* [인쇄 전용 스타일] */
+            @media print {
+                /* 1. 날짜 셀 강제 중앙 정렬 */
+                #section3 .form-table th#s3_dateDisplay {
+                    border: none !important;          
+                    border-bottom: 2px solid #000 !important; 
+                    text-align: center !important;    
+                    vertical-align: bottom !important;
+                    padding: 5px 0 !important;
+                    display: table-cell !important; 
                 }
+                
+                /* 2. 날짜 텍스트 컨테이너 */
+                #s3_print_date_container {
+                    display: block !important;
+                    width: 100%;
+                    text-align: center !important;
+                    font-size: 24pt !important;       
+                    font-weight: bold;
+                    color: #000 !important;
+                    margin: 0 auto;
+                    white-space: nowrap;              
+                    line-height: 1.5;
+                }
+
+                /* 3. 노선/차량 번호 강제 표시 */
+                .vehicle-display {
+                    display: block !important;
+                    text-align: center;
+                    width: 100%;
+                    color: #000 !important;           
+                    visibility: visible !important;   
+                    opacity: 1 !important;
+                }
+
+                /* 4. 기타 숨김 처리 */
+                #s3_date_nav_container { display: none !important; }
+                input::placeholder { color: transparent !important; }
+            }
+        `;
+        document.head.appendChild(style);
+    },
+
+    bindEventListeners() {
+        document.getElementById('s3_prevDate').onclick = () => this.navigateDate(-1);
+        document.getElementById('s3_nextDate').onclick = () => this.navigateDate(1);
+        
+        this.ui.datePicker.onchange = (e) => {
+            if (e.target.value) this.updateDate(new Date(e.target.value));
+        };
+        document.getElementById('s3_dateDisplay_text').onclick = () => {
+            this.ui.datePicker.showPicker ? this.ui.datePicker.showPicker() : this.ui.datePicker.focus();
+        };
+
+        document.getElementById('s3-showAll').onclick = () => S1_Module.showAllSections();
+        document.getElementById('s3-printPage').onclick = () => this.printPage();
+        document.getElementById('s3-clearForm').onclick = () => this.clearForm();
+        document.getElementById('s3-addRow').onclick = () => this.addNewRow();
+        document.getElementById('s3-backupFile').onclick = () => this.backupData();
+        document.getElementById('s3-triggerRestore').onclick = () => document.getElementById('s3_restoreFile').click();
+        document.getElementById('s3_restoreFile').onchange = (e) => this.restoreData(e.target.files[0]);
+
+        document.getElementById('s3-showCalculator').onclick = () => {
+            document.getElementById('s3_startDate').value = this.state.dateString;
+            document.getElementById('s3_endDate').value = this.state.dateString;
+            document.getElementById('s3_calculatorModal').style.display = 'block';
+        };
+        document.getElementById('s3-closeCalculator').onclick = () => {
+            document.getElementById('s3_calculatorModal').style.display = 'none';
+        };
+        document.getElementById('s3-calculatePrices').onclick = () => this.calculateTotalPrice();
+
+        document.getElementById('s3_marginLeft').onchange = (e) => this.updateMargin('left', e.target.value);
+        document.getElementById('s3_marginRight').onchange = (e) => this.updateMargin('right', e.target.value);
+        document.getElementById('s3_fontSizeInput').onchange = (e) => {
+            document.getElementById('section3').style.fontSize = e.target.value + 'pt';
+        };
+
+        this.ui.form.addEventListener('input', (e) => {
+            const target = e.target;
+            if (target.tagName === 'TEXTAREA' && target.classList.contains('auto-resize')) {
+                this.resizeTextarea(target);
+            }
+            if (target.name && target.name.startsWith('price_')) {
+                this.formatPriceInput(target);
+            }
+            this.saveData(); 
+        });
+
+        this.ui.form.addEventListener('change', (e) => {
+            const target = e.target;
+            if (target.classList.contains('s3_routeSelect_row')) {
+                this.handleRouteSelect(target);
+            } else if (target.classList.contains('s3_vehicleSelect_row')) {
+                this.handleVehicleSelect(target);
+            }
+            this.saveData();
+        });
+
+        this.ui.form.addEventListener('focusin', (e) => {
+            if (e.target.getAttribute('list') === 's3_maintenance_items') {
+                e.target.dataset.originalValue = e.target.value; 
+                e.target.value = ''; 
+            }
+        });
+        this.ui.form.addEventListener('focusout', (e) => {
+            if (e.target.getAttribute('list') === 's3_maintenance_items') {
+                if (e.target.value === '') {
+                    e.target.value = e.target.dataset.originalValue || '';
+                }
+            }
+        });
+    },
+
+    updateTitle() {
+        const companyInput = document.getElementById('companyInput');
+        const companyName = companyInput ? companyInput.value.trim() : '';
+        const titleEl = document.getElementById('s3_title');
+        if (titleEl) {
+            titleEl.textContent = companyName 
+                ? `${companyName} 차량정비점검일지 및 작업의뢰서` 
+                : '차량정비점검일지 및 작업의뢰서';
+        }
+    },
+
+    updateDate(date) {
+        this.state.currentDate = date;
+        this.state.dateString = DataManager.getTodayDateString(date);
+        
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const formatted = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
+        this.ui.dateDisplay.textContent = formatted;
+        this.ui.datePicker.value = this.state.dateString;
+        
+        this.loadDataForDate(); 
+    },
+
+    navigateDate(delta) {
+        const newDate = new Date(this.state.currentDate);
+        newDate.setDate(newDate.getDate() + delta);
+        this.updateDate(newDate);
+    },
+
+    loadDataForDate() {
+        this.ui.form.reset();
+        this.ui.tbody.innerHTML = ''; 
+        this.updateTitle();
+
+        const s3Data = DataManager.loadS3Data();
+        const dailyData = s3Data[this.state.dateString] || {};
+        
+        let maxRow = 8;
+        Object.keys(dailyData).forEach(key => {
+            const parts = key.split('_');
+            if (parts.length >= 3) {
+                const r = parseInt(parts[1]);
+                if (r > maxRow) maxRow = r;
+            }
+        });
+
+        for (let i = 1; i <= maxRow; i++) {
+            this.createRow(i);
+        }
+
+        Object.keys(dailyData).forEach(key => {
+            const el = this.ui.form.elements[key];
+            if (el) {
+                if (key.startsWith('price_')) {
+                    el.value = this.addCommas(dailyData[key]);
+                } else {
+                    el.value = dailyData[key];
+                }
+                if (el.tagName === 'TEXTAREA') this.resizeTextarea(el);
+                if (key.startsWith('route_')) this.handleRouteSelect(el, false); 
+            }
+        });
+        
+        document.querySelectorAll('.s3_routeSelect_row').forEach(routeSel => {
+            const cell = routeSel.parentElement;
+            this.updateVehicleDisplay(cell);
+        });
+
+        const priceInputs = this.ui.form.querySelectorAll('input[name^="price_"]');
+        priceInputs.forEach(input => {
+            this.formatPriceInput(input);
+        });
+    },
+
+    saveData() {
+        const formData = new FormData(this.ui.form);
+        const dataToSave = {};
+        for (const [key, value] of formData.entries()) {
+            if (value.trim() !== '') {
+                dataToSave[key] = value;
+            }
+        }
+        DataManager.updateS3Data(s3Data => {
+            s3Data[this.state.dateString] = dataToSave;
+        });
+    },
+
+    createRow(rowIndex) {
+        if (this.ui.form.elements[`item_${rowIndex}_1`]) return;
+
+        const tr = document.createElement('tr');
+        tr.className = 'entry-row';
+        if (rowIndex > 8) tr.classList.add('s3_added-row'); 
+
+        tr.innerHTML = `
+            <td class="route-select-cell">
+                <select class="header-select s3_routeSelect_row no-print" name="route_${rowIndex}_1"></select>
+                <select class="header-select s3_vehicleSelect_row no-print" name="vehicle_${rowIndex}_1" style="display: none;"></select>
+                <div class="vehicle-display"></div>
+            </td>
+            <td><input type="text" name="item_${rowIndex}_1" list="s3_maintenance_items" style="width:100%; border:none; background:transparent;" placeholder=""></td>
+            <td><textarea name="detail_${rowIndex}_1" class="auto-resize"></textarea></td>
+            <td><textarea name="parts_${rowIndex}_1" class="auto-resize"></textarea></td>
+            <td>
+                <div class="price-wrapper">
+                    <input type="text" inputmode="numeric" name="price_${rowIndex}_1" class="price-input" placeholder="" />
+                    <span class="price-unit">원</span> 
+                </div>
+            </td>
+            <td><textarea name="worker_${rowIndex}_1" class="auto-resize"></textarea></td>
+        `;
+        
+        this.ui.tbody.appendChild(tr);
+        
+        const routeSelect = tr.querySelector('.s3_routeSelect_row');
+        this.populateRouteOptions(routeSelect);
+    },
+
+    addNewRow() {
+        const currentRows = this.ui.tbody.querySelectorAll('tr').length;
+        this.createRow(currentRows + 1);
+    },
+
+    populateRouteSelects() {
+        document.querySelectorAll('.s3_routeSelect_row').forEach(select => {
+            this.populateRouteOptions(select);
+        });
+    },
+
+    populateRouteOptions(selectElement) {
+        const routes = DataManager.getAllRoutes();
+        selectElement.innerHTML = '<option value="">노선선택</option>';
+        Object.keys(routes).forEach(routeName => {
+            const option = document.createElement('option');
+            option.value = routeName;
+            option.textContent = routeName;
+            selectElement.appendChild(option);
+        });
+    },
+
+    handleRouteSelect(routeSelectElement, triggerSave = true) {
+        const cell = routeSelectElement.parentElement;
+        const vehicleSelect = cell.querySelector('.s3_vehicleSelect_row');
+        const routeName = routeSelectElement.value;
+
+        vehicleSelect.innerHTML = '<option value="">차량선택</option>';
+        vehicleSelect.style.display = 'none';
+        
+        if (routeName) {
+            const routes = DataManager.getAllRoutes();
+            const routeData = routes[routeName];
+            if (routeData && routeData.vehicleColumns) {
+                const cars = routeData.vehicleColumns.filter(c => c && c !== '미입력' && /^\d+$/.test(c.trim()));
+                cars.sort((a, b) => parseInt(a) - parseInt(b));
+                
+                cars.forEach(car => {
+                    const opt = document.createElement('option');
+                    opt.value = car;
+                    opt.textContent = car;
+                    vehicleSelect.appendChild(opt);
+                });
+                vehicleSelect.style.display = 'block';
             }
         }
         
-        reportHTML += `</tbody><tfoot><tr><th colspan="4" style="text-align:right;">총 합계</th><th style="text-align:right;color:red;">${total.toLocaleString()}원</th></tr></tfoot></table></body></html>`;
+        this.updateVehicleDisplay(cell);
+        if(triggerSave) this.saveData();
+    },
 
-        this.ui.calcTotal.textContent = total.toLocaleString() + "원";
+    handleVehicleSelect(vehicleSelectElement) {
+        const cell = vehicleSelectElement.parentElement;
+        this.updateVehicleDisplay(cell);
+    },
+
+    // [수정됨] 노선/차량 번호 표시 로직 (크기 조절 + 굵게 + '/' 구분자)
+    updateVehicleDisplay(cell) {
+        const routeSel = cell.querySelector('.s3_routeSelect_row');
+        const vehicleSel = cell.querySelector('.s3_vehicleSelect_row');
+        const displayDiv = cell.querySelector('.vehicle-display');
         
-        const popup = window.open('', '_blank', 'width=800,height=600');
-        popup.document.write(reportHTML);
-        popup.document.close();
+        const route = routeSel ? routeSel.value : '';
+        const vehicle = vehicleSel ? vehicleSel.value : '';
+        
+        displayDiv.innerHTML = ''; 
+
+        if (route || vehicle) {
+            // style: color:black !important (인쇄 시 선명하게), 둘 다 bold 처리
+            // 노선번호: 1.1em (기존 1.4em보다 작게)
+            // 구분자: /
+            displayDiv.innerHTML = `
+                <span style="font-weight:bold; font-size:1.1em; color:#000 !important; vertical-align: middle;">${route}</span>
+                <span style="font-weight:bold; font-size:1.1em; margin: 0 4px; color:#000 !important; vertical-align: middle;">/</span>
+                <span style="font-weight:bold; font-size:1.1em; color:#000 !important; vertical-align: middle;">${vehicle}</span>
+            `;
+        }
+    },
+
+    resizeTextarea(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    },
+
+    addCommas(val) {
+        if (!val) return '';
+        const num = val.replace(/[^0-9]/g, '');
+        return num ? parseInt(num).toLocaleString() : '';
+    },
+
+    formatPriceInput(input) {
+        input.value = this.addCommas(input.value);
+        const wrapper = input.parentElement; 
+        if (wrapper) {
+            const unitSpan = wrapper.querySelector('.price-unit');
+            if (unitSpan) {
+                if (input.value.trim() !== '') {
+                    unitSpan.style.display = 'inline';
+                    unitSpan.classList.add('show');
+                } else {
+                    unitSpan.style.display = 'none';
+                    unitSpan.classList.remove('show');
+                }
+            }
+        }
+    },
+
+    clearForm() {
+        if (confirm(`${this.state.dateString} 일지 내용을 모두 지우시겠습니까?`)) {
+            this.ui.form.reset();
+            this.ui.tbody.querySelectorAll('.vehicle-display').forEach(el => el.textContent = '');
+            this.ui.tbody.querySelectorAll('.s3_vehicleSelect_row').forEach(el => el.style.display = 'none');
+            this.ui.tbody.querySelectorAll('.price-unit').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('show');
+            });
+            this.saveData();
+        }
     },
 
     backupData() {
         const data = DataManager.data.s3;
         const json = JSON.stringify(data);
-        const dateStr = this.state.currentDate.replace(/-/g, '');
-        const blob = new Blob([json], {type: "application/json"});
+        const blob = new Blob([json], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `정비일지(S3)_백업_${dateStr}.json`;
+        a.download = `정비일지_백업_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
     },
 
     restoreData(file) {
-        if (!confirm("정비일지 데이터를 복구하시겠습니까? 현재 데이터는 덮어쓰여집니다.")) return;
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const loaded = JSON.parse(e.target.result);
-                DataManager.updateS3Data(s3_data => {
-                    Object.keys(s3_data).forEach(k => delete s3_data[k]);
-                    Object.assign(s3_data, loaded);
+                const data = JSON.parse(e.target.result);
+                DataManager.updateS3Data(s3Data => {
+                    for (const key in s3Data) delete s3Data[key];
+                    Object.assign(s3Data, data);
                 });
-                this.loadDataForDate(this.state.currentDate);
-                alert("정비일지가 복구되었습니다.");
-            } catch(err) {
-                alert("파일 형식이 올바르지 않습니다.");
-                console.error(err);
+                alert('정비일지가 복구되었습니다.');
+                this.loadDataForDate();
+            } catch (err) {
+                alert('파일 형식이 올바르지 않습니다.');
             }
-            this.ui.restoreFile.value = '';
         };
         reader.readAsText(file);
     },
 
+    calculateTotalPrice() {
+        const startStr = document.getElementById('s3_startDate').value;
+        const endStr = document.getElementById('s3_endDate').value;
+        if (!startStr || !endStr) return alert("시작일과 종료일을 모두 선택해주세요.");
+
+        const s3Data = DataManager.loadS3Data();
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+        let total = 0;
+        let details = [];
+
+        Object.keys(s3Data).forEach(dateStr => {
+            const current = new Date(dateStr);
+            if (current >= start && current <= end) {
+                const dayData = s3Data[dateStr];
+                Object.keys(dayData).forEach(key => {
+                    if (key.startsWith('price_')) {
+                        const price = parseInt(dayData[key].replace(/,/g, '') || '0');
+                        if (price > 0) {
+                            total += price;
+                            const suffix = key.replace('price_', ''); 
+                            details.push({
+                                date: dateStr,
+                                route: dayData[`route_${suffix}`] || '',
+                                vehicle: dayData[`vehicle_${suffix}`] || '',
+                                item: dayData[`item_${suffix}`] || '',
+                                parts: dayData[`parts_${suffix}`] || '',
+                                price: price
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        document.getElementById('s3_totalPrice').textContent = total.toLocaleString() + '원';
+        if (confirm(`총 합계: ${total.toLocaleString()}원\n\n상세 내역을 보시겠습니까?`)) {
+            this.showPriceDetails(details, total, startStr, endStr);
+        }
+    },
+
+    showPriceDetails(details, total, start, end) {
+        details.sort((a, b) => new Date(a.date) - new Date(b.date));
+        let html = `<html><head><title>부품 사용 내역</title><style>body { font-family: Arial; padding: 20px; } table { width: 100%; border-collapse: collapse; margin-top: 10px; } th, td { border: 1px solid #ddd; padding: 8px; text-align: center; font-size: 13px; } th { background-color: #f2f2f2; } .price { text-align: right; } h2 { text-align: center; }</style></head><body><h2>정비 부품 사용 내역서</h2><p style="text-align:center;">기간: ${start} ~ ${end}</p><table><thead><tr><th>날짜</th><th>노선</th><th>차량</th><th>정비항목</th><th>부품명</th><th>금액</th></tr></thead><tbody>`;
+        details.forEach(d => {
+            html += `<tr><td>${d.date}</td><td>${d.route}</td><td>${d.vehicle}</td><td>${d.item}</td><td>${d.parts}</td><td class="price">${d.price.toLocaleString()}</td></tr>`;
+        });
+        html += `<tr style="background-color:#fff3cd; font-weight:bold;"><td colspan="5">총 합계</td><td class="price">${total.toLocaleString()}</td></tr></tbody></table><div style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px;">인쇄하기</button></div></body></html>`;
+        const win = window.open('', '_blank', 'width=800,height=600');
+        win.document.write(html);
+        win.document.close();
+    },
+
+    updateMargin(side, value) {
+        document.documentElement.style.setProperty(`--s3-print-margin-${side}`, value + 'mm');
+    },
+
     printPage() {
+        const headerCell = document.querySelector('#s3_dateDisplay');
+        if(!headerCell) { window.print(); return; }
+
+        const dateText = document.getElementById('s3_dateDisplay_text').textContent;
+        
+        let printDiv = document.getElementById('s3_print_date_container');
+        if (!printDiv) {
+            printDiv = document.createElement('div');
+            printDiv.id = 's3_print_date_container';
+            headerCell.appendChild(printDiv);
+        }
+        printDiv.textContent = dateText;
+        printDiv.style.display = 'block';
+
+        const labelCell = headerCell.previousElementSibling; 
+        if (labelCell) labelCell.style.display = 'none';
+
+        const originalColspan = headerCell.getAttribute('colspan');
+        headerCell.setAttribute('colspan', '6'); 
+
         document.body.classList.remove('printing-section1', 'printing-section2');
         document.body.classList.add('printing-section3');
         
-        // 인쇄 전 textarea 높이 재조정 (확실하게 하기 위함)
-        this.ui.tbody.querySelectorAll('textarea').forEach(el => this.autoResize(el));
-        
-        const handleAfterPrint = () => {
-            document.body.classList.remove('printing-section3');
-            window.removeEventListener('afterprint', handleAfterPrint);
-        };
-        window.addEventListener('afterprint', handleAfterPrint);
-        window.print();
+        setTimeout(() => {
+            const afterPrint = () => {
+                document.body.classList.remove('printing-section3');
+                if (labelCell) labelCell.style.display = ''; 
+                if (originalColspan) headerCell.setAttribute('colspan', originalColspan);
+                else headerCell.removeAttribute('colspan');
+                
+                printDiv.style.display = 'none';
+                window.removeEventListener('afterprint', afterPrint);
+            };
+            window.addEventListener('afterprint', afterPrint);
+            window.print();
+        }, 300); 
     }
 };
 
